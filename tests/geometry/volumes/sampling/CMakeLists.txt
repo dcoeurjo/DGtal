@@ -1,5 +1,6 @@
 SET(DGTAL_TESTS_SRC
   testUniformSampling
+  testKorobovSampling
   )
 
 FOREACH(FILE ${DGTAL_TESTS_SRC})

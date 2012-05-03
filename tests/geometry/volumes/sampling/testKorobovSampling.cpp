@@ -15,14 +15,14 @@
  **/
 
 /**
- * @file testUniformSampling.cpp
+ * @file testKorobovSampling.cpp
  * @ingroup Tests
  * @author David Coeurjolly (\c david.coeurjolly@liris.cnrs.fr )
  * Laboratoire d'InfoRmatique en Image et Systèmes d'information - LIRIS (CNRS, UMR 5205), CNRS, France
  *
  * @date 2012/05/01
  *
- * Functions for testing class UniformSampling.
+ * Functions for testing class KorobovSampling.
  *
  * This file is part of the DGtal library.
  */
@@ -31,7 +31,7 @@
 #include <iostream>
 #include "DGtal/base/Common.h"
 #include "DGtal/helpers/StdDefs.h"
-#include "DGtal/geometry/volumes/sampling/UniformSampling.h"
+#include "DGtal/geometry/volumes/sampling/KorobovSampling.h"
 #include "DGtal/io/boards/Board2D.h"
 ///////////////////////////////////////////////////////////////////////////////
 
@@ -39,13 +39,13 @@ using namespace std;
 using namespace DGtal;
 
 ///////////////////////////////////////////////////////////////////////////////
-// Functions for testing class UniformSampling.
+// Functions for testing class KorobovSampling.
 ///////////////////////////////////////////////////////////////////////////////
 /**
  * Example of a test. To be completed.
  *
  */
-bool testUniformSampling()
+bool testKorobovSampling()
 {
   unsigned int nbok = 0;
   unsigned int nb = 0;
@@ -54,16 +54,17 @@ bool testUniformSampling()
 
   Z2i::Domain domain(Z2i::Point(0,0),Z2i::Point(256,256));
 
-  UniformSampling<Z2i::Domain> sampler(domain);
+  KorobovSampling<Z2i::Domain> sampler(domain,7, 1000);
+
+  trace.info() << sampler <<std::endl;
 
   DGtal::Board2D board;
 
-  board << domain;
+   for(unsigned int k=0; k< 1000; k++)
+       board << sampler.generate();
 
-  for(unsigned int k=0; k< 100; k++)
-    board <<  sampler.generate();
 
-  board.saveSVG("uniform-sampling.svg");
+  board.saveEPS("korobov-sampling.eps");
 
 
   nbok += true ? 1 : 0;
@@ -80,13 +81,13 @@ bool testUniformSampling()
 
 int main( int argc, char** argv )
 {
-  trace.beginBlock ( "Testing class UniformSampling" );
+  trace.beginBlock ( "Testing class KorobovSampling" );
   trace.info() << "Args:";
   for ( int i = 0; i < argc; ++i )
     trace.info() << " " << argv[ i ];
   trace.info() << endl;
 
-  bool res = testUniformSampling(); // && ... other tests
+  bool res = testKorobovSampling(); // && ... other tests
   trace.emphase() << ( res ? "Passed." : "Error." ) << endl;
   trace.endBlock();
   return res ? 0 : 1;

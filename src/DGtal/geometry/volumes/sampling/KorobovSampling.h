@@ -17,26 +17,26 @@
 #pragma once
 
 /**
- * @file UniformSampling.h
+ * @file KorobovSampling.h
  * @author David Coeurjolly (\c david.coeurjolly@liris.cnrs.fr )
  * Laboratoire d'InfoRmatique en Image et Systèmes d'information - LIRIS (CNRS, UMR 5205), CNRS, France
  *
  * @date 2012/05/01
  *
- * Header file for module UniformSampling.cpp
+ * Header file for module KorobovSampling.cpp
  *
  * This file is part of the DGtal library.
  */
 
-#if defined(UniformSampling_RECURSES)
-#error Recursive header files inclusion detected in UniformSampling.h
-#else // defined(UniformSampling_RECURSES)
+#if defined(KorobovSampling_RECURSES)
+#error Recursive header files inclusion detected in KorobovSampling.h
+#else // defined(KorobovSampling_RECURSES)
 /** Prevents recursive inclusion of headers. */
-#define UniformSampling_RECURSES
+#define KorobovSampling_RECURSES
 
-#if !defined UniformSampling_h
+#if !defined KorobovSampling_h
 /** Prevents repeated inclusion of headers. */
-#define UniformSampling_h
+#define KorobovSampling_h
 
 //////////////////////////////////////////////////////////////////////////////
 // Inclusions
@@ -44,31 +44,30 @@
 #include "DGtal/base/Common.h"
 #include "DGtal/kernel/domains/CDomain.h"
 #include <boost/array.hpp>
-#include <boost/random/mersenne_twister.hpp>
-#include <boost/random/uniform_int.hpp>
+#include <cmath>
 //////////////////////////////////////////////////////////////////////////////
 
 namespace DGtal
 {
 
   /////////////////////////////////////////////////////////////////////////////
-  // template class UniformSampling
+  // template class KorobovSampling
   /**
-   * Description of template class 'UniformSampling' <p>
+   * Description of template class 'KorobovSampling' <p>
    * \brief Aim: Define a uniform point sampling in a given domain.
    *
    *
    */
-  template <typename TDomain, typename TPNRGEngine = boost::mt19937 >
-  class UniformSampling
+  template <typename TDomain>
+  class KorobovSampling
   {
     // ----------------------- Standard services ------------------------------
   public:
 
     ///Domain type
     typedef TDomain Domain;
-    typedef TPNRGEngine PNRGEngine;
     typedef typename Domain::Point Point;
+    typedef typename Domain::Vector Vector;
     typedef typename Domain::Space::Integer Integer;
 
 
@@ -76,26 +75,36 @@ namespace DGtal
     BOOST_CONCEPT_ASSERT ( ( CDomain<TDomain> ) );
 
 
-    UniformSampling(const Domain &aDomain, const PNRGEngine aSeed = PNRGEngine())
+    KorobovSampling(const Domain &aDomain, const Integer &aSeed, const Integer &N )
     {
       mySeed = aSeed;
-      for(DGtal::Dimension d=0; d < Domain::dimension ; d++)
-        myDistributions[d] = boost::uniform_int <Integer>(aDomain.lowerBound()[d],
-                                                          aDomain.upperBound()[d] );
-    }
+      myPrevious = myPrevious.diagonal(0.5);
+      myN = N;
+
+      myZ[0] = 1.0;
+      myExtent = aDomain.extent();
+
+      for(DGtal::Dimension d=1; d < Domain::dimension ; d++)
+        myZ[d] = fmod(NumberTraits<Integer>::castToDouble(aSeed)*myZ[d-1] ,
+                      NumberTraits<Integer>::castToDouble(myExtent[d]));
+      }
+
+
 
     /**
      * Generate a point using a uniform random generator.
      *
      * @return a Point.
      */
+    inline
     Point generate()
     {
-      Point p;
-      for(DGtal::Dimension d=0; d < Domain::dimension ; d++)
-        p[d] = myDistributions[d](mySeed);
-
-      return p;
+       for(DGtal::Dimension d=0; d < Domain::dimension ; d++)
+       {
+         myPrevious[d] =  fmod(myPrevious[d] + myZ[d]/NumberTraits<Integer>::castToDouble(myN), 1.0);
+         myPreviousDigital[d] = myPrevious[d] * myExtent[d];
+       }
+      return myPreviousDigital;
     }
 
     // ----------------------- Interface --------------------------------------
@@ -115,15 +124,29 @@ namespace DGtal
 
     // ------------------------- Protected Datas ------------------------------
   private:
+
+
     // ------------------------- Private Datas --------------------------------
   private:
 
     ///Random seed
-    PNRGEngine mySeed;
+    Integer mySeed;
 
-    ///Random ditribution
-    boost::array < boost::uniform_int<Integer> ,
-                   Domain::dimension > myDistributions;
+    ///Previous point
+    typename Domain::Space::RealPoint myZ;
+
+    ///Previous point in the [0,1]^s cube
+    typename Domain::Space::RealPoint myPrevious;
+
+    ///Previous digital point
+    Point myPreviousDigital;
+
+    ///Domain size
+    Vector myExtent;
+
+    ///Number of points
+    Integer myN;
+
 
     // ------------------------- Hidden services ------------------------------
   protected:
@@ -132,7 +155,7 @@ namespace DGtal
      * Constructor.
      * Forbidden by default (protected to avoid g++ warnings).
      */
-    UniformSampling();
+    KorobovSampling();
 
   private:
 
@@ -141,7 +164,7 @@ namespace DGtal
      * @param other the object to clone.
      * Forbidden by default.
      */
-    UniformSampling ( const UniformSampling & other );
+    KorobovSampling ( const KorobovSampling & other );
 
     /**
      * Assignment.
@@ -149,35 +172,36 @@ namespace DGtal
      * @return a reference on 'this'.
      * Forbidden by default.
      */
-    UniformSampling & operator= ( const UniformSampling & other );
+    KorobovSampling & operator= ( const KorobovSampling & other );
 
     // ------------------------- Internals ------------------------------------
   private:
 
-  }; // end of class UniformSampling
+  }; // end of class KorobovSampling
 
 
   /**
-   * Overloads 'operator<<' for displaying objects of class 'UniformSampling'.
+   * Overloads 'operator<<' for displaying objects of class 'KorobovSampling'.
    * @param out the output stream where the object is written.
-   * @param object the object of class 'UniformSampling' to write.
+   * @param object the object of class 'KorobovSampling' to write.
    * @return the output stream after the writing.
    */
-  template <typename T, typename E>
+  template <typename T>
   std::ostream&
-  operator<< ( std::ostream & out, const UniformSampling<T,E> & object );
+  operator<< ( std::ostream & out, const KorobovSampling<T> & object );
 
 } // namespace DGtal
 
 
 ///////////////////////////////////////////////////////////////////////////////
 // Includes inline functions.
-#include "DGtal/geometry/volumes/sampling/UniformSampling.ih"
+#include "DGtal/geometry/volumes/sampling/KorobovSampling.ih"
 
 //                                                                           //
 ///////////////////////////////////////////////////////////////////////////////
 
-#endif // !defined UniformSampling_h
+#endif // !defined KorobovSampling_h
 
-#undef UniformSampling_RECURSES
-#endif // else defined(UniformSampling_RECURSES)
+#undef KorobovSampling_RECURSES
+#endif // else defined(KorobovSampling_RECURSES)
+
