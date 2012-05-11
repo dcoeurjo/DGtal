@@ -41,23 +41,81 @@
 /**
  * Destructor.
  */
-template <typename T>
+template <typename Sh,typename Sa,typename F>
 inline
-DGtal::OutputSensitiveConvexHull<T>::~OutputSensitiveConvexHull()
+DGtal::OutputSensitiveConvexHull<Sh,Sa,F>::~OutputSensitiveConvexHull()
 {
 }
 
 ///////////////////////////////////////////////////////////////////////////////
 // Interface - public :
 
+/****************************/
+template <typename Sh,typename Sa,typename F>
+inline
+typename DGtal::OutputSensitiveConvexHull<Sh,Sa,F>::Point
+DGtal::OutputSensitiveConvexHull<Sh,Sa,F>::findFirstPoint (bool &result, const unsigned int nbMax )
+{
+  Point resultPoint;
+  result = false;
+  unsigned int cpt=0;
+
+  do  {
+    resultPoint = mySampler.generate();
+    if (myShape.orientation( result ) == DGtal::INSIDE)
+      {
+        result = true;
+        return resultPoint;
+      }
+    cpt++;
+  } while (cpt < nbMax);
+  
+  return Point();    
+}
+
+/****************************/
+template <typename Sh,typename Sa,typename F>
+inline
+typename DGtal::OutputSensitiveConvexHull<Sh,Sa,F>::Point 
+DGtal::OutputSensitiveConvexHull<Sh,Sa,F>::findFirstPointOnContour(const Point &anInsidePoint, const DGtal::Dimension aDimension) const
+{
+  Point res = anInsidePoint;
+  recursiveFindOnRay( res, anInsidePoint[aDimension], mySampler.domain().upperBound()[aDimension]);
+
+  return res;
+}
+
+/****************************/
+template <typename Sh,typename Sa,typename F>
+inline
+void
+DGtal::OutputSensitiveConvexHull<Sh,Sa,F>::recursiveFindOnRay(Point &aPoint,
+                                                              const Coordinate minId,
+                                                              const Coordinate maxId,
+                                                              const DGtal::Dimension dimension) const
+{
+  if ((maxId - minId) <= 1)
+    {
+      aPoint[dimension] = minId;
+      return ;
+    }
+  
+  Coordinate pos = (maxId - minId) /2;
+  aPoint[dimension] = pos;
+  if (myShape.orientation( aPoint ) == DGtal::INSIDE)
+    return recursiveFindOnRay(aPoint, pos, maxId);
+  else
+    return recursiveFindOnRay(aPoint, minId, pos);
+}
+
 /**
  * Writes/Displays the object on an output stream.
  * @param out the output stream where the object is written.
  */
-template <typename T>
+template <typename Sh,typename Sa,typename F>
 inline
 void
-DGtal::OutputSensitiveConvexHull<T>::selfDisplay ( std::ostream & out ) const
+DGtal::OutputSensitiveConvexHull<Sh,Sa,F>::selfDisplay ( std::ostream & out ) const
 {
   out << "[OutputSensitiveConvexHull]";
 }
@@ -66,10 +124,10 @@ DGtal::OutputSensitiveConvexHull<T>::selfDisplay ( std::ostream & out ) const
  * Checks the validity/consistency of the object.
  * @return 'true' if the object is valid, 'false' otherwise.
  */
-template <typename T>
+template <typename Sh,typename Sa,typename F>
 inline
 bool
-DGtal::OutputSensitiveConvexHull<T>::isValid() const
+DGtal::OutputSensitiveConvexHull<Sh,Sa,F>::isValid() const
 {
     return true;
 }
@@ -79,11 +137,11 @@ DGtal::OutputSensitiveConvexHull<T>::isValid() const
 ///////////////////////////////////////////////////////////////////////////////
 // Implementation of inline functions                                        //
 
-template <typename T>
+template <typename Sh,typename Sa,typename F>
 inline
 std::ostream&
 DGtal::operator<< ( std::ostream & out, 
-		  const OutputSensitiveConvexHull<T> & object )
+		  const OutputSensitiveConvexHull<Sh,Sa,F> & object )
 {
   object.selfDisplay( out );
   return out;

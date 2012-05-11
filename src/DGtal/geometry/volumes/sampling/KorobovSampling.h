@@ -75,7 +75,9 @@ namespace DGtal
     BOOST_CONCEPT_ASSERT ( ( CDomain<TDomain> ) );
 
 
-    KorobovSampling(const Domain &aDomain, const Integer &aSeed, const Integer &N )
+    KorobovSampling(const Domain &aDomain, 
+                    const Integer &aSeed, 
+                    const Integer &N ): myDomain(aDomain)
     {
       mySeed = aSeed;
       myPrevious = myPrevious.diagonal(0.5);
@@ -105,6 +107,15 @@ namespace DGtal
          myPreviousDigital[d] = myPrevious[d] * myExtent[d];
        }
       return myPreviousDigital;
+    }
+
+    /** 
+     * 
+     * @return a const reference on the domain
+     */
+    const Domain &domain()
+    {
+      return myDomain;
     }
 
     // ----------------------- Interface --------------------------------------
@@ -147,6 +158,8 @@ namespace DGtal
     ///Number of points
     Integer myN;
 
+    ///Copy of the domain
+    const Domain & myDomain;
 
     // ------------------------- Hidden services ------------------------------
   protected:

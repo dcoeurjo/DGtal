@@ -42,6 +42,9 @@
 // Inclusions
 #include <iostream>
 #include "DGtal/base/Common.h"
+#include "DGtal/math/arithmetic/CPositiveIrreducibleFraction.h"
+#include "DGtal/shapes/CDigitalOrientedShape.h"
+
 //////////////////////////////////////////////////////////////////////////////
 
 namespace DGtal
@@ -52,12 +55,36 @@ namespace DGtal
   /**
    * Description of template class 'OutputSensitiveConvexHull' <p>
    * \brief Aim:
+   *
+   *
+   * @tparam TShape any model of digital oriented shape
+   * @tparam TSampler any model of point sampler
+   * @tparam TFraction a model of Fractions
    */
-  template <typename T>
+  template <typename TShape, typename TSampler, typename TFraction>
   class OutputSensitiveConvexHull
   {
     // ----------------------- Standard services ------------------------------
   public:
+
+    typedef TShape Shape;
+    BOOST_CONCEPT_ASSERT(( CDigitalOrientedShape<Shape>));
+
+    typedef TSampler Sampler;
+    typedef typename Sampler::Point Point;
+    typedef typename Sampler::Point::Coordinate Coordinate;
+    
+
+    typedef TFraction Fraction;
+    BOOST_CONCEPT_ASSERT(( CPositiveIrreducibleFraction<Fraction> ));
+
+    
+
+
+    OutputSensitiveConvexHull(const Shape &aShape,
+                              const Sampler &aSampler): 
+      myShape(aShape), mySampler(aSampler)
+    {}
 
     /**
      * Destructor.
@@ -66,6 +93,43 @@ namespace DGtal
 
     // ----------------------- Interface --------------------------------------
   public:
+
+
+    /** 
+     * Find a first point in the shape using the point sampler.
+     * 
+     * @param found true if a point has been found.
+     * @param nbMax maximal number of trials.
+     * 
+     * @return a Point contained in the shape (it found is true), a
+     * default point instance otherwise.
+     */
+    Point findFirstPoint(bool &found, const unsigned int nbMax = 10000);
+
+   
+    /** 
+     * Given a point inside the shape, the method returns a point
+     * belonging to the shape contour (a point 4-adjacent to a
+     * background pixel). This method returns the point by a
+     * logarithmic search (@a O(log n)
+     * where @a n is the distance between @a anInsidePoint and the
+     * domain boundary according the direction).
+     * 
+     * @pre anInsidePoint must be inside the shape.
+     * @param aInsidePoint a Point inside the shape
+     * @param direction prefered direction using freeman code (default=0).
+     * 
+     * @return a Point belonging to the contour.
+     */
+    Point findFirstPointOnContour(const Point &anInsidePoint, 
+                                  const DGtal::Dimension dimension = 0) const;
+
+
+    void recursiveFindOnRay(Point &aPoint,
+                            const Coordinate minId,
+                            const Coordinate maxId,
+                            const DGtal::Dimension dimension) const;
+    
 
     /**
      * Writes/Displays the object on an output stream.
@@ -81,6 +145,15 @@ namespace DGtal
 
     // ------------------------- Protected Datas ------------------------------
   private:
+
+    ///Const reference on the input shape
+    const Shape & myShape;
+
+    ///Const reference on the input shape
+    const Sampler & mySampler;
+
+    
+
     // ------------------------- Private Datas --------------------------------
   private:
 
@@ -122,9 +195,9 @@ namespace DGtal
    * @param object the object of class 'OutputSensitiveConvexHull' to write.
    * @return the output stream after the writing.
    */
-  template <typename T>
+  template <typename Sh, typename Sa, typename F>
   std::ostream&
-  operator<< ( std::ostream & out, const OutputSensitiveConvexHull<T> & object );
+  operator<< ( std::ostream & out, const OutputSensitiveConvexHull<Sh,Sa,F> & object );
 
 } // namespace DGtal
 
