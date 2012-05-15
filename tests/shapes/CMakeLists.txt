@@ -3,7 +3,7 @@ SET(DGTAL_TESTS_SRC
   testHalfPlane
   testImplicitFunctionModels
   testShapesFromPoints
-  testOutputSentitiveCVX
+  testOutputSensitiveCVX
   )
 
 FOREACH(FILE ${DGTAL_TESTS_SRC})

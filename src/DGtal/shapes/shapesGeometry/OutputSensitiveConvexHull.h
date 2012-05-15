@@ -59,9 +59,8 @@ namespace DGtal
    *
    * @tparam TShape any model of digital oriented shape
    * @tparam TSampler any model of point sampler
-   * @tparam TFraction a model of Fractions
    */
-  template <typename TShape, typename TSampler, typename TFraction>
+  template <typename TShape, typename TSampler>
   class OutputSensitiveConvexHull
   {
     // ----------------------- Standard services ------------------------------
@@ -72,19 +71,16 @@ namespace DGtal
 
     typedef TSampler Sampler;
     typedef typename Sampler::Point Point;
+    typedef typename Sampler::Domain::Vector Vector;
     typedef typename Sampler::Point::Coordinate Coordinate;
     
 
-    typedef TFraction Fraction;
-    BOOST_CONCEPT_ASSERT(( CPositiveIrreducibleFraction<Fraction> ));
-
-    
-
-
+  
     OutputSensitiveConvexHull(const Shape &aShape,
-                              const Sampler &aSampler): 
+                              Sampler &aSampler): 
       myShape(aShape), mySampler(aSampler)
-    {}
+    {
+    }
 
     /**
      * Destructor.
@@ -125,11 +121,39 @@ namespace DGtal
                                   const DGtal::Dimension dimension = 0) const;
 
 
-    void recursiveFindOnRay(Point &aPoint,
-                            const Coordinate minId,
-                            const Coordinate maxId,
-                            const DGtal::Dimension dimension) const;
+   
+    /** 
+     * Digital Ray shooting. Finds the closest point on the digital
+     *    ray with direction Pminus1 and origin Piminus2, which is on
+     *    the same side of the shape as Pminus2.
+     *
+     *  @pre points coordinates are such that the origin is inside the shape.
+     *
+     * 
+     * @param Piminus1 
+     * @param Piminus2 
+     */
+    Point digitalRayShooting(const Vector &Piminus1,
+                             const Point &Piminus2) const;
     
+    /** 
+     * Recursive ray shooting. Finds the point Pi such that we have:
+     *    OPi = lambda Piminusone + Piminus2
+     *    Pi is on the same side of the shape as Piminus2
+     *    lambda is in [minLambda,maxLambda]
+     *
+     *  @pre points coordinates are such that the origin is inside the shape.
+     * 
+     * @param Pi 
+     * @param Piminus1 
+     * @param Piminus2 
+     * @param minLambda 
+     * @param maxLambda 
+     */
+    void recursiveDigitalRayShooting(Point &Pi,
+                                     const Vector &Piminus1,
+                                     const DGtal::Orientation Orientation,
+                                     const Coordinate intervalSize) const;
 
     /**
      * Writes/Displays the object on an output stream.
@@ -150,10 +174,9 @@ namespace DGtal
     const Shape & myShape;
 
     ///Const reference on the input shape
-    const Sampler & mySampler;
+    Sampler & mySampler;
 
     
-
     // ------------------------- Private Datas --------------------------------
   private:
 
@@ -195,9 +218,9 @@ namespace DGtal
    * @param object the object of class 'OutputSensitiveConvexHull' to write.
    * @return the output stream after the writing.
    */
-  template <typename Sh, typename Sa, typename F>
+  template <typename Sh, typename Sa>
   std::ostream&
-  operator<< ( std::ostream & out, const OutputSensitiveConvexHull<Sh,Sa,F> & object );
+  operator<< ( std::ostream & out, const OutputSensitiveConvexHull<Sh,Sa> & object );
 
 } // namespace DGtal
 
