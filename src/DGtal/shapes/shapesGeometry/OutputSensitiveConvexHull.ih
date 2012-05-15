@@ -73,12 +73,24 @@ DGtal::OutputSensitiveConvexHull<Sh,Sa>::findFirstPoint (bool &result, const uns
   return Point();    
 }
 
-   
+/****************************/
+template <typename Sh,typename Sa>
+inline
+typename DGtal::OutputSensitiveConvexHull<Sh,Sa>::Point
+DGtal::OutputSensitiveConvexHull<Sh,Sa>::nextCVXPoint (const Point & previousPoint )
+{
+  
+
+  
+  return Point();    
+}
+
+/************************************/   
 template <typename Sh,typename Sa>
 inline
 typename DGtal::OutputSensitiveConvexHull<Sh,Sa>::Point 
 DGtal::OutputSensitiveConvexHull<Sh,Sa>::digitalRayShooting(const Vector &Piminus1,
-                                                              const Point &Piminus2) const
+                                                            const Point &Piminus2) const
 {
   Point Pi = Piminus2;
   Coordinate lambdax, lambday;

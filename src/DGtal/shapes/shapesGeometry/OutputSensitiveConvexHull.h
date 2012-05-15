@@ -102,26 +102,18 @@ namespace DGtal
      */
     Point findFirstPoint(bool &found, const unsigned int nbMax = 10000);
 
-   
+
     /** 
-     * Given a point inside the shape, the method returns a point
-     * belonging to the shape contour (a point 4-adjacent to a
-     * background pixel). This method returns the point by a
-     * logarithmic search (@a O(log n)
-     * where @a n is the distance between @a anInsidePoint and the
-     * domain boundary according the direction).
+     * Compute the next point on the CVXhull
      * 
-     * @pre anInsidePoint must be inside the shape.
-     * @param aInsidePoint a Point inside the shape
-     * @param direction prefered direction using freeman code (default=0).
+     * @param previousPoint the previous point
      * 
-     * @return a Point belonging to the contour.
+     * @return the successor.
      */
-    Point findFirstPointOnContour(const Point &anInsidePoint, 
-                                  const DGtal::Dimension dimension = 0) const;
+    Point nextCVXPoint(const Point & previousPoint);
+ 
 
-
-   
+    
     /** 
      * Digital Ray shooting. Finds the closest point on the digital
      *    ray with direction Pminus1 and origin Piminus2, which is on
