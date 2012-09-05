@@ -65,7 +65,9 @@ int main(int argc, char** argv)
       parseOK=false;
       trace.info()<< "Error checking program options: "<< ex.what()<< endl;
     }
+  
   po::notify(vm);    
+  
   if(!parseOK || vm.count("help") || argc<=1 || (!(vm.count("Input"))) || (!(vm.count("Output"))) )
     {
       trace.info()<< "Watershed" <<std::endl << "Basic usage: "<<std::endl
@@ -75,14 +77,21 @@ int main(int argc, char** argv)
     }
   if( vm.count("Default") + vm.count("StochasticProbability") + vm.count("StochasticWatershed") != 1 )
     {
-      trace.info()<< "Watershed" <<std::endl << "Only one watershed method argument may be used (--Default, --StochasticProbability or --StochasticWatershed)" << std::endl;
+      trace.info()<< "Watershed" <<std::endl 
+		  << "Only one watershed method argument may be used "
+		  << "(--Default, --StochasticProbability or --StochasticWatershed)" << std::endl;
       return 0;
     }
-  if( ( vm.count("StochasticProbability") || vm.count("StochasticWatershed") ) && ( !vm.count("Iterations") || !vm.count("Regions") ) )
+  if( ( vm.count("StochasticProbability") || 
+	vm.count("StochasticWatershed") ) && 
+      ( !vm.count("Iterations") || !vm.count("Regions") ) )
     {
-      trace.info()<< "Watershed" <<std::endl << "Missing options : --Iterations <integer> --Regions <integer>" << std::endl;
+      trace.info()<< "Watershed" <<std::endl 
+		  << "Missing options : --Iterations <integer> --Regions <integer>" << std::endl;
       return 0;
     }
+
+
   // Initialisation
   QApplication application(argc,argv);
   srand ( time(NULL) );
@@ -146,7 +155,8 @@ int main(int argc, char** argv)
   // Display
   Viewer3D viewer;
   viewer.show();  
-  
+  viewer << LVset3d ;
+  /*
   for(Domain::ConstIterator it = WSdomain.begin(), itend=WSdomain.end(); it!=itend; ++it){
     int value = WSImage( *it );
     if( value == -2 ) continue;
@@ -167,7 +177,7 @@ int main(int argc, char** argv)
       }
   }
   
-  
+  */  
   
   viewer << Viewer3D::updateDisplay;
   

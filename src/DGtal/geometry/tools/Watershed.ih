@@ -88,6 +88,7 @@ DGtal::Watershed<TGraph, TVertexMap, TLessFunctor>::segmentation()
   trace.beginBlock("Initialising image and generating heightmap");
   Graph outGraph(myGraph);
   VertexMap outMap(myValueMap);
+
   // Sort the points of image by thickness value and initialisation of outGraph
   std::map<Value, VertexVector, MapComparison> heightMap;
   for( typename Graph::ConstIterator it = myGraph.begin(); it != myGraph.end(); it++ ){
