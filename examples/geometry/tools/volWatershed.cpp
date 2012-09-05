@@ -103,7 +103,6 @@ int main(int argc, char** argv)
    
   Image LVimage = LongvolReader<Image>::importLongvol(LVinputFilename);
   
-  
   Z3i::DigitalSet LVset3d (LVimage.domain());
   SetFromImage<Z3i::DigitalSet>::append<Image>(LVset3d, LVimage, 0,10000);
   
@@ -155,8 +154,8 @@ int main(int argc, char** argv)
   // Display
   Viewer3D viewer;
   viewer.show();  
-  viewer << LVset3d ;
-  /*
+  //viewer << LVset3d ;
+  
   for(Domain::ConstIterator it = WSdomain.begin(), itend=WSdomain.end(); it!=itend; ++it){
     int value = WSImage( *it );
     if( value == -2 ) continue;
@@ -177,7 +176,7 @@ int main(int argc, char** argv)
       }
   }
   
-  */  
+  
   
   viewer << Viewer3D::updateDisplay;
   
