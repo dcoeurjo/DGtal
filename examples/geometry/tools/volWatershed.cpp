@@ -122,7 +122,7 @@ int main(int argc, char** argv)
   Object object = Object(Z3i::dt18_6, LVset3d);
     
   // Watershed launching
-  Watershed<Object, Image > ws(object, LVimage);
+  Watershed<Object, Image, std::greater<Image::Value> > ws(object, LVimage);
   
   
   Image WSImage = LVimage;

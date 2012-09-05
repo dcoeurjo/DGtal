@@ -28,6 +28,7 @@
 ///////////////////////////////////////////////////////////////////////////////
 #include <iostream>
 #include <queue>
+#include <vector>
 #include <math.h>
 #include "DGtal/topology/BreadthFirstVisitor.h"
 #include <boost/random/poisson_distribution.hpp>
@@ -78,7 +79,7 @@ DGtal::Watershed<TGraph, TVertexMap, TLessFunctor>::segmentation()
   Value MASK = WSHED + 2;
   Value INQUEUE = WSHED + 3;
   
-  typedef vector<Vertex> VertexVector;
+  typedef std::vector<Vertex> VertexVector;
   int current_label = 0;
   bool flag = false;
   int maxHeight = 0;
@@ -89,17 +90,23 @@ DGtal::Watershed<TGraph, TVertexMap, TLessFunctor>::segmentation()
   Graph outGraph(myGraph);
   VertexMap outMap(myValueMap);
 
-  // Sort the points of image by thickness value and initialisation of outGraph
+  // Sort the points of image by thickness value and initialisation of
+  // outGraph 
+  ///heightMap: { (height value, pixels with this height value) }
   std::map<Value, VertexVector, MapComparison> heightMap;
-  for( typename Graph::ConstIterator it = myGraph.begin(); it != myGraph.end(); it++ ){
-    outMap.setValue(*it, INIT);
-    int value = myValueMap(*it);
-    if( heightMap.find(value) == heightMap.end() )
-      {
-	heightMap.insert(pair< int, VertexVector >(value, VertexVector()));
-      }
-    heightMap.find(value)->second.push_back(*it);
-  }
+  for( typename Graph::ConstIterator it = myGraph.begin(), itend = myGraph.end(); 
+       it != itend ; ++it )
+    {
+      outMap.setValue(*it, INIT);
+      Value value = myValueMap(*it);
+      if( heightMap.find(value) == heightMap.end() )
+	{
+	  //new iso-level detected
+	  heightMap.insert(std::pair< Value, VertexVector >(value, VertexVector()));
+	}
+      //adding the point to existing iso-level
+      heightMap.find(value)->second.push_back(*it);
+    }
   trace.endBlock();
   
   
@@ -107,10 +114,14 @@ DGtal::Watershed<TGraph, TVertexMap, TLessFunctor>::segmentation()
   int heightNumber = heightMap.size();
   int heightCount = 1;
   // For every height of the heigthmap
-  for(typename map<int, VertexVector>::iterator mit = heightMap.begin(); mit != heightMap.end(); mit++)
+  for(typename map<Value, VertexVector>::iterator mit = heightMap.begin(),
+	mitend = heightMap.end(); mit != mitend; 
+      ++mit)
     {
       // For every point at the height h
-      for(typename VertexVector::const_iterator it = mit->second.begin(); it != mit->second.end(); it++)
+      for(typename VertexVector::const_iterator it = mit->second.begin(),
+	    itend = mit->second.end();
+	  it != itend; ++it)
 	{
 	  Vertex p = *it;
 	  outMap.setValue(p, MASK);
@@ -118,10 +129,11 @@ DGtal::Watershed<TGraph, TVertexMap, TLessFunctor>::segmentation()
 	  VertexVector neighbors;
 	  back_insert_iterator< VertexVector > insertIt(neighbors);
 	  myGraph.writeNeighbors(insertIt, *it);
-	  for( typename VertexVector::const_iterator nit = neighbors.begin(); nit != neighbors.end(); nit++ ) 
+	  for( typename VertexVector::const_iterator nit = neighbors.begin(); 
+	       nit != neighbors.end(); ++nit) 
 	    {
 	      Vertex np = *nit;
-	      if( outMap(np) < WSHED || outMap(np) == WSHED )
+	      if( outMap(np) <= WSHED )// || outMap(np) == WSHED )
 		{
 		  outMap.setValue(p, INQUEUE);
 		  fifo.push(p);
@@ -134,7 +146,6 @@ DGtal::Watershed<TGraph, TVertexMap, TLessFunctor>::segmentation()
       // While there are still points to analyse
       while( !fifo.empty() )
 	{
-	  //flag = false; // Not in base algorithm
 	  Vertex p = fifo.front();
 	  fifo.pop();
       
@@ -142,41 +153,46 @@ DGtal::Watershed<TGraph, TVertexMap, TLessFunctor>::segmentation()
 	  VertexVector neighbors;
 	  back_insert_iterator< VertexVector > insertIt(neighbors);
 	  myGraph.writeNeighbors(insertIt, p);
-	  for( typename VertexVector::const_iterator nit = neighbors.begin(); nit != neighbors.end(); nit++ ) 
+	  for( typename VertexVector::const_iterator nit = neighbors.begin(); 
+	       nit != neighbors.end(); nit++ ) 
 	    {
 	      Vertex np = *nit; // A neighbor
-	      if( outMap(np) < WSHED && outMap(np) != WSHED )
+	      if( outMap(np) < WSHED ) // && outMap(np) != WSHED )
 		{
 		  if( outMap(p) == INQUEUE || (outMap(p) == WSHED && flag == true ))
 		    {
 		      outMap.setValue(p, outMap(np));
 		    }
-		  else if( (outMap(p) < WSHED && outMap(p) != WSHED) && outMap(p) != outMap(np) )
+		  else
+		    if( (outMap(p) < WSHED /*&& outMap(p) != WSHED*/) && outMap(p) != outMap(np) )
+		      {
+			outMap.setValue(p, WSHED);
+			flag = false;
+		      }
+		}
+	      else
+		if( outMap(np) == WSHED )
+		  {
+		    if( outMap(p) == INQUEUE )
+		      {
+			outMap.setValue(p, WSHED);
+			flag = true;
+		      }
+		  }
+		else 
+		  if( outMap(np) == MASK )
 		    {
-		      outMap.setValue(p, WSHED);
-		      flag = false;
+		      outMap.setValue(np, INQUEUE);
+		      fifo.push(np);
 		    }
-		}
-	      else if( outMap(np) == WSHED )
-		{
-		  if( outMap(p) == INQUEUE )
-		    {
-		      outMap.setValue(p, WSHED);
-		      flag = true;
-		    }
-		}
-	      else if( outMap(np) == MASK )
-		{
-		  outMap.setValue(np, INQUEUE);
-		  fifo.push(np);
-		}
 	    }
 	}
-    
-    
+      
+      
       // Check for new minima
       // For every point at the height h
-      for(typename VertexVector::const_iterator it = mit->second.begin(); it != mit->second.end(); it++)
+      for(typename VertexVector::const_iterator it = mit->second.begin();
+	  it != mit->second.end(); it++)
 	{
 	  Vertex p = *it;
 	  if( outMap(p) == MASK )
@@ -194,7 +210,8 @@ DGtal::Watershed<TGraph, TVertexMap, TLessFunctor>::segmentation()
 		  VertexVector neighbors;
 		  back_insert_iterator< VertexVector > insertIt(neighbors);
 		  myGraph.writeNeighbors(insertIt, newp);
-		  for( typename VertexVector::const_iterator nit = neighbors.begin(); nit != neighbors.end(); nit++ ) 
+		  for( typename VertexVector::const_iterator nit = neighbors.begin(); 
+		       nit != neighbors.end(); nit++ ) 
 		    {
 		      Vertex np = *nit;
 		      if( outMap(np) == MASK )
