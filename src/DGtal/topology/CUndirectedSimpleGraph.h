@@ -54,31 +54,34 @@ namespace DGtal
   /**
 Description of \b concept '\b CUndirectedSimpleGraph' <p>
      @ingroup Concepts
-     @brief Aim: Represents the concept of local graph: each vertex has neighboring vertices, but we do not necessarily know all the vertices.
+     @brief Aim: Represents the concept of local graph: each vertex
+     has neighboring vertices, but we do not necessarily know all the
+     vertices.
+
      
- ### Refinement of CUndirectedSimpleLocalGraph, CSinglePassConstRange
+ ### Refinement of CUndirectedSimpleLocalGraph, CConstSinglePassRange
     
  ### Associated types :
 
-     - Edge: the type for the edges of the graph.
+ - Edge: the type for the edges of the graph.
 
-     The following types are defined in CSinglePassConstRange
+ The following types are defined in CConstSinglePassRange 
 
-     - ConstIterator: const iterator on Vertex
+ - ConstIterator: const iterator on Vertex
 
-     The following types are defined in CUndirectedSimpleLocalGraph
+  The following types are defined in CUndirectedSimpleLocalGraph
 
-     - Size: an integral type to count the number of vertices.
-     - Vertex: the type for the vertices of the graph.
-     - VertexSet: the type for storing a set of vertices.
-     - VertexMap: a rebinding structure to associate Value to vertices.
+ - Size: an integral type to count the number of vertices.
+ - Vertex: the type for the vertices of the graph.
+ - VertexSet: the type for storing a set of vertices.
+ - VertexMap: a rebinding structure to associate Value to vertices.
     
  ### Notation
-     - \c X : A type that is a model of CUndirectedSimpleGraph
-     - \c x : object of type X
-     - \c v : object of type Vertex
-     - \c out : an output iterator of type OutputIterator (model of boost::OutputIterator).
-     - \c p : a predicate on vertex of type VertexPredicate (model of CVertexPredicate).
+   - \c X : A type that is a model of CUndirectedSimpleGraph
+   - \c x : object of type X
+   - \c v : object of type Vertex
+   - \c out : an output iterator of type OutputIterator (model of boost::OutputIterator).
+   - \c p : a predicate on vertex of type VertexPredicate (model of CVertexPredicate).
     
  ### Definitions
     
@@ -121,10 +124,6 @@ Description of \b concept '\b CUndirectedSimpleGraph' <p>
   struct CUndirectedSimpleGraph : 
     CUndirectedSimpleLocalGraph<T>, 
     CConstSinglePassRange<T>
-  // Use derivation for coarser concepts, like
-  // : CoarserConcept<T>
-  // Think to boost::CopyConstructible<T>, boost::DefaultConstructible<T>, ...
-  // http://www.boost.org/doc/libs/1_49_0/libs/concept_check/reference.htm
   {
     // ----------------------- Concept checks ------------------------------
   public:
