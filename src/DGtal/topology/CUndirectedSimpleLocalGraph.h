@@ -57,6 +57,7 @@ Description of \b concept '\b CUndirectedSimpleLocalGraph' <p>
      @brief Aim: Represents the concept of local graph: each vertex has neighboring vertices, but we do not necessarily know all the vertices.
      
  ### Refinement of
+
     
  ### Associated types :
 
