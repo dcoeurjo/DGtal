@@ -47,36 +47,36 @@
 //////////////////////////////////////////////////////////////////////////////
 
 namespace DGtal {
-/////////////////////////////////////////////////////////////////////////////
-// class Watershed
-/**
- * Description of class 'Watershed' <p>
- * 
- * @brief Define utilites to perform a segmentation of a value-mapped graph 
- * using watershed algorithms
- * 
- * 
- * @tparam TGraph any model of CUndirectedSimpleGraph.
- * @tparam TVertexMap any model of C?.
- * @tparam TLessFunctor a functor defining the less comparison
- * 
- */
-// Template class Image
-template < typename TGraph, typename TVertexMap, class TLessFunctor = std::less<typename TVertexMap::Value> >
-class Watershed
-{
+  /////////////////////////////////////////////////////////////////////////////
+  // class Watershed
+  /**
+   * Description of class 'Watershed' <p>
+   * 
+   * @brief Define utilites to perform a segmentation of a value-mapped graph 
+   * using watershed algorithms
+   * 
+   * 
+   * @tparam TGraph any model of CUndirectedSimpleGraph.
+   * @tparam TVertexMap any model of C?.
+   * @tparam TLessFunctor a functor defining the less comparison
+   * 
+   */
+  // Template class Image
+  template < typename TGraph, typename TVertexMap, class TLessFunctor = std::less<typename TVertexMap::Value> >
+  class Watershed
+  {
 
   
-  // ----------------------- Standard services ------------------------------
+    // ----------------------- Standard services ------------------------------
   public:
-  BOOST_CONCEPT_ASSERT(( CUndirectedSimpleGraph<TGraph> ));
-  typedef TGraph Graph;
-  typedef typename TVertexMap::Value Value;
-  typedef typename TGraph::Vertex Vertex;
-  typedef set<Vertex>/*typename TGraph::VertexSet*/ VertexSet;
-  template <typename TPair>
-  struct PairComparison
-  {
+    BOOST_CONCEPT_ASSERT(( CUndirectedSimpleGraph<TGraph> ));
+    typedef TGraph Graph;
+    typedef typename TVertexMap::Value Value;
+    typedef typename TGraph::Vertex Vertex;
+    typedef set<Vertex>/*typename TGraph::VertexSet*/ VertexSet;
+    template <typename TPair>
+    struct PairComparison
+    {
     public:
       PairComparison() {}
       bool
@@ -85,9 +85,9 @@ class Watershed
 	TLessFunctor comp;
 	return !comp.operator()(p1.second, p2.second);
       }
-  };
-  struct MapComparison
-  {
+    };
+    struct MapComparison
+    {
     public:
       MapComparison() {}
       bool
@@ -96,75 +96,75 @@ class Watershed
 	TLessFunctor comp;
 	return comp.operator()(e1, e2);
       }
-  };
-  typedef /*typename TGraph::template VertexMap<TValue>::Type*/TVertexMap VertexMap;
+    };
+    typedef /*typename TGraph::template VertexMap<TValue>::Type*/TVertexMap VertexMap;
   
   
   
-  //template<typename Value> struct VertexMap {
-  //  typedef typename TGraph::template VertexMap<Value>::map map;    
-  //};
+    //template<typename Value> struct VertexMap {
+    //  typedef typename TGraph::template VertexMap<Value>::map map;    
+    //};
   
-  // ----------------------- Interface --------------------------------------
+    // ----------------------- Interface --------------------------------------
   public:
   
-  /**
-   * Constructor
-   * 
-   * @param aGraph graph on which the segmentation is made
-   * 
-   * @param values a data structure which binds a value for each graph vertex
-   * 
-   */
+    /**
+     * Constructor
+     * 
+     * @param aGraph graph on which the segmentation is made
+     * 
+     * @param values a data structure which binds a value for each graph vertex
+     * 
+     */
     Watershed(const Graph & aGraph, const VertexMap & values);
     
-  /**
-   * Return a segmented image where each point of the image contains the
-   * region label which he is associated to.
-   * 
-   * @return the segmented image
-   */ 
+    /**
+     * Return a segmented image where each point of the image contains the
+     * region label which he is associated to.
+     * 
+     * @return the segmented image
+     */ 
     VertexMap segmentation();
     
-  /**
-   * Return a segmented image where each point of the image contains the
-   * region label which he is associated to. The watershed uses a 
-   * set of markers instead of local minima as water sources.
-   * 
-   * @tparam TVertexSet any model of CSinglePassRange on vertices
-   * 
-   * @param markerSet a set of vertices contained by the graph
-   * 
-   * @return the segmented image
-   */ 
+    /**
+     * Return a segmented image where each point of the image contains the
+     * region label which he is associated to. The watershed uses a 
+     * set of markers instead of local minima as water sources.
+     * 
+     * @tparam TVertexSet any model of CSinglePassRange on vertices
+     * 
+     * @param markerSet a set of vertices contained by the graph
+     * 
+     * @return the segmented image
+     */ 
     template<typename TVertexSet> VertexMap segmentationFromMarkers(const TVertexSet &markerSet);
     
-  /**
-   * Return an image where each point contains a value representing
-   * the probability of the presence of a watershed. The higher the value, the
-   * bigger the probability.
-   * This method executes several watershed based on a random set of markers 
-   * to deduce the probabilistic function.
-   * 
-   * @param N the number of markers placed at each iteration
-   * 
-   * @param M the number of iterations
-   * 
-   * @return the watershed probabilistic function
-   */ 
+    /**
+     * Return an image where each point contains a value representing
+     * the probability of the presence of a watershed. The higher the value, the
+     * bigger the probability.
+     * This method executes several watershed based on a random set of markers 
+     * to deduce the probabilistic function.
+     * 
+     * @param N the number of markers placed at each iteration
+     * 
+     * @param M the number of iterations
+     * 
+     * @return the watershed probabilistic function
+     */ 
     VertexMap segmentationStochastic(int N, int M);
         
-  /**
-   * Return a segmented image where each point of the image contains the
-   * region label which he is associated to. The watershed is based on
-   * the probabilistic function computed by segmentation_stochastic(N, M).
-   * 
-   * @param N the number of markers placed at each iteration
-   * 
-   * @param M the number of iterations
-   * 
-   * @return the watershed probabilistic function
-   */     
+    /**
+     * Return a segmented image where each point of the image contains the
+     * region label which he is associated to. The watershed is based on
+     * the probabilistic function computed by segmentation_stochastic(N, M).
+     * 
+     * @param N the number of markers placed at each iteration
+     * 
+     * @param M the number of iterations
+     * 
+     * @return the watershed probabilistic function
+     */     
     VertexMap segmentationStochasticHeuristic(int N, int M);
     
     inline

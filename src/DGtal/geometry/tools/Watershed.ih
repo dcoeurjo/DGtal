@@ -35,8 +35,6 @@
 #include <boost/random/variate_generator.hpp>
 ///////////////////////////////////////////////////////////////////////////////
 
-using namespace std;
-
 ///////////////////////////////////////////////////////////////////////////////
 // IMPLEMENTATION of inline methods.
 ///////////////////////////////////////////////////////////////////////////////
@@ -56,16 +54,11 @@ using namespace std;
  */
 template <typename TGraph, typename TVertexMap, class TLessFunctor>
 inline
-DGtal::Watershed<TGraph, TVertexMap, TLessFunctor>::Watershed(const TGraph & aGraph, const TVertexMap & values)
-  :myGraph(aGraph), myValueMap(values)/*, mySet(new VertexSet())*/
+DGtal::Watershed<TGraph, TVertexMap, TLessFunctor>::Watershed(const TGraph & aGraph, 
+							      const TVertexMap & values)
+  :myGraph(aGraph), myValueMap(values)
 {
-  trace.beginBlock("Importing graph");
-  /*for( typename Graph::ConstIterator it = aGraph.begin(); it != aGraph.end(); it++ )
-    {
-    mySet->insert(*it);
-    }*/
   WSHED = aGraph.size();
-  trace.endBlock();
 }
 
 
@@ -89,7 +82,7 @@ DGtal::Watershed<TGraph, TVertexMap, TLessFunctor>::segmentation()
   int current_label = 0;
   bool flag = false;
   int maxHeight = 0;
-  queue<Vertex> fifo;
+  std::queue<Vertex> fifo;
   
     
   trace.beginBlock("Initialising image and generating heightmap");
