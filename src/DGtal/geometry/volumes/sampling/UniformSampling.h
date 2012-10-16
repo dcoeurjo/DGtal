@@ -76,12 +76,22 @@ namespace DGtal
     BOOST_CONCEPT_ASSERT ( ( CDomain<TDomain> ) );
 
 
-    UniformSampling(const Domain &aDomain, const PNRGEngine aSeed = PNRGEngine())
+    UniformSampling(const Domain &aDomain, const PNRGEngine aSeed = PNRGEngine()): myDomain(aDomain)
     {
       mySeed = aSeed;
       for(DGtal::Dimension d=0; d < Domain::dimension ; d++)
         myDistributions[d] = boost::uniform_int <Integer>(aDomain.lowerBound()[d],
                                                           aDomain.upperBound()[d] );
+    }
+
+    /** 
+     * Return a cconstant reference on the sampler domain.
+     * 
+     * @return the sampler domain.
+     */
+    const Domain & domain()
+    {
+      return myDomain;
     }
 
     /**
@@ -117,6 +127,9 @@ namespace DGtal
   private:
     // ------------------------- Private Datas --------------------------------
   private:
+
+    ///Const reference on the domain
+    Domain myDomain;
 
     ///Random seed
     PNRGEngine mySeed;
