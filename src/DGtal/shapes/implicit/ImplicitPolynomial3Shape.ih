@@ -208,16 +208,16 @@ gaussianCurvature( const RealPoint &aPoint ) const
   double vFxy= myFxy( aPoint[ 0 ] )( aPoint[ 1 ] )( aPoint[ 2 ] );
   double vFxz= myFxz( aPoint[ 0 ] )( aPoint[ 1 ] )( aPoint[ 2 ] );
 
-  double vFyx= myFyx( aPoint[ 0 ] )( aPoint[ 1 ] )( aPoint[ 2 ] );
+  //double vFyx= myFyx( aPoint[ 0 ] )( aPoint[ 1 ] )( aPoint[ 2 ] );
   double vFyy= myFyy( aPoint[ 0 ] )( aPoint[ 1 ] )( aPoint[ 2 ] );
   double vFyz= myFyz( aPoint[ 0 ] )( aPoint[ 1 ] )( aPoint[ 2 ] );
 
-
-  double vFzx = myFzx( aPoint[ 0 ] )( aPoint[ 1 ] )( aPoint[ 2 ] );
+  
+  /*double vFzx = myFzx( aPoint[ 0 ] )( aPoint[ 1 ] )( aPoint[ 2 ] );
   double vFzy = myFzy( aPoint[ 0 ] )( aPoint[ 1 ] )( aPoint[ 2 ] );
+  */
   double vFzz = myFzz( aPoint[ 0 ] )( aPoint[ 1 ] )( aPoint[ 2 ] );
-
-
+ 
 
   double A = vFz*(vFxx*vFz-2.0*vFx*vFxz)+vFx*vFx*vFzz;
 
@@ -232,6 +232,47 @@ gaussianCurvature( const RealPoint &aPoint ) const
   return G;
 
 }
+
+
+/**
+ *@param aPoint any point in the Euclidean space.
+ *@param accuracy refers to the precision 
+ *@param maxIter refers to the maximum iterations the fonction user authorises
+ *@param gamma refers to the step
+ * This function is very useful for mean and gaussian curvature computation (If the set step is big) .For a small one ( <0.5) it's less
+ * usefull
+ *@return the nearest point on the surface to the one given in parameter.
+ */
+template <typename TSpace>
+inline
+typename DGtal::ImplicitPolynomial3Shape<TSpace>::RealPoint 
+DGtal::ImplicitPolynomial3Shape<TSpace>::nearestPoint( const RealPoint &aPoint, const double accuracy, 
+                                                       const int maxIter, const double gamma ) const
+{
+   RealPoint agradient= (*this).gradient(aPoint);
+   RealPoint X=aPoint;
+   int numberIter=0;
+   while((fabs((*this)(X))>=accuracy) && (numberIter<maxIter))
+   {
+        double norm=agradient.norm();
+	RealPoint normalizedGradient= RealPoint(agradient[0]/norm,agradient[1]/norm,agradient[2]/norm);
+        double alpha =gamma;
+	if((*this)(X)>0)
+	{
+		alpha=-alpha;
+	}
+	else
+	{
+
+	}
+	
+	X=X+normalizedGradient*alpha;
+	agradient=  (*this).gradient(X);
+	numberIter++;
+   }
+	return X;
+}
+
 ///////////////////////////////////////////////////////////////////////////////
 // Interface - public :
 
