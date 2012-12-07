@@ -253,7 +253,7 @@ DGtal::Watershed<TGraph, TVertexMap, TLessFunctor>::segmentationFromMarkers(cons
   trace.beginBlock("Initialising image");
   
   // Initialise image
-  for(typename Graph::iterator it = myGraph.begin(); it != myGraph.end(); it++){
+  for(typename Graph::ConstIterator it = myGraph.begin(); it != myGraph.end(); it++){
     outMap.setValue(*it, INIT);
   }
   

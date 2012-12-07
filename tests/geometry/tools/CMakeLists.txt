@@ -1,6 +1,7 @@
 SET(DGTAL_TESTS_SRC
   testPreimage
   testWatershed
+  testWatershedFromImage
   )
 
 FOREACH(FILE ${DGTAL_TESTS_SRC})
