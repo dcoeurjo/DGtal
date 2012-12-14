@@ -62,10 +62,10 @@ namespace DGtal {
  * 
  */
 // Template class Image
-template < typename TGraph, typename TVertexMap, class TLessFunctor = std::less<typename TVertexMap::Value> >
+template < typename TGraph, typename TVertexMap, 
+	   class TLessFunctor = std::less<typename TVertexMap::Value> >
 class Watershed
 {
-
   
   // ----------------------- Standard services ------------------------------
   public:

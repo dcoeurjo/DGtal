@@ -47,13 +47,22 @@
 #include "DGtal/images/imagesSetsUtils/SetFromImage.h"
 #include "DGtal/io/readers/PNMReader.h"
 #include "DGtal/geometry/tools/Watershed.h"
-
+#include "DGtal/io/writers/PGMWriter.h"
 
 #include "ConfigTest.h"
 
 using namespace std;
 using namespace DGtal;
 using namespace Z2i;
+
+
+struct IntToUnsignedChar
+{
+  unsigned char operator()(const int a) const
+  {
+    return static_cast<unsigned char>(a);
+  }
+};
 
 typedef ImageContainerBySTLVector < Domain, int > Image;
 
@@ -122,7 +131,7 @@ int main(int argc, char **argv)
     
   }
   
-  board.saveEPS("testWatershedFromImage.eps");
+  PGMWriter<Image, IntToUnsignedChar>::exportPGM("testWatershedFromImage.pgm",result , IntToUnsignedChar()  );
 
   return 0;
 }

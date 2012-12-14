@@ -113,7 +113,7 @@ DGtal::Watershed<TGraph, TVertexMap, TLessFunctor>::segmentation()
   int heightNumber = heightMap.size();
   int heightCount = 1;
   // For every height of the heigthmap
-  for(typename map<int, VertexVector>::iterator mit = heightMap.begin(); mit != heightMap.end(); mit++)
+  for(typename map<Value, VertexVector>::iterator mit = heightMap.begin(); mit != heightMap.end(); mit++)
   {
     // For every point at the height h
     for(typename VertexVector::const_iterator it = mit->second.begin(); it != mit->second.end(); it++)
