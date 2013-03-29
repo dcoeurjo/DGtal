@@ -65,9 +65,9 @@ namespace DGtal
 
      It is a model of boost::CopyConstructible,
      boost::DefaultConstructible, boost::Assignable. It is also a
-     model of boost::Container (it contains the sequence of points). It
-     is also a model of CDrawableWithBoard2D, and is displayable on a
-     Board2D object.
+     model of boost::Container (it contains the sequence of
+     points). It is also displayable on a Board2D object with two
+     modes: "" or "Transparent", "Filled".
 
      It contains no more data than the sequence of points, except mutable
      data for intermediate computations.
@@ -467,9 +467,7 @@ namespace DGtal
        @param pointRefC1 and pointRefC3 corresponds to grid point lying on
        the supporting lines of C1 and of C3 resp.
        
-       @param pos corresponds to an iterator in the list of vertices
-       of the polytope, to add the next new vertices
-       
+     
        NB: the method also computes grid point satisfying N1.P<=c1 and
        N3.P>=c3 but not satisfying N2.P<=c2. The algorithm uses
        these points that's why they appear in the code.
@@ -504,7 +502,7 @@ namespace DGtal
     bool isValid() const;
 
     /**
-     * @return the style name used for drawing this object.
+     * @return the class name. It is notably used for drawing this object.
      */
     std::string className() const;
 
