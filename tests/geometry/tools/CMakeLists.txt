@@ -1,7 +1,5 @@
 SET(DGTAL_TESTS_SRC
   testPreimage
-  testWatershed
-  testWatershedFromImage
   testSphericalAccumulator)
 
 SET(DGTAL_TESTS_QSRC

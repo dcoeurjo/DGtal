@@ -4,6 +4,8 @@ SET(DGTAL_TESTS_SRC
    testDigitalSurfaceBoostGraphInterface
    testExpander
    testSTLMapToVertexMapAdapter
+   testWatershed
+   testWatershedFromImage
    )
 
 FOREACH(FILE ${DGTAL_TESTS_SRC})

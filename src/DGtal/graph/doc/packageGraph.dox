@@ -52,6 +52,7 @@ boost::graph.
 @b Modules
  - \ref moduleGraphDefinitions (Jacques-Olivier Lachaud, David Coeurjolly)
  - \ref moduleBoostGraphWrapping (Jacques-Olivier Lachaud)
+ - \ref moduleWatershed (Jérémy Gaillard, David Coeurjolly)
 
 
 @b Package @b Concepts @b Overview

@@ -105,7 +105,8 @@ int main(int argc, char **argv)
       maxval = *it;
 
   trace.info() << "Max val = "<<maxval<<std::endl;
-  GradientColorMap<int> cmap_grad( 1, maxval );
+  
+  GradientColorMap<int> cmap_grad( 0, maxval );
   cmap_grad.addColor( Color( 50, 50, 255 ) );
   cmap_grad.addColor( Color( 255, 0, 0 ) );
   cmap_grad.addColor( Color( 255, 255, 10 ) );

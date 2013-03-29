@@ -1,5 +1,6 @@
 SET(DGTAL_EXAMPLES_TOPO_SRC
   graphTraversal
+  watershed
 )
 
 FOREACH(FILE ${DGTAL_EXAMPLES_TOPO_SRC}) 

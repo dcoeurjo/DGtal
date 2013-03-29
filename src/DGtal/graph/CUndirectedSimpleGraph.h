@@ -57,7 +57,7 @@ Description of \b concept '\b CUndirectedSimpleGraph' <p>
 @brief Aim: Represents the concept of local graph: each vertex has neighboring vertices, but we do not necessarily know all the vertices.
      
  ### Refinement of 
-      CUndirectedSimpleLocalGraph, CSinglePassConstRange
+      CUndirectedSimpleLocalGraph, CConstSinglePassRange
     
  ### Associated types :
      - Edge: the type for the edges of the graph.
