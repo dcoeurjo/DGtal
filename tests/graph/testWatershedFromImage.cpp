@@ -46,7 +46,7 @@
 #include "DGtal/helpers/StdDefs.h"
 #include "DGtal/images/imagesSetsUtils/SetFromImage.h"
 #include "DGtal/io/readers/PNMReader.h"
-#include "DGtal/geometry/tools/Watershed.h"
+#include "DGtal/graph/Watershed.h"
 #include "DGtal/io/writers/PGMWriter.h"
 
 #include "ConfigTest.h"
@@ -68,8 +68,10 @@ typedef ImageContainerBySTLVector < Domain, int > Image;
 
 int main(int argc, char **argv)
 {
+ 
+
   //! [Initialization]
-  std::string filename( argv[1] );
+  std::string filename = testPath + "samples/testwatershed.pgm";
   Image image = PNMReader<Image>::importPGM( filename ); 
 
   trace.info() << image<<std::endl;
@@ -105,33 +107,33 @@ int main(int argc, char **argv)
       maxval = *it;
 
   trace.info() << "Max val = "<<maxval<<std::endl;
-  
-  GradientColorMap<int> cmap_grad( 0, maxval );
+  GradientColorMap<int> cmap_grad( 1, maxval+1 );
   cmap_grad.addColor( Color( 50, 50, 255 ) );
   cmap_grad.addColor( Color( 255, 0, 0 ) );
   cmap_grad.addColor( Color( 255, 255, 10 ) );
   
   for ( typename Object4_8::DigitalSet::ConstIterator it = object.pointSet().begin();
-  it != object.pointSet().end();
-  ++it )
-  {
-    if( result(*it) == ws.getWatershedValue() )
+	it != object.pointSet().end();
+	++it )
     {
+    if( result(*it) == ws.getWatershedValue() )
+      {
       board << CustomStyle( specificStyle,
-	  new CustomColors( Color::Black,
-	  Color::Black ) )
-	<< *it;
+			    new CustomColors( Color::Black,
+			    Color::Black ) )
+	    << *it;
     }
     else
-    {
-      board << CustomStyle( specificStyle,
-	  new CustomColors( Color::Black,
-	  cmap_grad( result(*it) ) ) )
-	<< *it;
-    }
+      {
+	board << CustomStyle( specificStyle,
+			      new CustomColors( cmap_grad( result(*it)) ,
+						cmap_grad( result(*it) ) ) )
+	      << *it;
+      }
     
   }
   
+  board.saveEPS("testWatershedFromImage-color.eps");
   PGMWriter<Image, IntToUnsignedChar>::exportPGM("testWatershedFromImage.pgm",result , IntToUnsignedChar()  );
 
   return 0;
