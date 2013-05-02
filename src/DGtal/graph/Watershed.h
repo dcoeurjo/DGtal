@@ -42,7 +42,7 @@
 #include "DGtal/base/Common.h"
 #include "DGtal/base/ConceptUtils.h"
 #include "DGtal/base/CowPtr.h"
-#include "DGtal/topology/CUndirectedSimpleGraph.h"
+#include "DGtal/graph/CUndirectedSimpleGraph.h"
 
 //////////////////////////////////////////////////////////////////////////////
 
