@@ -26,13 +26,6 @@
  */
 
 ///////////////////////////////////////////////////////////////////////////////
-#include <iostream>
-#include <queue>
-#include <math.h>
-#include "DGtal/topology/BreadthFirstVisitor.h"
-#include <boost/random/poisson_distribution.hpp>
-#include <boost/random/mersenne_twister.hpp>
-#include <boost/random/variate_generator.hpp>
 ///////////////////////////////////////////////////////////////////////////////
 
 using namespace std;

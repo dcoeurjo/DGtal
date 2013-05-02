@@ -39,10 +39,16 @@
 
 //////////////////////////////////////////////////////////////////////////////
 // Inclusions
+#include <queue>
+#include <boost/random/poisson_distribution.hpp>
+#include <boost/random/mersenne_twister.hpp>
+#include <boost/random/variate_generator.hpp>
+
 #include "DGtal/base/Common.h"
 #include "DGtal/base/ConceptUtils.h"
 #include "DGtal/base/CowPtr.h"
 #include "DGtal/graph/CUndirectedSimpleGraph.h"
+#include "DGtal/graph/BreadthFirstVisitor.h"
 
 //////////////////////////////////////////////////////////////////////////////
 
