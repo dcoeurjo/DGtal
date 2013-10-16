@@ -1,26 +1,26 @@
 /**
- *  This program is free software: you can redistribute it and/or modify
- *  it under the terms of the GNU Lesser General Public License as
- *  published by the Free Software Foundation, either version 3 of the
- *  License, or  (at your option) any later version.
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Lesser General Public License as
+ * published by the Free Software Foundation, either version 3 of the
+ * License, or (at your option) any later version.
  *
- *  This program is distributed in the hope that it will be useful,
- *  but WITHOUT ANY WARRANTY; without even the implied warranty of
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *  GNU General Public License for more details.
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
  *
- *  You should have received a copy of the GNU General Public License
- *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ * You should have received a copy of the GNU General Public License
+ * along with this program. If not, see <http://www.gnu.org/licenses/>.
  *
  **/
 
 #pragma once
 
 /**
- * @file   Display3DFactory.h
+ * @file Display3DFactory.h
  * @author Martial Tola <http://liris.cnrs.fr/martial.tola/>
- * @date   mercredi 21 septembre 2011
- * 
+ * @date mercredi 21 septembre 2011
+ *
  * @brief
  *
  * Header file for module Display3DFactory
@@ -41,7 +41,7 @@
 //////////////////////////////////////////////////////////////////////////////
 // Inclusions
 
-
+#include "DGtal/helpers/StdDefs.h"
 #include "DGtal/base/Common.h"
 
 #include "DGtal/io/DrawWithDisplay3DModifier.h"
@@ -53,13 +53,17 @@
 #include "DGtal/topology/Object.h"
 #include "DGtal/kernel/PointVector.h"
 #include "DGtal/geometry/curves/GridCurve.h"
-#include "DGtal/shapes/fromPoints/MeshFromPoints.h"
+#include "DGtal/shapes/Mesh.h"
 #include "DGtal/geometry/tools/SphericalAccumulator.h"
 #include "DGtal/io/colormaps/HueShadeColorMap.h"
 #include "DGtal/io/colormaps/CColorMap.h"
+#include "DGtal/images/ImageContainerBySTLVector.h"
+#include "DGtal/images/ImageContainerBySTLMap.h"
+#include "DGtal/images/ConstImageAdapter.h"
+#include "DGtal/images/ImageAdapter.h"
+#include "DGtal/helpers/StdDefs.h"
 
-
-
+//
 //////////////////////////////////////////////////////////////////////////////
 
 namespace DGtal
@@ -70,15 +74,20 @@ namespace DGtal
    * Description of struct 'Display3DFactory' <p>
    * \brief Factory for GPL Display3D:
    */
+  template <typename TSpace=Z3i::Space, typename TKSpace=Z3i::KSpace>
   struct Display3DFactory
   {
-    
+
+    typedef TSpace Space;
+    typedef TKSpace KSpace;
+
+
     // SphericalAccumulator
-    /** 
+    /**
      * Display an spherical accumulator in 3D. Bin values are mapped
      * using a default HueShadeColorMap.
-     * 
-     * @param display current display
+     *
+     * @param display the display where to draw current display
      * @param accumulator the accumulator to display
      * @param shift translate vector for display purposes (default:
      * zero vector)
@@ -86,249 +95,466 @@ namespace DGtal
      * @tparam TVector a vector model
      */
     template <typename TVector>
-    static void draw( Display3D & display, const  DGtal::SphericalAccumulator<TVector> & accumulator,
-                      const typename DGtal::SphericalAccumulator<TVector>::RealVector &shift = 
+    static void draw( Display3D<Space, KSpace> & display, const DGtal::SphericalAccumulator<TVector> & accumulator,
+                      const typename DGtal::SphericalAccumulator<TVector>::RealVector &shift =
                       typename DGtal::SphericalAccumulator<TVector>::RealVector(0,0,0),
                       const double radius=1.0);
     // SphericalAccumulator
 
-    // MeshFromPoints        
-    template <typename TPoint>
-    static void drawAsFaces( Display3D & display,  const DGtal::MeshFromPoints<TPoint> & );
-
-    template <typename TPoint>
-    static void draw( Display3D & display, const  DGtal::MeshFromPoints<TPoint> &  );
-    // MeshFromPoints
-
-
-    
-    // ArithmeticalDSS3d
+    // Mesh
     /**
-      * Default drawing style object.
-      * @return the dyn. alloc. default style for this object.
-      */
-    template <typename TIterator, typename TInteger, int connectivity>
-    static DGtal::DrawableWithDisplay3D * defaultStyle( std::string, const DGtal::ArithmeticalDSS3d<TIterator,TInteger,connectivity> & );
-    
-    template <typename TIterator, typename TInteger, int connectivity>
-    static void drawAsPoints( Display3D & display, const DGtal::ArithmeticalDSS3d<TIterator,TInteger,connectivity> & );
-    
-    template <typename TIterator, typename TInteger, int connectivity>
-    static void drawAsBoundingBox( Display3D & display, const DGtal::ArithmeticalDSS3d<TIterator,TInteger,connectivity> & );
+     * @brief drawAsFaces
+     * @param display the display where to draw
+     * @param aMesh the mesh to draw
+     */
+    template <typename TPoint>
+    static void drawAsFaces( Display3D<Space, KSpace> & display, const DGtal::Mesh<TPoint> & aMesh);
 
-    template <typename TIterator, typename TInteger, int connectivity>
-    static void draw( Display3D & display, const DGtal::ArithmeticalDSS3d<TIterator,TInteger,connectivity> & );
+    /**
+     * @brief draw
+     * @param display the display where to draw
+     * @param aMesh the mesh to draw
+     */
+    template <typename TPoint>
+    static void draw( Display3D<Space, KSpace> & display, const DGtal::Mesh<TPoint> & aMesh);
+    // Mesh
+
+
+
     // ArithmeticalDSS3d
-    
-    
-    // DigitalSetBySTLSet
     /**
      * Default drawing style object.
+     * @param str the name of the class
+     * @param anObject the object to draw
+     * @return the dyn. alloc. default style for this object.
+     */
+    template <typename TIterator, typename TInteger, int connectivity>
+    static DGtal::DrawableWithDisplay3D * defaultStyle( std::string str, const DGtal::ArithmeticalDSS3d<TIterator,TInteger,connectivity> & anObject );
+
+    /**
+     * @brief drawAsBalls
+     * @param display the display where to draw
+     * @param anObject the object to draw
+     */
+    template <typename TIterator, typename TInteger, int connectivity>
+    static void drawAsBalls( Display3D<Space, KSpace> & display, const DGtal::ArithmeticalDSS3d<TIterator,TInteger,connectivity> & anObject );
+
+    /**
+     * @brief drawAsBoundingBox
+     * @param display the display where to draw
+     * @param anObject the object to draw
+     */
+    template <typename TIterator, typename TInteger, int connectivity>
+    static void drawAsBoundingBox( Display3D<Space, KSpace> & display, const DGtal::ArithmeticalDSS3d<TIterator,TInteger,connectivity> & anObject );
+
+    /**
+     * @brief draw
+     * @param display the display where to draw
+     * @param anObject the object to draw
+     */
+    template <typename TIterator, typename TInteger, int connectivity>
+    static void draw( Display3D<Space, KSpace> & display, const DGtal::ArithmeticalDSS3d<TIterator,TInteger,connectivity> & anObject );
+    // ArithmeticalDSS3d
+
+
+    // DigitalSetBySTLSet
+    /**
+     * @brief defaultStyle
+     * @param str the name of the class
+     * @param anObject the object to draw
      * @return the dyn. alloc. default style for this object.
      */
     template<typename Domain>
-    static DGtal::DrawableWithDisplay3D * defaultStyle( std::string, const DGtal::DigitalSetBySTLSet<Domain> & );
-  
+    static DGtal::DrawableWithDisplay3D * defaultStyle( std::string str, const DGtal::DigitalSetBySTLSet<Domain> & anObject );
+
+    /**
+     * @brief drawAsPavingTransparent
+     * @param display the display where to draw
+     * @param anObject the object to draw
+     */
     template<typename Domain>
-    static void drawAsPavingTransparent( Display3D & display, const DGtal::DigitalSetBySTLSet<Domain> & );
-    
+    static void drawAsPavingTransparent( Display3D<Space, KSpace> & display, const DGtal::DigitalSetBySTLSet<Domain> & anObject );
+
+    /**
+     * @brief drawAsPaving
+     * @param display the display where to draw
+     * @param anObject the object to draw
+     */
     template<typename Domain>
-    static void drawAsPaving( Display3D & display, const DGtal::DigitalSetBySTLSet<Domain> & );
-    
+    static void drawAsPaving( Display3D<Space, KSpace> & display, const DGtal::DigitalSetBySTLSet<Domain> & anObject );
+
+    /**
+     * @brief drawAsGrid
+     * @param display the display where to draw
+     * @param anObject the object to draw
+     */
     template<typename Domain>
-    static void drawAsGrid( Display3D & display, const DGtal::DigitalSetBySTLSet<Domain> & );
-    
+    static void drawAsGrid( Display3D<Space, KSpace> & display, const DGtal::DigitalSetBySTLSet<Domain> & anObject );
+
+    /**
+     * @brief draw
+     * @param display the display where to draw
+     * @param anObject the object to draw
+     */
     template<typename Domain>
-    static void draw( Display3D & display, const DGtal::DigitalSetBySTLSet<Domain> & );
+    static void draw( Display3D<Space, KSpace> & display, const DGtal::DigitalSetBySTLSet<Domain> & anObject );
     // DigitalSetBySTLSet
-    
-    
+
+
     // DigitalSetBySTLVector
     /**
-     * Default drawing style object.
+     * @brief Default drawing style object.
+     * @param str the name of the class
+     * @param anObject the object to draw
      * @return the dyn. alloc. default style for this object.
      */
     template<typename Domain>
-    static DGtal::DrawableWithDisplay3D * defaultStyle( std::string, const DGtal::DigitalSetBySTLVector<Domain> & );
+    static DGtal::DrawableWithDisplay3D * defaultStyle( std::string str, const DGtal::DigitalSetBySTLVector<Domain> & anObject );
 
+    /**
+     * @brief drawAsPavingTransparent
+     * @param display the display where to draw
+     * @param anObject the object to draw
+     */
     template<typename Domain>
-    static void drawAsPavingTransparent( Display3D & display, const DGtal::DigitalSetBySTLVector<Domain> & );
+    static void drawAsPavingTransparent( Display3D<Space, KSpace> & display, const DGtal::DigitalSetBySTLVector<Domain> & anObject );
 
+    /**
+     * @brief drawAsPaving
+     * @param display the display where to draw
+     * @param anObject the object to draw
+     */
     template<typename Domain>
-    static void drawAsPaving( Display3D & display, const DGtal::DigitalSetBySTLVector<Domain> & );
-    
-    template<typename Domain>
-    static void drawAsGrid( Display3D & display, const DGtal::DigitalSetBySTLVector<Domain> & );
+    static void drawAsPaving( Display3D<Space, KSpace> & display, const DGtal::DigitalSetBySTLVector<Domain> & anObject );
 
+    /**
+     * @brief drawAsGrid
+     * @param display the display where to draw
+     * @param anObject the object to draw
+     */
     template<typename Domain>
-    static void draw( Display3D & display, const DGtal::DigitalSetBySTLVector<Domain> & );
+    static void drawAsGrid( Display3D<Space, KSpace> & display, const DGtal::DigitalSetBySTLVector<Domain> & anObject );
+
+    /**
+     * @brief draw
+     * @param display the display where to draw
+     * @param anObject the object to draw
+     */
+    template<typename Domain>
+    static void draw( Display3D<Space, KSpace> & display, const DGtal::DigitalSetBySTLVector<Domain> & anObject );
     // DigitalSetBySTLVector
-    
-    
+
+
     // HyperRectDomain
     /**
      * Default drawing style object.
+     * @param str the name of the class
+     * @param anObject the object to draw
      * @return the dyn. alloc. default style for this object.
      */
-    template<typename TSpace>
-    static DGtal::DrawableWithDisplay3D * defaultStyle( std::string, const DGtal::HyperRectDomain<TSpace> & );
-    
-    template<typename TSpace>
-    static void drawAsBoundingBox( Display3D & display, const DGtal::HyperRectDomain<TSpace> & );
-    
-    template<typename TSpace>
-    static void drawAsGrid( Display3D & display, const DGtal::HyperRectDomain<TSpace> & );
-    
-    template<typename TSpace>
-    static void drawAsPavingPoints( Display3D & display, const DGtal::HyperRectDomain<TSpace> & );
-    
-    template<typename TSpace>
-    static void drawAsPaving( Display3D & display, const DGtal::HyperRectDomain<TSpace> & );
-    
-    template<typename TSpace>
-    static void draw( Display3D & display, const DGtal::HyperRectDomain<TSpace> & );
+    template <typename SpaceDom>
+    static DGtal::DrawableWithDisplay3D * defaultStyle( std::string str, const DGtal::HyperRectDomain<SpaceDom> & anObject );
+
+    /**
+     * @brief drawAsBoundingBox
+     * @param display the display where to draw
+     * @param anObject the object to draw
+     */
+    template <typename SpaceDom>
+    static void drawAsBoundingBox( Display3D<Space, KSpace> & display, const DGtal::HyperRectDomain<SpaceDom> & anObject );
+
+    /**
+     * @brief drawAsGrid
+     * @param display the display where to draw
+     * @param anObject the object to draw
+     */
+    template <typename SpaceDom>
+    static void drawAsGrid( Display3D<Space, KSpace> & display, const DGtal::HyperRectDomain<SpaceDom> & anObject );
+
+    /**
+     * @brief drawAsPavingBalls
+     * @param display the display where to draw
+     * @param anObject the object to draw
+     */
+    template <typename SpaceDom>
+    static void drawAsPavingBalls( Display3D<Space, KSpace> & display, const DGtal::HyperRectDomain<SpaceDom> & anObject );
+
+    /**
+     * @brief drawAsPaving
+     * @param display the display where to draw
+     * @param anObject the object to draw
+     */
+    template <typename SpaceDom>
+    static void drawAsPaving( Display3D<Space, KSpace> & display, const DGtal::HyperRectDomain<SpaceDom> & anObject );
+
+
+    /**
+     * @brief draw
+     * @param display the display where to draw
+     * @param anObject the object to draw
+     */
+    template <typename SpaceDom>
+    static void draw( Display3D<Space, KSpace> & display, const DGtal::HyperRectDomain<SpaceDom> & anObject );
+
+
     // HyperRectDomain
-    
-    
+
+
     // KhalimskyCell
     /**
-      * Default drawing style object.
-      * @return the dyn. alloc. default style for this object.
-      */
-    template < Dimension dim, typename TInteger >
-    static DGtal::DrawableWithDisplay3D * defaultStyle( std::string, const DGtal::KhalimskyCell<dim, TInteger> & );
-    
-    template < Dimension dim, typename TInteger >
-    static void draw( Display3D & display, const DGtal::KhalimskyCell<dim, TInteger> & );
+     * Default drawing style object.
+     * @param str the name of the class
+     * @param anObject the object to draw
+     * @return the dyn. alloc. default style for this object.
+     */
+    static DGtal::DrawableWithDisplay3D * defaultStyle( std::string str, const typename KSpace::Cell & anObject );
+
+    /**
+     * @brief draw
+     * @param display the display where to draw
+     * @param anObject the object to draw
+     */
+    static void draw( Display3D<Space, KSpace> & display, const typename KSpace::Cell & anObject );
     // KhalimskyCell
-    
-    
-    // Object
-    template <typename TDigitalTopology, typename TDigitalSet>
-    static DGtal::DrawableWithDisplay3D * defaultStyle( std::string, const DGtal::Object<TDigitalTopology, TDigitalSet> & );
 
-    template <typename TDigitalTopology, typename TDigitalSet>
-    static void drawWithAdjacencies( Display3D & display, const DGtal::Object<TDigitalTopology, TDigitalSet> & );
 
-    template <typename TDigitalTopology, typename TDigitalSet>
-    static void draw( Display3D & display, const DGtal::Object<TDigitalTopology, TDigitalSet> & );
     // Object
-    
-    
+    /**
+     * Default drawing style object.
+     * @param str the name of the class
+     * @param anObject the object to draw
+     * @return the dyn. alloc. default style for this object.
+     */
+    template <typename TDigitalTopology, typename TDigitalSet>
+    static DGtal::DrawableWithDisplay3D * defaultStyle( std::string str, const DGtal::Object<TDigitalTopology, TDigitalSet> & anObject );
+
+    /**
+     * @brief drawWithAdjacencies
+     * @param display the display where to draw
+     * @param anObject the object to draw
+     */
+    template <typename TDigitalTopology, typename TDigitalSet>
+    static void drawWithAdjacencies( Display3D<Space, KSpace> & display, const DGtal::Object<TDigitalTopology, TDigitalSet> & anObject );
+
+    /**
+     * @brief draw
+     * @param display the display where to draw
+     * @param anObject the object to draw
+     */
+    template <typename TDigitalTopology, typename TDigitalSet>
+    static void draw( Display3D<Space, KSpace> & display, const DGtal::Object<TDigitalTopology, TDigitalSet> & anObject );
+    // Object
+
+
     // PointVector
     /**
      * Default drawing style object.
+     * @param str the name of the class
+     * @param anObject the object to draw
      * @return the dyn. alloc. default style for this object.
      */
     template<Dimension dim, typename TComponent>
-    static DGtal::DrawableWithDisplay3D * defaultStyle( std::string, const DGtal::PointVector<dim,TComponent> & );
-    
-    template<Dimension dim, typename TComponent>
-    static void drawAsGrid( Display3D & display, const DGtal::PointVector<dim,TComponent> & );
+    static DGtal::DrawableWithDisplay3D * defaultStyle( std::string str, const DGtal::PointVector<dim,TComponent> & anObject );
 
+    /**
+     * @brief drawAsGrid
+     * @param display the display where to draw
+     * @param anObject the object to draw
+     */
     template<Dimension dim, typename TComponent>
-    static void drawAsPaving( Display3D & display, const DGtal::PointVector<dim,TComponent> & );
+    static void drawAsGrid( Display3D<Space, KSpace> & display, const DGtal::PointVector<dim,TComponent> & anObject );
 
+    /**
+     * @brief drawAsPaving
+     * @param display the display where to draw
+     * @param anObject the object to draw
+     */
     template<Dimension dim, typename TComponent>
-    static void drawAsPavingWired( Display3D & display, const DGtal::PointVector<dim,TComponent> & );
+    static void drawAsPaving( Display3D<Space, KSpace> & display, const DGtal::PointVector<dim,TComponent> & anObject );
 
+    /**
+     * @brief drawAsPavingWired
+     * @param display the display where to draw
+     * @param anObject the object to draw
+     */
     template<Dimension dim, typename TComponent>
-    static void draw( Display3D & display, const DGtal::PointVector<dim,TComponent> & );
-    
+    static void drawAsPavingWired( Display3D<Space, KSpace> & display, const DGtal::PointVector<dim,TComponent> & anObject );
+
+    /**
+     * @brief draw
+     * @param display the display where to draw
+     * @param anObject the object to draw
+     */
     template<Dimension dim, typename TComponent>
-    static void draw( Display3D & display, const DGtal::PointVector<dim,TComponent> & , const DGtal::PointVector<dim,TComponent> & );
+    static void draw( Display3D<Space, KSpace> & display, const DGtal::PointVector<dim,TComponent> & anObject );
+
+    /**
+     * @brief draw
+     * @param display the display where to draw
+     * @param anObject the object to draw
+     */
+    template<Dimension dim, typename TComponent>
+    static void draw( Display3D<Space, KSpace> & display, const DGtal::PointVector<dim,TComponent> & , const DGtal::PointVector<dim,TComponent> & anObject );
     // PointVector
-    
-    
+
+
     // SignedKhalimskyCell
     /**
-      * Default drawing style object.
-      * @return the dyn. alloc. default style for this object.
-      */
-    template< Dimension dim, typename TInteger >
-    static DGtal::DrawableWithDisplay3D * defaultStyle( std::string, const DGtal::SignedKhalimskyCell<dim, TInteger> & );
-    
-    template< Dimension dim, typename TInteger >
-    static void draw( Display3D & display, const DGtal::SignedKhalimskyCell<dim, TInteger> & );
+     * Default drawing style object.
+     * @param str the name of the class
+     * @param anObject the object to draw
+     * @return the dyn. alloc. default style for this object.
+     */
+    static DGtal::DrawableWithDisplay3D * defaultStyle( std::string str, const typename KSpace::SCell & anObject );
+
+    /**
+     * @brief draw
+     * @param display the display where to draw
+     * @param anObject the object to draw
+     */
+    static void draw( Display3D<Space, KSpace> & display, const typename KSpace::SCell & anObject );
     // SignedKhalimskyCell
-   
+
     // GridCurve
-    template< typename TKSpace >
-    static void draw( Display3D & display, const DGtal::GridCurve<TKSpace> & );
-    // GridCurve 
-    
+    /**
+     * @brief draw
+     * @param display the display where to draw
+     * @param anObject the object to draw
+     */
+    static void draw( Display3D<Space, KSpace> & display, const DGtal::GridCurve<KSpace> & anObject );
+    // GridCurve
+
     // SCellsRange
-    template < typename TIterator, typename TSCell >
-    static void draw( DGtal::Display3D & display, 
-          const DGtal::ConstRangeAdapter<TIterator, DGtal::DefaultFunctor, TSCell> & );
+    /**
+     * @brief draw
+     * @param display the display where to draw
+     * @param anObject the object to draw
+     */
+    template < typename TIterator, typename TSCell>
+    static void draw( DGtal::Display3D<Space, KSpace> & display,
+                      const DGtal::ConstRangeAdapter<TIterator, DGtal::DefaultFunctor, TSCell> & anObject );
     // SCellsRange
 
     // PointsRange
-    template <typename TIterator, typename TKSpace>
-    static void draw( Display3D & display, 
-               const DGtal::ConstRangeAdapter<TIterator, SCellToPoint<TKSpace>, typename TKSpace::Point> & );
+    /**
+     * @brief draw
+     * @param display the display where to draw
+     * @param anObject the object to draw
+     */
+    template <typename TIterator>
+    static void draw( Display3D<Space, KSpace> & display,
+                      const DGtal::ConstRangeAdapter<TIterator, SCellToPoint<KSpace>, typename TKSpace::Point> & anObject );
     // PointsRange
 
     // MidPointsRange
-    template <typename TIterator, typename TKSpace>
-    static void draw( Display3D & display, 
-               const DGtal::ConstRangeAdapter<TIterator, SCellToMidPoint<TKSpace>, 
-               typename TKSpace::Space::RealPoint> & );
+    template <typename TIterator>
+    /**
+     * @brief draw
+     * @param display the display where to draw
+     * @param anObject the object to draw
+     */
+    static void draw( Display3D<Space, KSpace> & display,
+                      const DGtal::ConstRangeAdapter<TIterator, SCellToMidPoint<KSpace>,
+                      typename TKSpace::Space::RealPoint> & anObject );
     // MidPointsRange
 
     // ArrowsRange
-    template <typename TIterator, typename TKSpace>
-    static void draw( Display3D & display, 
-               const DGtal::ConstRangeAdapter<TIterator, SCellToArrow<TKSpace>, 
-               std::pair<typename TKSpace::Point, typename TKSpace::Vector > > & );
+    /**
+     * @brief draw
+     * @param display the display where to draw
+     * @param anObject the object to draw
+     */
+    template <typename TIterator>
+    static void draw( Display3D<Space, KSpace> & display,
+                      const DGtal::ConstRangeAdapter<TIterator, SCellToArrow<KSpace>,
+                      std::pair<typename TKSpace::Point, typename TKSpace::Vector > > & anObject );
     // ArrowsRange
 
     // InnerPointsRange
-    template <typename TIterator, typename TKSpace>
-    static void draw( Display3D & display, 
-               const DGtal::ConstRangeAdapter<TIterator, SCellToInnerPoint<TKSpace>, typename TKSpace::Point> & );
+    /**
+     * @brief draw
+     * @param display the display where to draw
+     * @param anObject the object to draw
+     */
+    template <typename TIterator>
+    static void draw( Display3D<Space, KSpace> & display,
+                      const DGtal::ConstRangeAdapter<TIterator, SCellToInnerPoint<KSpace>, typename TKSpace::Point> & anObject );
     // InnerPointsRange
 
     // OuterPointsRange
-    template <typename TIterator, typename TKSpace>
-    static void draw( Display3D & display, 
-               const DGtal::ConstRangeAdapter<TIterator, SCellToOuterPoint<TKSpace>, typename TKSpace::Point> & );
+    /**
+     * @brief draw
+     * @param display the display where to draw
+     * @param anObject the object to draw
+     */
+    template <typename TIterator>
+    static void draw( Display3D<Space, KSpace> & display,
+                      const DGtal::ConstRangeAdapter<TIterator, SCellToOuterPoint<KSpace>, typename TKSpace::Point> & anObject );
     // OuterPointsRange
 
     // IncidentPointsRange
-    template <typename TIterator, typename TKSpace>
-    static void draw( Display3D & display, 
-               const DGtal::ConstRangeAdapter<TIterator, SCellToIncidentPoints<TKSpace>, 
-               std::pair<typename TKSpace::Point, typename TKSpace::Point > > & );
+    /**
+     * @brief draw
+     * @param display the display where to draw
+     * @param anObject the object to draw
+     */
+    template <typename TIterator>
+    static void draw( Display3D<Space, KSpace> & display,
+                      const DGtal::ConstRangeAdapter<TIterator, SCellToIncidentPoints<KSpace>,
+                      std::pair<typename TKSpace::Point, typename TKSpace::Point > > & anObject );
     // IncidentPointsRange
 
-    //
-    
-    
-    static void draw( Display3D & display, const DGtal::SetMode3D & );
-    static void draw( Display3D & display, const DGtal::CustomStyle3D & );
-    static void draw( Display3D & display, const DGtal::CustomColors3D & );
-    
-    static void draw( Display3D & display, const DGtal::ClippingPlane & );
-    
-    static void draw( Display3D & display, const DGtal::CameraPosition & );    
-    static void draw( Display3D & display, const DGtal::CameraDirection & );
-    static void draw( Display3D & display, const DGtal::CameraUpVector & );
-    static void draw( Display3D & display, const DGtal::CameraZNearFar & );
+    /**
+     * @brief draw
+     * @param display the display where to draw
+     * @param anObject the object to draw
+     */
+    static void
+    draw( Display3D<Space, KSpace> & display, const DGtal::SetMode3D & anObject );
 
-    static void draw( Display3D & display, const DGtal::TransformedKSSurfel & aTransformedKSSurfel);
+    /**
+     * @brief draw
+     * @param display the display where to draw
+     * @param anObject the object to draw
+     */
+    static void
+    draw( Display3D<Space, KSpace> & display, const DGtal::CustomStyle3D & anObject );
+
+    /**
+     * @brief draw
+     * @param display the display where to draw
+     * @param anObject the object to draw
+     */
+    static void
+    draw( Display3D<Space, KSpace> & display, const DGtal::CustomColors3D & anObject );
+
+    /**
+     * @brief draw
+     * @param display the display where to draw
+     * @param anObject the object to draw
+     */
+    static void
+    draw( Display3D<Space, KSpace> & display, const DGtal::ClippingPlane & anObject );
+
+
+    /**
+     * Draw a surfel
+     * @param display the display where to draw
+     * @param aTransformedSurfelPrism a transformed surfel prism
+     */
+    static void
+    draw( Display3D<Space, KSpace> & display, const DGtal::TransformedSurfelPrism & aTransformedSurfelPrism);
 
   }; // end of struct Display3DFactory
 
 } // namespace DGtal
 
-
 ///////////////////////////////////////////////////////////////////////////////
-// Includes inline functions/methods 
+// Includes inline functions/methods
+
 #include "DGtal/io/Display3DFactory.ih"
 
-
-//                                                                           //
+// //
 ///////////////////////////////////////////////////////////////////////////////
 
 #endif // !defined Display3DFactory_h

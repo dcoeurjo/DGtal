@@ -1,0 +1,282 @@
+/**
+ *  This program is free software: you can redistribute it and/or modify
+ *  it under the terms of the GNU Lesser General Public License as
+ *  published by the Free Software Foundation, either version 3 of the
+ *  License, or  (at your option) any later version.
+ *
+ *  This program is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *  GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU General Public License
+ *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ *
+ **/
+
+/**
+ * @file Mesh.ih
+ * @author Bertrand Kerautret (\c kerautre@loria.fr )
+ * LORIA (CNRS, UMR 7503), University of Nancy, France
+ *
+ * @date 2012/06/29
+ *
+ * Implementation of inline methods defined in Mesh.h
+ *
+ * This file is part of the DGtal library.
+ */
+
+
+//////////////////////////////////////////////////////////////////////////////
+
+#include <cstdlib>
+//////////////////////////////////////////////////////////////////////////////
+
+///////////////////////////////////////////////////////////////////////////////
+// IMPLEMENTATION of inline methods.
+///////////////////////////////////////////////////////////////////////////////
+
+///////////////////////////////////////////////////////////////////////////////
+// ----------------------- Standard services ------------------------------
+
+/**
+ * Constructor.
+ */
+template <typename TPoint>
+inline
+DGtal::Mesh<TPoint>::Mesh(bool saveFaceColor)
+{
+  mySaveFaceColor=saveFaceColor;
+  myDefaultColor = DGtal::Color::White;
+}
+
+/**
+ * Constructor.
+ */
+template <typename TPoint>
+inline
+DGtal::Mesh<TPoint>::Mesh(const DGtal::Color &aColor)
+{
+  mySaveFaceColor=false;
+  myDefaultColor = aColor;
+}
+
+/**
+ * Destructor.
+ */
+template <typename TPoint>
+inline
+DGtal::Mesh<TPoint>::~Mesh()
+{
+}
+
+///////////////////////////////////////////////////////////////////////////////
+// Interface - public :
+
+/**
+ * Writes/Displays the object on an output stream.
+ * @param out the output stream where the object is written.
+ */
+template <typename TPoint>
+inline
+void
+DGtal::Mesh<TPoint>::selfDisplay ( std::ostream & out ) const
+{
+  out << "[Mesh]";
+}
+
+/**
+ * Checks the validity/consistency of the object.
+ * @return 'true' if the object is valid, 'false' otherwise.
+ */
+template <typename TPoint>
+inline
+bool
+DGtal::Mesh<TPoint>::isValid() const
+{
+    return true;
+}
+
+
+
+
+///////////////////////////////////////////////////////////////////////////////
+// Implementation of inline functions                                        //
+
+    
+
+
+
+
+
+template<typename TPoint>
+inline
+DGtal::Mesh<TPoint>::Mesh(const DGtal::Mesh<TPoint>::VertexStorage &vertexSet)
+{
+  mySaveFaceColor=false;
+  for(int i =0; i< vertexSet.size(); i++){
+    myVertexList.push_back(vertexSet.at(i));
+  }
+
+}    
+
+
+
+template<typename TPoint>
+inline
+void
+DGtal::Mesh<TPoint>::addVertex(const TPoint &point)
+{
+  myVertexList.push_back(point);
+}    
+
+
+
+template<typename TPoint>
+inline
+void
+DGtal::Mesh<TPoint>::addTriangularFace(unsigned int indexVertex1, unsigned int indexVertex2, 
+						 unsigned int indexVertex3, const DGtal::Color &aColor)
+{
+  MeshFace aFace;
+  aFace.push_back(indexVertex1);
+  aFace.push_back(indexVertex2);
+  aFace.push_back(indexVertex3);
+  myFaceList.push_back(aFace);
+  if(mySaveFaceColor){
+    myFaceColorList.push_back(aColor);
+  }
+}    
+
+
+
+
+template<typename TPoint>
+inline
+void
+DGtal::Mesh<TPoint>::addQuadFace(unsigned int indexVertex1, unsigned int indexVertex2, 
+					   unsigned int indexVertex3, unsigned int indexVertex4, 
+					   const DGtal::Color &aColor)
+{
+  MeshFace aFace;
+  aFace.push_back(indexVertex1);
+  aFace.push_back(indexVertex2);
+  aFace.push_back(indexVertex3);
+  aFace.push_back(indexVertex4);
+  myFaceList.push_back(aFace);
+  if(mySaveFaceColor){
+    myFaceColorList.push_back(aColor);
+  }
+}    
+
+
+
+template<typename TPoint>
+inline
+void 
+DGtal::Mesh<TPoint>::addFace(const MeshFace &aFace,  const DGtal::Color &aColor){
+  myFaceList.push_back(aFace);
+  if(mySaveFaceColor){
+    myFaceColorList.push_back(aColor);
+  }
+
+
+}
+
+
+template<typename TPoint>
+inline
+const TPoint &
+DGtal::Mesh<TPoint>::getVertex(unsigned int i) const 
+{
+  return myVertexList.at(i);
+}    
+
+
+
+template<typename TPoint>
+inline
+const typename  DGtal::Mesh<TPoint>::MeshFace & 
+DGtal::Mesh<TPoint>::getFace(unsigned int i) const
+{
+  return myFaceList.at(i);
+}    
+
+
+template<typename TPoint>
+inline
+unsigned int 
+DGtal::Mesh<TPoint>::nbFaces() const
+{
+  return myFaceList.size();
+}
+
+template<typename TPoint>
+inline
+unsigned int 
+DGtal::Mesh<TPoint>::nbVertex() const
+{
+  return myVertexList.size();
+}
+
+template<typename TPoint>
+inline
+const DGtal::Color & 
+DGtal::Mesh<TPoint>::getFaceColor(unsigned int i) const{
+  if(mySaveFaceColor){
+    return myFaceColorList.at(i);
+  }else{
+    return myDefaultColor;
+  }
+}
+
+
+
+
+
+
+
+
+template<typename TPoint> 
+inline     
+void 
+DGtal::Mesh<TPoint>::invertVertexFaceOrder(){
+  for(unsigned int i=0; i<myFaceList.size(); i++){
+    std::vector<unsigned int> & aFace =  myFaceList.at(i);
+    for(unsigned int j=0; j < aFace.size()/2; j++){
+      unsigned int tmp=aFace.at(j);
+      aFace.at(j)=aFace.at(aFace.size()-1-j);
+      aFace.at(aFace.size()-1-j)=tmp;
+    }
+  }
+}
+
+    
+
+//------------------------------------------------------------------------------
+template<typename TPoint>
+inline
+std::string
+DGtal::Mesh<TPoint>::className() const
+{
+  return "Mesh";
+}
+
+
+
+
+
+template <typename TPoint>
+inline
+std::ostream&
+DGtal::operator<< ( std::ostream & out, 
+		    const Mesh<TPoint> & object )
+{
+  object.selfDisplay( out );
+  return out;
+}
+
+//                                                                           //
+///////////////////////////////////////////////////////////////////////////////
+
+

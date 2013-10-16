@@ -5,31 +5,35 @@ compiler:
   - clang
 
 env:
-  - BTYPE="-DCMAKE_BUILD_TYPE=Debug -DWITH_QGLVIEWER=true" 
-  - BTYPE="-DCMAKE_BUILD_TYPE=Debug -DWITH_CAIRO=true" 
-  - BTYPE="-DCMAKE_BUILD_TYPE=Debug -DWITH_MAGICK=true -DWITH_GMP=true" 
-  - BTYPE="-DCMAKE_BUILD_TYPE=Release" 
-  - BTYPE="-DCMAKE_BUILD_TYPE=Debug -DDGTAL_BUILD_TESTING=true"
+  - BTYPE="-DCMAKE_BUILD_TYPE=Debug -DWITH_QGLVIEWER=true -DBUILD_TESTING=OFF"
+  - BTYPE="-DCMAKE_BUILD_TYPE=Debug -DWITH_CAIRO=true -DBUILD_TESTING=OFF"
+  - BTYPE="-DCMAKE_BUILD_TYPE=Debug -DWITH_MAGICK=true -DWITH_GMP=true -DBUILD_TESTING=OFF"
+  - BTYPE="-DCMAKE_BUILD_TYPE=Release  -DBUILD_TESTING=OFF"
+  - BTYPE="-DCMAKE_BUILD_TYPE=Debug -DBUILD_TESTING=OFF"
 
 before_script:
   - sudo apt-get -qq install libboost-program-options-dev libcairo2-dev libgraphicsmagick++1-dev libboost-system-dev libgmp-dev libqglviewer-qt4-dev
-  - sudo pip install cpp-coveralls --use-mirror
 
+before_install:
+  - git clone https://github.com/dcoeurjo/cpp-coveralls.git
+  - cd cpp-coveralls
+  - sudo python setup.py install
+  - cd ..
 
 
 matrix:
   exclude:
     - compiler: gcc
-      env: BTYPE="-DCMAKE_BUILD_TYPE=Debug -DWITH_QGLVIEWER=true" 
+      env: BTYPE="-DCMAKE_BUILD_TYPE=Debug -DWITH_QGLVIEWER=true -DBUILD_TESTING=OFF"
     - compiler: gcc
-      env: BTYPE="-DCMAKE_BUILD_TYPE=Debug -DWITH_CAIRO=true" 
+      env: BTYPE="-DCMAKE_BUILD_TYPE=Debug -DWITH_CAIRO=true -DBUILD_TESTING=OFF"
     - compiler: gcc
-      env: BTYPE="-DCMAKE_BUILD_TYPE=Debug -DWITH_MAGICK=true -DWITH_GMP=true" 
+      env: BTYPE="-DCMAKE_BUILD_TYPE=Debug -DWITH_MAGICK=true -DWITH_GMP=true -DBUILD_TESTING=OFF"
     - compiler: clang
-      env: BTYPE="-DCMAKE_BUILD_TYPE=Debug"
- 
+      env: BTYPE="-DCMAKE_BUILD_TYPE=Debug -DBUILD_TESTING=OFF"
 
-script: 
+
+script:
   - cmake . $BTYPE
   - make DGtal
   - make DGtalIO
@@ -40,6 +44,6 @@ script:
   - cd ..
   - make
 
-after_script: 
+after_script:
   - "make test"
   - coveralls --exclude lib --exclude tests
