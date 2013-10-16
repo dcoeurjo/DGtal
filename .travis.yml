@@ -2,7 +2,7 @@ language: cpp
 
 compiler:
   - gcc
-  - clang
+#  - clang
 
 env:
 #  - BTYPE="-DCMAKE_BUILD_TYPE=Debug -DWITH_QGLVIEWER=true -DBUILD_TESTING=OFF"
