@@ -84,10 +84,6 @@ generateSimplicityTable( const typename Object::DigitalTopology & dt,
     {
       DigitalSet shapeSet( domain );
       Object shape( dt, shapeSet );
-      if ( ( cfg % 1000 ) == 0 )
-	{
-	  trace.progressBar( (double) cfg, (double) nbCfg );
-	}
       shape.pointSet().insertNew( c );
       unsigned int mask = 1;
       for ( DomainConstIterator it = domain.begin(); it != domain.end(); ++it )
@@ -111,6 +107,8 @@ int main( int /*argc*/, char** /*argv*/ )
 
   using namespace Z3i;
   trace.beginBlock ( "Generate 3d table for 6_26 topology" );
+
+  trace.warning() << "Generating tables could be long.. please be patient..."<<std::endl;
 
   ConfigMap* table  = new ConfigMap;
 
