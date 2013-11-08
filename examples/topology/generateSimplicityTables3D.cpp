@@ -70,24 +70,25 @@ generateSimplicityTable( const typename Object::DigitalTopology & dt,
 
   Point p1 = Point::diagonal( -1 );
   Point p2 = Point::diagonal(  1 );
-  Point c = Point::diagonal( 0 );
   Domain domain( p1, p2 );
-  DigitalSet shapeSet( domain );
-  Object shape( dt, shapeSet );
   unsigned int k = 0;
   for ( DomainConstIterator it = domain.begin(); it != domain.end(); ++it )
     if ( *it != c ) ++k;
   ASSERT( ( k < 32 )
 	  && "[generateSimplicityTable] number of configurations is too high." );
   unsigned int nbCfg = 1 << k;
+
+#pragma omp parallel for
   for ( unsigned int cfg = 0; cfg < nbCfg; ++cfg )
     {
+      Point c = Point::diagonal( 0 );
+      DigitalSet shapeSet( domain );
+      Object shape( dt, shapeSet );
       if ( ( cfg % 1000 ) == 0 )
 	{
 	  trace.progressBar( (double) cfg, (double) nbCfg );
 	}
-      shape.pointSet().clear();
-      shape.pointSet().insert( c );
+      shape.pointSet().insertNew( c );
       unsigned int mask = 1;
       for ( DomainConstIterator it = domain.begin(); it != domain.end(); ++it )
 	{
