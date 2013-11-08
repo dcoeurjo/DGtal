@@ -59,7 +59,7 @@ using namespace DGtal;
    @param map (modified) the mapping configuration -> bool.
 */
 template <typename Object, typename Map>
-void 
+void
 generateSimplicityTable( const typename Object::DigitalTopology & dt,
 			 Map & map )
 {
@@ -109,17 +109,47 @@ int main( int /*argc*/, char** /*argv*/ )
   typedef std::bitset<67108864> ConfigMap; // 2^26
 
   using namespace Z3i;
-  trace.beginBlock ( "Generate 3d table for 26_6 topology" );
-  // Too big for stack. Use heap instead.
-  ConfigMap* table26_6 = new ConfigMap;
-  generateSimplicityTable< Object6_26 >( dt6_26, *table26_6 );
+  trace.beginBlock ( "Generate 3d table for 6_26 topology" );
+
+  ConfigMap* table  = new ConfigMap;
+
+  trace.beginBlock(" Generating (6,26) ");
+  generateSimplicityTable< Object6_26 >( dt6_26, *table );
+  trace.endBlock();
+  ofstream file6_26( "simplicity_table6_26.txt" );
+  file6_26 << *table;
+  file6_26.close();
+  table->reset();
   trace.endBlock();
 
-  ofstream file26_6( "simplicity_table6_26.txt" );
-  file26_6 << *table26_6;
+  trace.beginBlock(" Generating (26,6) ");
+  generateSimplicityTable< Object26_6 >( dt26_6, *table );
+  trace.endBlock();
+  ofstream file26_6( "simplicity_table26_6.txt" );
+  file26_6 << *table;
   file26_6.close();
+  table->reset();
+  trace.endBlock();
 
-  delete table26_6;
+  trace.beginBlock(" Generating (6,18) ");
+  generateSimplicityTable< Object6_18 >( dt6_18, *table );
+  trace.endBlock();
+  ofstream file6_18( "simplicity_table6_18.txt" );
+  file6_18 << *table;
+  file6_18.close();
+  table->reset();
+  trace.endBlock();
+
+  trace.beginBlock(" Generating (18,6) ");
+  generateSimplicityTable< Object18_6 >( dt18_6, *table );
+  trace.endBlock();
+  ofstream file18_6( "simplicity_table18_6.txt" );
+  file18_6 << *table;
+  file18_6.close();
+  table->reset();
+  trace.endBlock();
+
+  delete table;
   return 0;
 }
 //                                                                           //
