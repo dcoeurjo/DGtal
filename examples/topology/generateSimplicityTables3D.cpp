@@ -70,6 +70,7 @@ generateSimplicityTable( const typename Object::DigitalTopology & dt,
 
   Point p1 = Point::diagonal( -1 );
   Point p2 = Point::diagonal(  1 );
+  Point c = Point::diagonal( 0 );
   Domain domain( p1, p2 );
   unsigned int k = 0;
   for ( DomainConstIterator it = domain.begin(); it != domain.end(); ++it )
@@ -81,7 +82,6 @@ generateSimplicityTable( const typename Object::DigitalTopology & dt,
 #pragma omp parallel for
   for ( unsigned int cfg = 0; cfg < nbCfg; ++cfg )
     {
-      Point c = Point::diagonal( 0 );
       DigitalSet shapeSet( domain );
       Object shape( dt, shapeSet );
       if ( ( cfg % 1000 ) == 0 )
@@ -94,7 +94,7 @@ generateSimplicityTable( const typename Object::DigitalTopology & dt,
 	{
 	  if ( *it != c )
 	    {
-	      if ( cfg & mask ) shape.pointSet().insert( *it );
+	      if ( cfg & mask ) shape.pointSet().insertNew( *it );
 	      mask <<= 1;
 	    }
 	}
