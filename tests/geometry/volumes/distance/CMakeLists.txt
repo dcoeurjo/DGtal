@@ -10,6 +10,7 @@ SET(DGTAL_TESTS_SRC
   testPowerMap
   testReducedMedialAxis
   testSeparableMetricAdapter
+  testChamferDT
   )
 
 
@@ -18,7 +19,7 @@ FOREACH(FILE ${DGTAL_TESTS_SRC})
   target_link_libraries (${FILE} DGtal DGtalIO)
   add_test(${FILE} ${FILE})
 ENDFOREACH(FILE)
- 
+
 SET(DGTAL_BENCH_SRC
   testMetrics-benchmark
   )
@@ -30,4 +31,3 @@ FOREACH(FILE ${DGTAL_BENCH_SRC})
   add_custom_target(${FILE}-benchmark COMMAND ${FILE} ">benchmark-${FILE}.txt" )
   ADD_DEPENDENCIES(benchmark ${FILE}-benchmark)
 ENDFOREACH(FILE)
-
