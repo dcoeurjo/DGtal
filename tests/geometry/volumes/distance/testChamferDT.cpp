@@ -34,6 +34,8 @@
 #include "DGtal/base/Common.h"
 #include "ConfigTest.h"
 #include "DGtal/helpers/StdDefs.h"
+#include "DGtal/geometry/volumes/distance/ChamferNorm2D.h"
+#include "DGtal/geometry/volumes/distance/CMetric.h"
 ///////////////////////////////////////////////////////////////////////////////
 
 using namespace std;
@@ -44,111 +46,116 @@ using namespace Z2i;
 // Functions for testing class ChamferDT.
 ///////////////////////////////////////////////////////////////////////////////
 
+template<typename Abscissa, typename ConstIterator, typename Point>
+Abscissa intersectRayL(ConstIterator &ray,
+                       const Point &center,
+                       const Point &Lmin,
+                       const int k)
+{
+  Abscissa xk;
+  if (k != 0)
+    return static_cast<Abscissa>(floor((Lmin[0] - center[0] ) / (double)(*ray)[0] * ((*ray)[k])+ center[k]));
+  else
+    return  static_cast<Abscissa>(floor((Lmin[1] - center[1] ) / (double)(*ray)[1] * ((*ray)[k])+ center[k]));
 
-template <typename TVector>
-struct LessThanAngular
+}
+
+template <typename Abscissa,typename  ConstIterator,typename  Point>
+ConstIterator shrinkP(ConstIterator &pBegin,
+                      ConstIterator &pEnd,
+                      ConstIterator &qBegin,
+                      ConstIterator &qEnd,
+                      const Point &P,
+                      const Point & Q,
+                      const Point &Lmin,
+                      const Point& Lmax)
 {
 
-  bool operator() (const TVector& a, const TVector& b) const
-  {
-    return  (( (DGtal::int64_t)a[0]*(DGtal::int64_t)b[1] -
-               (DGtal::int64_t)a[1]*(DGtal::int64_t)b[0] ) > 0);
-  }
-};
+  //Mid cone
+  size_t count = distance (pBegin, pEnd);
+  if (count == 1)
+    return pBegin;
+  ConstIterator mid = pBegin + count /2;
+
+  //on L, we check the vetors of the cone (mid, mid+1);
+  Abscissa posCone, posConeNext;
+  //double dist;
+}
 
 
-bool testContainer()
+bool checkCMetricConcept()
+{
+  BOOST_CONCEPT_ASSERT(( CMetric<ChamferNorm2D<Z2i::Space > > ));
+  return true;
+}
+
+
+bool testChamferSimple()
 {
   unsigned int nbok = 0;
   unsigned int nb = 0;
-  trace.beginBlock ( "Testing std::set container for 2D ChamferDT ..." );
+  trace.beginBlock ( "Testing simple chamfer mask localization...");
 
-  Vector v(1,1);
-  Vector v2(2,1);
-  Vector v3(1,2);
-  LessThanAngular<Vector> lthan;
+  ChamferNorm2D<Z2i::Space> aMask(3);
+  ChamferNorm2D<Z2i::Space>::LessThanAngular lthan;
+  ChamferNorm2D<Z2i::Space>::LessOrEqThanAngular lqthan;
 
-  trace.info()<<"v =  "<<v<<std::endl;
-  trace.info()<<"v2 =  "<<v2<<std::endl;
-  trace.info()<<"v3 =  "<<v3<<std::endl;
-
-  //Few orientation tests
-  nbok += lthan(v2,v) ? 1 : 0;
+  
+  //Testing cone discovery
+  Vector d(101,100);
+  trace.info() << "Direction "<<d<<std::endl;
+  trace.info() << " -> cone "<< *aMask.getCone(d)
+  << "  -- " << *(aMask.getCone(d)+1) <<std::endl;
+  nbok += ( lthan(d, *(aMask.getCone(d)+1))) ? 1 : 0;
   nb++;
   trace.info() << "(" << nbok << "/" << nb << ") "
-	       << "v2 < v" << std::endl;
-
-  nbok += lthan(v,v3) ? 1 : 0;
+  << "(d < cone+1) returns true" << std::endl;
+  nbok += (lqthan(*(aMask.getCone(d)),d)) ? 1 : 0;
   nb++;
   trace.info() << "(" << nbok << "/" << nb << ") "
-	       << "v < v3" << std::endl;
-
-  //Adding some vectors
-  typedef std::set<Vector, LessThanAngular<Vector> >  Mask;
-  Mask mask;
-  for(unsigned int i = 0; i < 10; i++)
-    mask.insert( Vector( i, rand() % 10 ));
-  //Display
-  std::copy( mask.begin(), mask.end(), std::ostream_iterator<Vector>(std::cout, "\n"));
-
-
-  //Check
-  std::set<int> myset;
-  myset.insert(10);
-  myset.insert(20);
-  myset.insert(30);
-  myset.insert(40);
-  myset.insert(50);
-
-  trace.info()<<std::endl;
-  trace.info()<<std::endl;
-  trace.info() << "probe = "<<25<<std::endl;
-  trace.info() << "Lower bound = " << * (myset.lower_bound(25))<<std::endl;
-  trace.info() << "Upper bound = " << * (myset.upper_bound(25))<<std::endl;
-  trace.info()<<std::endl;
-  trace.info()<<std::endl;
-
-  //get Cone
-  Vector probe(102,100);
-  trace.info() << "probe = "<<probe<<std::endl;
-  trace.info() << "Lower bound = " << * (mask.lower_bound(probe))<<std::endl;
-  trace.info() << "Upper bound = " << * (mask.upper_bound(probe))<<std::endl;
-  trace.info() << "Lower bound from range = " << * (mask.equal_range(probe).first)<<std::endl;
-  trace.info() << "Upper bound from range = " << * (mask.equal_range(probe).second)<<std::endl;
-  nbok += lthan(probe, * (mask.upper_bound(probe))) ? 1 : 0;
+  << "(cone <= d) returns true" << std::endl;
+  
+  //testing canonical
+  Vector d3(-101,100);
+  trace.info() << "Direction "<<d3<<std::endl;
+  trace.info() << " -> cone "<< *aMask.getCone(d3)
+  << "  -- " << *(aMask.getCone(d3)+1) <<std::endl;
+  nbok += ( lthan(aMask.canonicalRay(d3), *(aMask.getCone(d3)+1))) ? 1 : 0;
   nb++;
   trace.info() << "(" << nbok << "/" << nb << ") "
-	       << "probe < upper" << std::endl;
-  nbok += (!lthan(probe,  * (mask.lower_bound(probe)))) ? 1 : 0;
+  << "(d < cone+1) returns true" << std::endl;
+  nbok += (lqthan(*(aMask.getCone(d3)),aMask.canonicalRay(d3))) ? 1 : 0;
   nb++;
   trace.info() << "(" << nbok << "/" << nb << ") "
-	       << "lower <= probe" << std::endl;
-
-  Vector probe2(15,16);
-  trace.info() << "probe = "<<probe2<<std::endl;
-  trace.info() << "Lower bound = " << * (mask.lower_bound(probe2))<<std::endl;
-  trace.info() << "Upper bound = " << * (mask.upper_bound(probe2))<<std::endl;
-  nbok += lthan(probe2, * (mask.upper_bound(probe2))) ? 1 : 0;
+  << "(cone <= d) returns true" << std::endl;
+ 
+  
+  //aligned
+  Vector d2(8,8);
+  trace.info() << "Direction "<<d2<<std::endl;
+  trace.info() << " -> cone "<< *aMask.getCone(d2)
+  << "  -- " << *(aMask.getCone(d2)+1) <<std::endl;
+  nbok += ( lthan(d2, *(aMask.getCone(d2)+1))) ? 1 : 0;
   nb++;
   trace.info() << "(" << nbok << "/" << nb << ") "
-	       << "probe2 < upper" << std::endl;
-  nbok += (!lthan(probe2,  * (mask.lower_bound(probe2)))) ? 1 : 0;
+  << "(d2 < cone+1) returns true" << std::endl;
+  nbok += (lqthan(*(aMask.getCone(d2)),d2) ) ? 1 : 0;
   nb++;
   trace.info() << "(" << nbok << "/" << nb << ") "
-	       << "lower <= probe2" << std::endl;
+  << "(cone <= d2) returns true" << std::endl;
+  
 
-  Vector probe3(8,-1);
-  trace.info() << "probe = "<<probe3<<std::endl;
-  trace.info() << "Lower bound = " << * (mask.lower_bound(probe3))<<std::endl;
-  trace.info() << "Upper bound = " << * (mask.upper_bound(probe3))<<std::endl;
-
-  Vector probe4(-1,8);
-  trace.info() << "probe = "<<probe4<<std::endl;
-  trace.info() << "Lower bound = " << * (mask.lower_bound(probe4))<<std::endl;
-  trace.info() << "Upper bound = " << * (mask.upper_bound(probe4))<<std::endl;
-
+  //Distance test
+  Point p(1,1), q(102,101);
+  trace.info()<< "Distance between "<<p<<" and "<< q << " = "<< aMask(p,q)<<std::endl;
+  trace.info()<< "Distance between "<<q<<" and "<< p << " = "<< aMask(q,p)<<std::endl;
+  nbok += ( aMask(p,q) == aMask(q,p))  ? 1 : 0;
+  nb++;
+  trace.info() << "(" << nbok << "/" << nb << ") "
+  << "d(p,q)==d(q,p)" << std::endl;
+  
+  
   trace.endBlock();
-
   return nbok == nb;
 }
 
@@ -163,7 +170,7 @@ int main( int argc, char** argv )
     trace.info() << " " << argv[ i ];
   trace.info() << endl;
 
-  bool res = testContainer(); // && ... other tests
+  bool res = testChamferSimple()  && checkCMetricConcept(); // && ... other tests
   trace.emphase() << ( res ? "Passed." : "Error." ) << endl;
   trace.endBlock();
   return res ? 0 : 1;
