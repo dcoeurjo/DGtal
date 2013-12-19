@@ -1,0 +1,148 @@
+/**
+ *  This program is free software: you can redistribute it and/or modify
+ *  it under the terms of the GNU Lesser General Public License as
+ *  published by the Free Software Foundation, either version 3 of the
+ *  License, or  (at your option) any later version.
+ *
+ *  This program is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *  GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU General Public License
+ *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ *
+ **/
+
+/**
+ * @file ChamferNorm2D.ih
+ * @author David Coeurjolly (\c david.coeurjolly@liris.cnrs.fr )
+ * Laboratoire d'InfoRmatique en Image et Systemes d'information - LIRIS (CNRS, UMR 5205), CNRS, France
+ *
+ * @date 2013/12/18
+ *
+ * Implementation of inline methods defined in ChamferNorm2D.h
+ *
+ * This file is part of the DGtal library.
+ */
+
+
+//////////////////////////////////////////////////////////////////////////////
+#include <cstdlib>
+//////////////////////////////////////////////////////////////////////////////
+
+///////////////////////////////////////////////////////////////////////////////
+// IMPLEMENTATION of inline methods.
+///////////////////////////////////////////////////////////////////////////////
+
+///////////////////////////////////////////////////////////////////////////////
+template <typename TSpace>
+inline
+DGtal::ChamferNorm2D<TSpace>::~ChamferNorm2D()
+{
+}
+///////////////////////////////////////////////////////////////////////////////
+template <typename TSpace>
+inline
+DGtal::ChamferNorm2D<TSpace>::ChamferNorm2D(const unsigned int N)
+{
+  myDirections.reserve(N);
+  myNormals.reserve(N);
+
+  for(unsigned int i = 1; i < N; i++)
+  {
+    myDirections.push_back( Vector( i, N - i));
+    myNormals.push_back( Vector(1,1) );
+  }
+  
+  //Sorting
+  std::sort(myDirections.begin(), myDirections.end(), myLessThanAngular);
+
+  //Display
+  std::copy( myDirections.begin(), myDirections.end(), std::ostream_iterator<Vector>(std::cout, "\n"));
+}
+///////////////////////////////////////////////////////////////////////////////
+template <typename TSpace>
+inline
+DGtal::ChamferNorm2D<TSpace>::ChamferNorm2D(const Directions &aDirSet,
+                                            const Directions &aNormalDirSet):
+myDirections(aDirSet), myNormals(aNormalDirSet)
+{
+}
+///////////////////////////////////////////////////////////////////////////////
+template <typename TSpace>
+inline
+void
+DGtal::ChamferNorm2D<TSpace>::selfDisplay ( std::ostream & out ) const
+{
+  out << "[ChamferNorm2D] mask size= "<<myDirections.size();
+}
+///////////////////////////////////////////////////////////////////////////////
+template <typename TSpace>
+inline
+bool
+DGtal::ChamferNorm2D<TSpace>::isValid() const
+{
+  return true;
+}
+///////////////////////////////////////////////////////////////////////////////
+template <typename TSpace>
+inline
+typename DGtal::ChamferNorm2D<TSpace>::ConstIterator
+DGtal::ChamferNorm2D<TSpace>::getCone(const Vector &aDirection,
+                                      ConstIterator aBegin,
+                                      ConstIterator aEnd) const
+{
+  return std::upper_bound(aBegin, aEnd , canonicalRay(aDirection), myLessThanAngular) - 1;
+}
+///////////////////////////////////////////////////////////////////////////////
+template <typename TSpace>
+inline
+typename DGtal::ChamferNorm2D<TSpace>::Vector
+DGtal::ChamferNorm2D<TSpace>::canonicalRay(const Vector &aRay) const
+{
+  return Vector( (aRay[0]<0)? -aRay[0]:aRay[0],
+                (aRay[1]<0)? -aRay[1]:aRay[1]);
+}
+///////////////////////////////////////////////////////////////////////////////
+template <typename TSpace>
+inline
+typename DGtal::ChamferNorm2D<TSpace>::Value
+DGtal::ChamferNorm2D<TSpace>::operator()(const Point &P,
+                                         const Point &Q) const
+{
+  Vector ray = canonicalRay(Q - P);
+  
+  //The cone
+  ConstIterator it = getCone(ray, myDirections.begin(), myDirections.end());
+
+ /* trace.info() << "   getting cone "<< *it<<std::endl;
+  trace.info() << "   can. ray = "<< ray<<std::endl;
+ */
+  
+  if ((it+1) == myDirections.end()) //aligned with Y axis
+    --it;
+  
+  size_t pos = it - myDirections.begin();
+  
+  // v = dir_i/w_i
+  Vector normalDir = myNormals[pos];
+  
+  //distance as the scalar product with the associated normal
+  return ray[0]*normalDir[0] + ray[1]*normalDir[1];
+}
+///////////////////////////////////////////////////////////////////////////////
+// Implementation of inline functions                                        //
+
+template <typename TSpace>
+inline
+std::ostream&
+DGtal::operator<< ( std::ostream & out,
+		  const ChamferNorm2D<TSpace> & object )
+{
+  object.selfDisplay( out );
+  return out;
+}
+
+//                                                                           //
+///////////////////////////////////////////////////////////////////////////////

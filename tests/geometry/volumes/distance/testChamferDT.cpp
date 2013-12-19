@@ -159,6 +159,39 @@ bool testChamferSimple()
   return nbok == nb;
 }
 
+bool testBasicMasks()
+{
+  unsigned int nbok = 0;
+  unsigned int nb = 0;
+  trace.beginBlock ( "Testing basic chamfer masks...");
+
+  ChamferNorm2D<Space>::Directions dirs34;
+  ChamferNorm2D<Space>::Directions normals34;
+  
+  //3-4 mask
+  dirs34.push_back(Vector(1,0));
+  normals34.push_back(Vector(3,1));
+  dirs34.push_back(Vector(1,1));
+  normals34.push_back(Vector(1,3));
+  dirs34.push_back(Vector(0,1));
+  
+  ChamferNorm2D<Space> mask34(dirs34,normals34);
+  
+  Point orig(0,0);
+  Point p(3,0);
+  trace.info() <<"Distance "<<p<<" = "<< mask34(orig,p)<<std::endl;;
+  trace.info() <<"Cone "<< *(mask34.getCone(p))<< "  "<< *(mask34.getCone(p)+1)<< std::endl;
+
+  Point q(3,1);
+  trace.info() <<"Distance "<<q<<" = "<< mask34(orig,q)<<std::endl;;
+  trace.info() <<"Cone "<< *(mask34.getCone(q))<< "  "<< *(mask34.getCone(q)+1)<< std::endl;
+  
+  
+  trace.endBlock();
+  return nbok == nb;
+}
+
+
 ///////////////////////////////////////////////////////////////////////////////
 // Standard services - public :
 
@@ -170,7 +203,7 @@ int main( int argc, char** argv )
     trace.info() << " " << argv[ i ];
   trace.info() << endl;
 
-  bool res = testChamferSimple()  && checkCMetricConcept(); // && ... other tests
+  bool res = testChamferSimple()  && checkCMetricConcept() && testBasicMasks(); // && ... other tests
   trace.emphase() << ( res ? "Passed." : "Error." ) << endl;
   trace.endBlock();
   return res ? 0 : 1;
