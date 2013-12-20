@@ -67,22 +67,32 @@ namespace DGtal
     //Underlying Space
     typedef TSpace Space;
 
+    //Type for vectors
     typedef typename Space::Vector Vector;
-    typedef typename Space::RealVector RealVector;
+    //Type for points
     typedef typename Space::Point Point;
-
+    
+    //Container for set of directions
     typedef std::vector< Vector > Directions;
-
     typedef typename Directions::const_iterator ConstIterator;
 
+    //ValueType for being model of CMetric
     typedef typename Space::Integer Value;
 
     
     
-    
+    /**
+     * Constructor from a number N.
+     * Will generate a partia mask with @a aN directions.
+     *
+     */
     ChamferNorm2D(const unsigned int aN);
 
-    
+    /** Constructor from direction and noraml vector sets.
+     *
+     * @param aDirectionSet the set of vectors (1st quadrant) of the chamfer norm mask.
+     * @param aNormalDirectionSet for each cone, the associated normal vector.
+     */
     ChamferNorm2D(const Directions &aDirectionSet,
                   const Directions &aNormalDirectionSet);
     
@@ -93,7 +103,9 @@ namespace DGtal
     ~ChamferNorm2D();
 
 
-    
+    /****
+     * @brief Vector comparator (1st quadrant)
+     */
     struct LessThanAngular
     {
       bool operator() (const Vector& a, const Vector& b) const
@@ -104,6 +116,9 @@ namespace DGtal
     };
     
   
+    /****
+     * @brief Vector comparator (1st quadrant)
+     */
     struct LessOrEqThanAngular
     {
       bool operator() (const Vector& a, const Vector& b) const
@@ -139,7 +154,6 @@ namespace DGtal
                           ConstIterator aBegin ,
                           ConstIterator aEnd ) const;
 
-
     
     /**
      * Returns the cone associated to a direction (iterator @a it) in
@@ -162,9 +176,12 @@ namespace DGtal
     }
 
     /**
-     * Return the canonical ray for a given ray
+     * Return the canonical ray for a given ray.
      *
-     * @return Vector (|aRay[0]|,aRay)
+     * This method construct a vector in the first quadrant
+     * corresponding to @a aRay.
+     *
+     * @return Vector |aRay[i]|
      **/
     Vector canonicalRay(const Vector &aRay) const;
     
@@ -181,11 +198,30 @@ namespace DGtal
     Value operator()(const Point &P, const Point &Q) const;
 
     
+    /**
+     * Returns the distance for the chamfer norm between P and P+aDir.
+     *
+     * @param P a point
+     * @param aDir a direction
+     *
+     * @return the distance between P and P+aDir.
+     */
     Value local(const Point &P, const Vector &aDir) const
     {
       return this->operator()(P,P+aDir);
     }
     
+    /**
+     * Given an origin and two points, this method decides which one
+     * is closest to the origin. This method should be faster than
+     * comparing distance values.
+     *
+     * @param origin the origin
+     * @param first  the first point
+     * @param second the second point
+     *
+     * @return a Closest enum: FIRST, SECOND or BOTH.
+     */
     DGtal::Closest closest(const Point &origin,
                            const Point &first,
                            const Point &second) const
@@ -203,7 +239,6 @@ namespace DGtal
     /**
      * Copy constructor.
      * @param other the object to clone.
-     * Forbidden by default.
      */
     ChamferNorm2D ( const ChamferNorm2D & other )
     {

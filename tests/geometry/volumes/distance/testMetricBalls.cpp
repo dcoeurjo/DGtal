@@ -54,23 +54,24 @@ using namespace DGtal;
 
 
 template <int norm>
-bool testExactMetricBalls()
+bool testExactMetricBalls(const unsigned int N)
 {
   unsigned int nbok = 0;
   unsigned int nb = 0;
-  trace.beginBlock("Exact metrcic"+  boost::lexical_cast<string>( norm ));
-  Z2i::Domain domain(Z2i::Point(0,0), Z2i::Point(64,64));
+  Z2i::Domain domain(Z2i::Point(0,0), Z2i::Point(N,N));
   typedef ExactPredicateLpSeparableMetric<Z2i::Space, norm> Metric;
   Z2i::DigitalSet set(domain);
   
-  set.insertNew(Z2i::Point(32,32));
+  set.insertNew(Z2i::Point(N/2,N/2));
   typedef NotPointPredicate< Z2i::DigitalSet > NegPred;
   // SetPredicate<Z2i::DigitalSet> setpred(set); 
   NegPred predicate( set );
   
+  trace.beginBlock("Exact metrcic"+  boost::lexical_cast<string>( norm ));
   typedef  DistanceTransformation< Z2i::Space, NegPred, Metric> DT;
   Metric metric;
   DT dt( &domain, &predicate, &metric);
+  trace.endBlock();
   
   
   Board2D board;
@@ -78,63 +79,60 @@ bool testExactMetricBalls()
   board.setUnit ( LibBoard::Board::UCentimeter );
   Display2DFactory::drawImage<Hue> (board, dt,
                                   0.0,
-                                  32*sqrt(2)/2.0);
+                                  N/2.0*sqrt(2)/2.0);
   
   std::string title = "image-ball-" +  boost::lexical_cast<string>( norm )+".png" ;
 #ifdef WITH_CAIRO
   board.saveCairo(title.c_str(), Board2D::CairoPNG );
 #endif  
-  trace.endBlock();
   return nbok == nb;
 }
 
-bool testInexactMetricBalls(double norm)
+bool testInexactMetricBalls(double norm, const unsigned int N)
 {
   unsigned int nbok = 0;
   unsigned int nb = 0;
   
-  trace.beginBlock("Inex metrcic"+  boost::lexical_cast<string>( norm ));
   
-  Z2i::Domain domain(Z2i::Point(0,0), Z2i::Point(64,64));
+  Z2i::Domain domain(Z2i::Point(0,0), Z2i::Point(N,N));
   typedef InexactPredicateLpSeparableMetric<Z2i::Space> Metric;
   Z2i::DigitalSet set(domain);
   
-  set.insertNew(Z2i::Point(32,32));
+  set.insertNew(Z2i::Point(N/2,N/2));
   typedef NotPointPredicate< Z2i::DigitalSet > NegPred;
   // SetPredicate<Z2i::DigitalSet> setpred(set);
   NegPred predicate( set );
   
+  trace.beginBlock("Inex metrcic"+  boost::lexical_cast<string>( norm ));
   typedef  DistanceTransformation< Z2i::Space, NegPred, Metric> DT;
   Metric metric(norm);
   DT dt( &domain, &predicate, &metric);
-  
+  trace.endBlock();
   
   Board2D board;
   typedef HueShadeColorMap< DT::Value,2> Hue;
   board.setUnit ( LibBoard::Board::UCentimeter );
   Display2DFactory::drawImage<Hue> (board, dt,
                                     0.0,
-                                    32*sqrt(2)/2.0);
+                                    N/2.0*sqrt(2)/2.0);
   
   std::string title = "image-ball-" +  boost::lexical_cast<string>( norm )+".png" ;
 #ifdef WITH_CAIRO
   board.saveCairo(title.c_str(), Board2D::CairoPNG );
 #endif
-  trace.endBlock();
   return nbok == nb;
 }
 
 
-bool testChamfer()
+bool testChamfer(const unsigned int N)
 {
   unsigned int nbok = 0;
   unsigned int nb = 0;
   
-  trace.beginBlock("Chamfer 3-4");
-  Z2i::Domain domain(Z2i::Point(0,0), Z2i::Point(64,64));
+  Z2i::Domain domain(Z2i::Point(0,0), Z2i::Point(N,N));
   Z2i::DigitalSet set(domain);
   
-  set.insertNew(Z2i::Point(32,32));
+  set.insertNew(Z2i::Point(N/2,N/2));
   typedef NotPointPredicate< Z2i::DigitalSet > NegPred;
   // SetPredicate<Z2i::DigitalSet> setpred(set);
   NegPred predicate( set );
@@ -156,10 +154,11 @@ bool testChamfer()
   AdaptedMetric metric(mask34);
   
   
-  
+  trace.beginBlock("Chamfer 3-4");
   //DT
   typedef  DistanceTransformation< Z2i::Space, NegPred, AdaptedMetric> DT;
   DT dt( &domain, &predicate, &metric);
+  trace.endBlock();
   
   double dtmax = 0;
   for(DT::ConstRange::ConstIterator it=dt.constRange().begin(),
@@ -180,22 +179,20 @@ bool testChamfer()
 #ifdef WITH_CAIRO
   board.saveCairo(title.c_str(), Board2D::CairoPNG );
 #endif
-  trace.endBlock();
   return nbok == nb;
 }
 
 
-bool testChamfer2()
+bool testChamfer2(const unsigned int N)
 {
   unsigned int nbok = 0;
   unsigned int nb = 0;
   
-  trace.beginBlock("Chamfer 5-7-11");
   
-  Z2i::Domain domain(Z2i::Point(0,0), Z2i::Point(64,64));
+  Z2i::Domain domain(Z2i::Point(0,0), Z2i::Point(N,N));
   Z2i::DigitalSet set(domain);
   
-  set.insertNew(Z2i::Point(32,32));
+  set.insertNew(Z2i::Point(N/2,N/2));
   typedef NotPointPredicate< Z2i::DigitalSet > NegPred;
   // SetPredicate<Z2i::DigitalSet> setpred(set); 
   NegPred predicate( set );
@@ -222,11 +219,13 @@ bool testChamfer2()
   AdaptedMetric metric(mask5711);
   
   //DT
+  trace.beginBlock("Chamfer 5-7-11");
   typedef  DistanceTransformation< Z2i::Space, NegPred, AdaptedMetric> DT;
   DT dt( &domain, &predicate, &metric);
+  trace.endBlock();
   
   Board2D board;
-  typedef HueShadeColorMap< DT::Value,2> Hue;
+  typedef HueShadeColorMap< DT::Value,12> Hue;
   board.setUnit ( LibBoard::Board::UCentimeter );
   
   double dtmax = 0;
@@ -243,13 +242,11 @@ bool testChamfer2()
 #ifdef WITH_CAIRO
   board.saveCairo(title.c_str(), Board2D::CairoPNG );
 #endif  
-  trace.endBlock();
   return nbok == nb;
 }
 
 ///////////////////////////////////////////////////////////////////////////////
 // Standard services - public :
-
 int main( int argc, char** argv )
 {
   trace.beginBlock ( "Testing class MetricBalls" );
@@ -257,16 +254,19 @@ int main( int argc, char** argv )
   for ( int i = 0; i < argc; ++i )
     trace.info() << " " << argv[ i ];
   trace.info() << endl;
+  unsigned int N=64;
+  if (argc == 2)
+    N = atoi(argv[1]);
 
-  bool res = testExactMetricBalls<2>()
-    && testExactMetricBalls<1>()
-    && testExactMetricBalls<4>()
-    && testExactMetricBalls<8>()
-    && testInexactMetricBalls(1.4)
-    && testInexactMetricBalls(43.1)
-    && testInexactMetricBalls(0.8)
-    && testChamfer()
-    && testChamfer2()
+  bool res = testExactMetricBalls<2>(N)
+    && testExactMetricBalls<1>(N)
+    && testExactMetricBalls<4>(N)
+    && testExactMetricBalls<8>(N)
+    && testInexactMetricBalls(1.4,N)
+    && testInexactMetricBalls(43.1,N)
+    && testInexactMetricBalls(0.8,N)
+    && testChamfer(N)
+    && testChamfer2(N)
     ; // && ... other tests
   trace.emphase() << ( res ? "Passed." : "Error." ) << endl;
   trace.endBlock();
