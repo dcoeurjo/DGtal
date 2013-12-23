@@ -191,6 +191,80 @@ bool testBasicMasks()
   return nbok == nb;
 }
 
+bool testIntersection()
+{
+  unsigned int nbok = 0;
+  unsigned int nb = 0;
+  trace.beginBlock ( "Testing intersection...");
+ 
+  Point P(0,0),Q(7,3),Qb(7,-3), Q2(2, -10), Q3(2,10);
+  Point Lmin(10,-10), Lmax(10,10);
+  ChamferNorm2D<Space> mask(1);
+  
+  trace.info() << "Intersection "<<P<<" "<<Q<<"   = "
+               << mask.getLowerRayIntersection(P,Q,Lmin,Lmax, 0)<<std::endl;
+  nbok += ( mask.getLowerRayIntersection(P,Q,Lmin,Lmax, 0) == 4)  ? 1 : 0;
+  nb++;
+  trace.info() << "(" << nbok << "/" << nb << ") "
+  << "inter==4" << std::endl;
+  
+  trace.info() << "Intersection "<<P<<" "<<Qb<<"   = "
+  << mask.getLowerRayIntersection(P,Qb,Lmin,Lmax, 0)<<std::endl;
+  nbok += ( mask.getLowerRayIntersection(P,Qb,Lmin,Lmax, 0) == -5)  ? 1 : 0;
+  nb++;
+  trace.info() << "(" << nbok << "/" << nb << ") "
+  << "inter==-5" << std::endl;
+  
+  trace.info() << "Intersection "<<P<<" "<<Q2<<"   = "
+  << mask.getLowerRayIntersection(P,Q2,Lmin,Lmax, 0)<<std::endl;
+  nbok += ( mask.getLowerRayIntersection(P,Q2,Lmin,Lmax, 0) == Lmin[1])  ? 1 : 0;
+  nb++;
+  trace.info() << "(" << nbok << "/" << nb << ") "
+  << "inter==Lmin" << std::endl;
+ 
+  trace.info() << "Intersection "<<P<<" "<<Q3<<"   = "
+  << mask.getLowerRayIntersection(P,Q3,Lmin,Lmax, 0)<<std::endl;
+  nbok += ( mask.getLowerRayIntersection(P,Q3,Lmin,Lmax, 0) == Lmax[1])  ? 1 : 0;
+  nb++;
+  trace.info() << "(" << nbok << "/" << nb << ") "
+  << "inter==Lmax" << std::endl;
+  
+  trace.info()<<std::endl;
+  
+  Point PP(0,0),QQ(3,7),QQb(-3,7), QQ2(-10, 2), QQ3(10, 2);
+  Point LLmin(-10,10), LLmax(10,10);
+  
+  trace.info() << "Intersection "<<PP<<" "<<QQ<<"   = "
+  << mask.getLowerRayIntersection(PP,QQ,LLmin,LLmax, 1)<<std::endl;
+  nbok += ( mask.getLowerRayIntersection(PP,QQ,LLmin,LLmax, 1) == 4)  ? 1 : 0;
+  nb++;
+  trace.info() << "(" << nbok << "/" << nb << ") "
+  << "inter==4" << std::endl;
+  
+  trace.info() << "Intersection "<<PP<<" "<<QQb<<"   = "
+  << mask.getLowerRayIntersection(PP,QQb,LLmin,LLmax, 1)<<std::endl;
+  nbok += ( mask.getLowerRayIntersection(PP,QQb,LLmin,LLmax, 1) == -5)  ? 1 : 0;
+  nb++;
+  trace.info() << "(" << nbok << "/" << nb << ") "
+  << "inter==-5" << std::endl;
+  
+  trace.info() << "Intersection "<<PP<<" "<<QQ2<<"   = "
+  << mask.getLowerRayIntersection(PP,QQ2,LLmin,LLmax, 1)<<std::endl;
+  nbok += ( mask.getLowerRayIntersection(PP,QQ2,LLmin,LLmax, 1) == LLmin[0])  ? 1 : 0;
+  nb++;
+  trace.info() << "(" << nbok << "/" << nb << ") "
+  << "inter==Lmin" << std::endl;
+  
+  trace.info() << "Intersection "<<PP<<" "<<QQ3<<"   = "
+  << mask.getLowerRayIntersection(PP,QQ3,LLmin,LLmax, 1)<<std::endl;
+  nbok += ( mask.getLowerRayIntersection(PP,QQ3,LLmin,LLmax, 1) == LLmax[0])  ? 1 : 0;
+  nb++;
+  trace.info() << "(" << nbok << "/" << nb << ") "
+  << "inter==Lmax" << std::endl;
+  
+  return nbok == nb;
+}
+
 
 ///////////////////////////////////////////////////////////////////////////////
 // Standard services - public :
@@ -203,7 +277,7 @@ int main( int argc, char** argv )
     trace.info() << " " << argv[ i ];
   trace.info() << endl;
 
-  bool res = testChamferSimple()  && checkCMetricConcept() && testBasicMasks(); // && ... other tests
+  bool res = testChamferSimple()  && checkCMetricConcept() && testBasicMasks() && testIntersection(); // && ... other tests
   trace.emphase() << ( res ? "Passed." : "Error." ) << endl;
   trace.endBlock();
   return res ? 0 : 1;

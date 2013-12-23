@@ -78,6 +78,9 @@ namespace DGtal
 
     //ValueType for being model of CMetric
     typedef typename Space::Integer Value;
+    
+    //Vector components type
+    typedef typename Vector::Component Abscissa;
 
     
     
@@ -259,6 +262,29 @@ namespace DGtal
       return *this;
     }
 
+    // ----------------------- CSeparableMetric concept -----------------------------------
+
+    /**
+     * Compute the intersection between (@a aP,@a aQ) and 
+     * [@a Lmin, @a Lmax]. More precisely, if we suppose that
+     *
+     * @pre  @f$ Lmin[aDimension] == Lmax[aDimension]@f$
+     * @pre  @f$ Lmin[(aDimension+1)%2] < Lmax[(aDimension+1)%2]@f$
+     * @pre  @f$ (aP,aQ) \cap (Lmin,Lmax) @f$
+     *
+     * this method returns the lower rounding abscissa of the rational
+     * intersection point.
+     *
+     * @param aP first extremity point
+     * @param aQ second extremity point
+     * @apram Lmin first extremity point of the L segment
+     * @apram Lmin first extremity point of the L segment
+     * @return the lowest rounding intersection point.
+     **/
+    Abscissa getLowerRayIntersection(const Vector &aP, const Vector &aQ,
+                                     const Point &Lmin, const Point &Lmax,
+                                     const Dimension aDimension) const ;
+    
     // ------------------------- Other services ------------------------------
 
     /**

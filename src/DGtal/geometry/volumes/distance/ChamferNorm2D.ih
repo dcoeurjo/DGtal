@@ -88,6 +88,47 @@ DGtal::ChamferNorm2D<TSpace>::isValid() const
 ///////////////////////////////////////////////////////////////////////////////
 template <typename TSpace>
 inline
+typename DGtal::ChamferNorm2D<TSpace>::Abscissa
+DGtal::ChamferNorm2D<TSpace>::getLowerRayIntersection(const Vector &aP, const Vector &aQ,
+                                                      const Point &Lmin, const Point &Lmax,
+                                                      const Dimension aDimension) const
+{
+  ASSERT(Lmin[aDimension] == Lmax[aDimension]);
+  ASSERT(Lmin[(aDimension+1) %2] < Lmax[(aDimension+1)%2]);
+
+  double slope, y;
+  if (aDimension == 0)
+  {
+    ASSERT( (aQ[0] - aP[0]) != NumberTraits<Abscissa>::ZERO);
+    slope = (aQ[1]-aP[1])/static_cast<double>((aQ[0] - aP[0]));
+    y=0.0;
+ 
+    y = slope * Lmin[0] + aP[1] - slope*aP[0];
+    //trace.info()<<"y="<<y<<" ";
+    if ( y < NumberTraits<Abscissa>::castToDouble(Lmin[1]))
+      return Lmin[1];
+    if ( y > NumberTraits<Abscissa>::castToDouble(Lmax[1]))
+      return Lmax[1];
+  
+    return static_cast<Abscissa>( floor(y));
+  }
+  else
+  {
+    ASSERT( (aQ[0] - aP[0]) != NumberTraits<Abscissa>::ZERO);
+    slope = (aQ[1]-aP[1])/static_cast<double>((aQ[0] - aP[0]));
+    double x = (Lmin[1] - aP[1] + slope*aP[0]) / slope;
+   //trace.info()<<"y="<<y<<" ";
+    if ( x < NumberTraits<Abscissa>::castToDouble(Lmin[0]))
+      return Lmin[0];
+    if ( x > NumberTraits<Abscissa>::castToDouble(Lmax[0]))
+      return Lmax[0];
+    
+    return static_cast<Abscissa>( floor(x));
+  }
+}
+///////////////////////////////////////////////////////////////////////////////
+template <typename TSpace>
+inline
 typename DGtal::ChamferNorm2D<TSpace>::ConstIterator
 DGtal::ChamferNorm2D<TSpace>::getCone(const Vector &aDirection,
                                       ConstIterator aBegin,
