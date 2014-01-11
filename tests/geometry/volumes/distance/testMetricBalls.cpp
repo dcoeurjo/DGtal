@@ -143,11 +143,16 @@ bool testChamfer(const unsigned int N)
   Metric::Directions dirs34;
   Metric::Directions normals34;
   //3-4 mask
+  dirs34.push_back(Z2i::Vector(0,-1));
+  dirs34.push_back(Z2i::Vector(1,-1));
   dirs34.push_back(Z2i::Vector(1,0));
-  normals34.push_back(Z2i::Vector(3,1));
   dirs34.push_back(Z2i::Vector(1,1));
-  normals34.push_back(Z2i::Vector(1,3));
   dirs34.push_back(Z2i::Vector(0,1));
+  normals34.push_back(Z2i::Vector(1,-3));
+  normals34.push_back(Z2i::Vector(3,-1));
+  normals34.push_back(Z2i::Vector(3,1));
+  normals34.push_back(Z2i::Vector(1,3));
+  
   Metric mask34(dirs34,normals34);
   
   typedef SeparableMetricAdapter<Metric> AdaptedMetric;
@@ -201,13 +206,21 @@ bool testChamfer2(const unsigned int N)
   typedef ChamferNorm2D<Z2i::Space> Metric;
   Metric::Directions dirs5711;
   Metric::Directions normals5711;
-  //3-4 mask
+  //5-7-11 mask
+  dirs5711.push_back(Z2i::Vector(0,-1));
+  dirs5711.push_back(Z2i::Vector(1,-2));
+  dirs5711.push_back(Z2i::Vector(1,-1));
+  dirs5711.push_back(Z2i::Vector(2,-1));
   dirs5711.push_back(Z2i::Vector(1,0));
   dirs5711.push_back(Z2i::Vector(2,1));
   dirs5711.push_back(Z2i::Vector(1,1));
   dirs5711.push_back(Z2i::Vector(1,2));
   dirs5711.push_back(Z2i::Vector(0,1));
   
+  normals5711.push_back(Z2i::Vector(1,-5));
+  normals5711.push_back(Z2i::Vector(3,-4));
+  normals5711.push_back(Z2i::Vector(4,-3));
+  normals5711.push_back(Z2i::Vector(5,-1));
   normals5711.push_back(Z2i::Vector(5,1));
   normals5711.push_back(Z2i::Vector(4,3));
   normals5711.push_back(Z2i::Vector(3,4));
@@ -225,7 +238,7 @@ bool testChamfer2(const unsigned int N)
   trace.endBlock();
   
   Board2D board;
-  typedef HueShadeColorMap< DT::Value,12> Hue;
+  typedef HueShadeColorMap< DT::Value,2> Hue;
   board.setUnit ( LibBoard::Board::UCentimeter );
   
   double dtmax = 0;

@@ -60,28 +60,6 @@ Abscissa intersectRayL(ConstIterator &ray,
 
 }
 
-template <typename Abscissa,typename  ConstIterator,typename  Point>
-ConstIterator shrinkP(ConstIterator &pBegin,
-                      ConstIterator &pEnd,
-                      ConstIterator &qBegin,
-                      ConstIterator &qEnd,
-                      const Point &P,
-                      const Point & Q,
-                      const Point &Lmin,
-                      const Point& Lmax)
-{
-
-  //Mid cone
-  size_t count = distance (pBegin, pEnd);
-  if (count == 1)
-    return pBegin;
-  ConstIterator mid = pBegin + count /2;
-
-  //on L, we check the vetors of the cone (mid, mid+1);
-  Abscissa posCone, posConeNext;
-  //double dist;
-}
-
 
 bool checkCMetricConcept()
 {
@@ -96,9 +74,24 @@ bool testChamferSimple()
   unsigned int nb = 0;
   trace.beginBlock ( "Testing simple chamfer mask localization...");
 
-  ChamferNorm2D<Z2i::Space> aMask(3);
-  ChamferNorm2D<Z2i::Space>::LessThanAngular lthan;
+    ChamferNorm2D<Z2i::Space>::LessThanAngular lthan;
   ChamferNorm2D<Z2i::Space>::LessOrEqThanAngular lqthan;
+  
+  ChamferNorm2D<Space>::Directions dirs34;
+  ChamferNorm2D<Space>::Directions normals34;
+  
+  //3-4 mask
+  dirs34.push_back(Z2i::Vector(0,-1));
+  dirs34.push_back(Z2i::Vector(1,-1));
+  dirs34.push_back(Z2i::Vector(1,0));
+  dirs34.push_back(Z2i::Vector(1,1));
+  dirs34.push_back(Z2i::Vector(0,1));
+  normals34.push_back(Z2i::Vector(1,-3));
+  normals34.push_back(Z2i::Vector(3,-1));
+  normals34.push_back(Z2i::Vector(3,1));
+  normals34.push_back(Z2i::Vector(1,3));
+  
+  ChamferNorm2D<Space> aMask(dirs34,normals34);
 
   
   //Testing cone discovery
@@ -169,11 +162,15 @@ bool testBasicMasks()
   ChamferNorm2D<Space>::Directions normals34;
   
   //3-4 mask
-  dirs34.push_back(Vector(1,0));
-  normals34.push_back(Vector(3,1));
-  dirs34.push_back(Vector(1,1));
-  normals34.push_back(Vector(1,3));
-  dirs34.push_back(Vector(0,1));
+  dirs34.push_back(Z2i::Vector(0,-1));
+  dirs34.push_back(Z2i::Vector(1,-1));
+  dirs34.push_back(Z2i::Vector(1,0));
+  dirs34.push_back(Z2i::Vector(1,1));
+  dirs34.push_back(Z2i::Vector(0,1));
+  normals34.push_back(Z2i::Vector(1,-3));
+  normals34.push_back(Z2i::Vector(3,-1));
+  normals34.push_back(Z2i::Vector(3,1));
+  normals34.push_back(Z2i::Vector(1,3));
   
   ChamferNorm2D<Space> mask34(dirs34,normals34);
   
@@ -202,29 +199,29 @@ bool testIntersection()
   ChamferNorm2D<Space> mask(1);
   
   trace.info() << "Intersection "<<P<<" "<<Q<<"   = "
-               << mask.getLowerRayIntersection(P,Q,Lmin,Lmax, 0)<<std::endl;
-  nbok += ( mask.getLowerRayIntersection(P,Q,Lmin,Lmax, 0) == 4)  ? 1 : 0;
+               << mask.getLowerRayIntersection(P,Q,Lmin,Lmax, 1)<<std::endl;
+  nbok += ( mask.getLowerRayIntersection(P,Q,Lmin,Lmax, 1) == 4)  ? 1 : 0;
   nb++;
   trace.info() << "(" << nbok << "/" << nb << ") "
   << "inter==4" << std::endl;
   
   trace.info() << "Intersection "<<P<<" "<<Qb<<"   = "
-  << mask.getLowerRayIntersection(P,Qb,Lmin,Lmax, 0)<<std::endl;
-  nbok += ( mask.getLowerRayIntersection(P,Qb,Lmin,Lmax, 0) == -5)  ? 1 : 0;
+  << mask.getLowerRayIntersection(P,Qb,Lmin,Lmax, 1)<<std::endl;
+  nbok += ( mask.getLowerRayIntersection(P,Qb,Lmin,Lmax, 1) == -5)  ? 1 : 0;
   nb++;
   trace.info() << "(" << nbok << "/" << nb << ") "
   << "inter==-5" << std::endl;
   
   trace.info() << "Intersection "<<P<<" "<<Q2<<"   = "
-  << mask.getLowerRayIntersection(P,Q2,Lmin,Lmax, 0)<<std::endl;
-  nbok += ( mask.getLowerRayIntersection(P,Q2,Lmin,Lmax, 0) == Lmin[1])  ? 1 : 0;
+  << mask.getLowerRayIntersection(P,Q2,Lmin,Lmax, 1)<<std::endl;
+  nbok += ( mask.getLowerRayIntersection(P,Q2,Lmin,Lmax, 1) <= Lmin[1])  ? 1 : 0;
   nb++;
   trace.info() << "(" << nbok << "/" << nb << ") "
   << "inter==Lmin" << std::endl;
  
   trace.info() << "Intersection "<<P<<" "<<Q3<<"   = "
-  << mask.getLowerRayIntersection(P,Q3,Lmin,Lmax, 0)<<std::endl;
-  nbok += ( mask.getLowerRayIntersection(P,Q3,Lmin,Lmax, 0) == Lmax[1])  ? 1 : 0;
+  << mask.getLowerRayIntersection(P,Q3,Lmin,Lmax, 1)<<std::endl;
+  nbok += ( mask.getLowerRayIntersection(P,Q3,Lmin,Lmax, 1) >= Lmax[1])  ? 1 : 0;
   nb++;
   trace.info() << "(" << nbok << "/" << nb << ") "
   << "inter==Lmax" << std::endl;
@@ -235,29 +232,29 @@ bool testIntersection()
   Point LLmin(-10,10), LLmax(10,10);
   
   trace.info() << "Intersection "<<PP<<" "<<QQ<<"   = "
-  << mask.getLowerRayIntersection(PP,QQ,LLmin,LLmax, 1)<<std::endl;
-  nbok += ( mask.getLowerRayIntersection(PP,QQ,LLmin,LLmax, 1) == 4)  ? 1 : 0;
+  << mask.getLowerRayIntersection(PP,QQ,LLmin,LLmax, 0)<<std::endl;
+  nbok += ( mask.getLowerRayIntersection(PP,QQ,LLmin,LLmax, 0) == 4)  ? 1 : 0;
   nb++;
   trace.info() << "(" << nbok << "/" << nb << ") "
   << "inter==4" << std::endl;
   
   trace.info() << "Intersection "<<PP<<" "<<QQb<<"   = "
-  << mask.getLowerRayIntersection(PP,QQb,LLmin,LLmax, 1)<<std::endl;
-  nbok += ( mask.getLowerRayIntersection(PP,QQb,LLmin,LLmax, 1) == -5)  ? 1 : 0;
+  << mask.getLowerRayIntersection(PP,QQb,LLmin,LLmax, 0)<<std::endl;
+  nbok += ( mask.getLowerRayIntersection(PP,QQb,LLmin,LLmax, 0) == -5)  ? 1 : 0;
   nb++;
   trace.info() << "(" << nbok << "/" << nb << ") "
   << "inter==-5" << std::endl;
   
   trace.info() << "Intersection "<<PP<<" "<<QQ2<<"   = "
-  << mask.getLowerRayIntersection(PP,QQ2,LLmin,LLmax, 1)<<std::endl;
-  nbok += ( mask.getLowerRayIntersection(PP,QQ2,LLmin,LLmax, 1) == LLmin[0])  ? 1 : 0;
+  << mask.getLowerRayIntersection(PP,QQ2,LLmin,LLmax, 0)<<std::endl;
+  nbok += ( mask.getLowerRayIntersection(PP,QQ2,LLmin,LLmax, 0) <= LLmin[0])  ? 1 : 0;
   nb++;
   trace.info() << "(" << nbok << "/" << nb << ") "
   << "inter==Lmin" << std::endl;
   
   trace.info() << "Intersection "<<PP<<" "<<QQ3<<"   = "
-  << mask.getLowerRayIntersection(PP,QQ3,LLmin,LLmax, 1)<<std::endl;
-  nbok += ( mask.getLowerRayIntersection(PP,QQ3,LLmin,LLmax, 1) == LLmax[0])  ? 1 : 0;
+  << mask.getLowerRayIntersection(PP,QQ3,LLmin,LLmax, 0)<<std::endl;
+  nbok += ( mask.getLowerRayIntersection(PP,QQ3,LLmin,LLmax, 0) >= LLmax[0])  ? 1 : 0;
   nb++;
   trace.info() << "(" << nbok << "/" << nb << ") "
   << "inter==Lmax" << std::endl;
@@ -265,6 +262,76 @@ bool testIntersection()
   return nbok == nb;
 }
 
+
+bool testShrink()
+{
+  unsigned int nbok = 0;
+  unsigned int nb = 0;
+  trace.beginBlock ( "Testing shrinking...");
+  
+  //5-7-11 metic
+  typedef ChamferNorm2D<Z2i::Space> Metric;
+  Metric::Directions dirs5711;
+  Metric::Directions normals5711;
+  //5-7-11 mask
+  dirs5711.push_back(Z2i::Vector(0,-1));
+  dirs5711.push_back(Z2i::Vector(1,-2));
+  dirs5711.push_back(Z2i::Vector(1,-1));
+  dirs5711.push_back(Z2i::Vector(2,-1));
+  dirs5711.push_back(Z2i::Vector(1,0));
+  dirs5711.push_back(Z2i::Vector(2,1));
+  dirs5711.push_back(Z2i::Vector(1,1));
+  dirs5711.push_back(Z2i::Vector(1,2));
+  dirs5711.push_back(Z2i::Vector(0,1));
+  
+  normals5711.push_back(Z2i::Vector(1,-5));
+  normals5711.push_back(Z2i::Vector(3,-4));
+  normals5711.push_back(Z2i::Vector(4,-3));
+  normals5711.push_back(Z2i::Vector(5,-1));
+  normals5711.push_back(Z2i::Vector(5,1));
+  normals5711.push_back(Z2i::Vector(4,3));
+  normals5711.push_back(Z2i::Vector(3,4));
+  normals5711.push_back(Z2i::Vector(1,5));
+  
+  Metric mask5711(dirs5711,normals5711);
+  
+  //Setting:
+  Point P(0,0);
+  Point Q(1,-2), QQ(1,2);
+  Point Lmin(10,0);
+  Point Lmax(10,10);
+  Metric::ConstIterator itBeg = mask5711.begin();
+  Metric::ConstIterator itEnd = mask5711.end();
+  
+  Metric::ConstIterator cone = mask5711.shrinkPSubMask(itBeg, itEnd, P, Q, Lmin, Lmax, 1);
+  trace.info() <<"Shrink returns the cone "<< *cone<<" " <<*(cone+1)<<std::endl;
+  
+  Metric::ConstIterator cone2 = mask5711.shrinkPSubMask(itBeg, itEnd, P, QQ, Lmin, Lmax, 1);
+  trace.info() <<"Shrink returns the cone2 "<< *cone2<<" " <<*(cone2+1)<<std::endl;
+  
+  trace.beginBlock("Testing Symmetry");
+  Point LLmin(-10,0);
+  Point LLmax(-10,10);
+  Metric::ConstIterator cone3 = mask5711.shrinkP(itBeg, itEnd, P, Q, LLmin, LLmax, 1);
+  trace.info() <<"Shrink returns the cone3 "<< *cone3<<" " <<*(cone3+1)<<std::endl;
+  trace.endBlock();
+  
+  //horizontal
+  Point LLLmin(0,10);
+  Point LLLmax(10,10);
+  Point Qhori(-2,1);
+  Metric::ConstIterator cone4 = mask5711.shrinkP(itBeg, itEnd, P, Q, LLLmin, LLLmax, 0);
+  trace.info() <<"Shrink returns the cone3 "<< *cone4<<" " <<*(cone4+1)<<std::endl;
+  nbok += ( *cone4 == *cone)  ? 1 : 0;
+  nb++;
+  trace.info() << "(" << nbok << "/" << nb << ") "
+  << "horiz==vert" << std::endl;
+  trace.endBlock();
+  
+  
+  trace.endBlock();
+  return nbok == nb;
+}
 
 ///////////////////////////////////////////////////////////////////////////////
 // Standard services - public :
@@ -277,7 +344,8 @@ int main( int argc, char** argv )
     trace.info() << " " << argv[ i ];
   trace.info() << endl;
 
-  bool res = testChamferSimple()  && checkCMetricConcept() && testBasicMasks() && testIntersection(); // && ... other tests
+  bool res = testChamferSimple()  && checkCMetricConcept() && testBasicMasks() && testIntersection()
+      && testShrink(); // && ... other tests
   trace.emphase() << ( res ? "Passed." : "Error." ) << endl;
   trace.endBlock();
   return res ? 0 : 1;

@@ -266,10 +266,10 @@ namespace DGtal
 
     /**
      * Compute the intersection between (@a aP,@a aQ) and 
-     * [@a Lmin, @a Lmax]. More precisely, if we suppose that
+     * (@a Lmin, @a Lmax). More precisely, if we suppose that
      *
-     * @pre  @f$ Lmin[aDimension] == Lmax[aDimension]@f$
-     * @pre  @f$ Lmin[(aDimension+1)%2] < Lmax[(aDimension+1)%2]@f$
+     * @pre  @f$ Lmin[aDimension] < Lmax[aDimension]@f$
+     * @pre  @f$ Lmin[(aDimension+1)%2] == Lmax[(aDimension+1)%2]@f$
      * @pre  @f$ (aP,aQ) \cap (Lmin,Lmax) @f$
      *
      * this method returns the lower rounding abscissa of the rational
@@ -285,8 +285,61 @@ namespace DGtal
                                      const Point &Lmin, const Point &Lmax,
                                      const Dimension aDimension) const ;
     
+    /**
+     * Compute the intersection between (@a aP,@a aQ) and
+     * (@a Lmin, @a Lmax). More precisely, if we suppose that
+     *
+     * @pre  @f$ Lmin[aDimension] < Lmax[aDimension]@f$
+     * @pre  @f$ Lmin[(aDimension+1)%2] == Lmax[(aDimension+1)%2]@f$
+     * @pre  @f$ (aP,aQ) \cap (Lmin,Lmax) @f$
+     *
+     * this method returns the upper rounding abscissa of the rational
+     * intersection point.
+     *
+     * @param aP first extremity point
+     * @param aQ second extremity point
+     * @apram Lmin first extremity point of the L segment
+     * @apram Lmin first extremity point of the L segment
+     * @return the lowest rounding intersection point.
+     **/
+    Abscissa getUpperRayIntersection(const Vector &aP, const Vector &aQ,
+                                     const Point &Lmin, const Point &Lmax,
+                                     const Dimension aDimension) const ;
+    
+    
+    
+    ConstIterator shrinkPSubMask(ConstIterator aBegin,
+                        ConstIterator aEnd,
+                        const Vector &aP, const Vector &aQ,
+                        const Point &Lmin, const Point &Lmax,
+                        const Dimension aDimension) const ;
+    
+    
+    ConstIterator shrinkP(ConstIterator aBegin,
+                          ConstIterator aEnd,
+                          const Vector &aP, const Vector &aQ,
+                          const Point &Lmin, const Point &Lmax,
+                          const Dimension aDimension) const ;
+    
+    
+    // ------------------------- Directions iterators ------------------------------
+    
+    /**
+     * @return the begin iterator to the mask direction set
+     */
+    ConstIterator begin()
+    {
+      return myDirections.begin();
+    }
+    
+    /**
+     * @return the end iterator to the mask direction set
+     */
+    ConstIterator end()
+    {
+      return myDirections.end();
+    }
     // ------------------------- Other services ------------------------------
-
     /**
      * Writes/Displays the object on an output stream.
      * @param out the output stream where the object is written.

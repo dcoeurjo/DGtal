@@ -49,12 +49,15 @@ DGtal::ChamferNorm2D<TSpace>::ChamferNorm2D(const unsigned int N)
   myDirections.reserve(N);
   myNormals.reserve(N);
 
-  for(unsigned int i = 1; i < N; i++)
+  for(int i = 1; i < N; i++)
   {
     myDirections.push_back( Vector( i, N - i));
+    myDirections.push_back( Vector( i, -(N - i)));
+    
+    myNormals.push_back( Vector(1,1) );
     myNormals.push_back( Vector(1,1) );
   }
-  
+
   //Sorting
   std::sort(myDirections.begin(), myDirections.end(), myLessThanAngular);
 
@@ -93,23 +96,25 @@ DGtal::ChamferNorm2D<TSpace>::getLowerRayIntersection(const Vector &aP, const Ve
                                                       const Point &Lmin, const Point &Lmax,
                                                       const Dimension aDimension) const
 {
-  ASSERT(Lmin[aDimension] == Lmax[aDimension]);
-  ASSERT(Lmin[(aDimension+1) %2] < Lmax[(aDimension+1)%2]);
-
+  ASSERT(Lmin[aDimension] < Lmax[aDimension]);
+  ASSERT(Lmin[(aDimension+1) %2] == Lmax[(aDimension+1)%2]);
+  
+  //trace.info() <<"     Computing intersection ("<<aP<<" ," <<aQ << ")  "<<std::endl;
   double slope, y;
-  if (aDimension == 0)
+  if (aDimension == 1)
   {
     ASSERT( (aQ[0] - aP[0]) != NumberTraits<Abscissa>::ZERO);
     slope = (aQ[1]-aP[1])/static_cast<double>((aQ[0] - aP[0]));
     y=0.0;
- 
+    
     y = slope * Lmin[0] + aP[1] - slope*aP[0];
     //trace.info()<<"y="<<y<<" ";
-    if ( y < NumberTraits<Abscissa>::castToDouble(Lmin[1]))
-      return Lmin[1];
-    if ( y > NumberTraits<Abscissa>::castToDouble(Lmax[1]))
-      return Lmax[1];
-  
+    /*if ( y < NumberTraits<Abscissa>::castToDouble(Lmin[1]))
+     return Lmin[1];
+     if ( y > NumberTraits<Abscissa>::castToDouble(Lmax[1]))
+     return Lmax[1];
+     */
+    
     return static_cast<Abscissa>( floor(y));
   }
   else
@@ -117,13 +122,56 @@ DGtal::ChamferNorm2D<TSpace>::getLowerRayIntersection(const Vector &aP, const Ve
     ASSERT( (aQ[0] - aP[0]) != NumberTraits<Abscissa>::ZERO);
     slope = (aQ[1]-aP[1])/static_cast<double>((aQ[0] - aP[0]));
     double x = (Lmin[1] - aP[1] + slope*aP[0]) / slope;
+    //trace.info()<<"y="<<y<<" ";
+    /*  if ( x < NumberTraits<Abscissa>::castToDouble(Lmin[0]))
+     return Lmin[0];
+     if ( x > NumberTraits<Abscissa>::castToDouble(Lmax[0]))
+     return Lmax[0];
+     */
+    return static_cast<Abscissa>( floor(x));
+  }
+}
+///////////////////////////////////////////////////////////////////////////////
+template <typename TSpace>
+inline
+typename DGtal::ChamferNorm2D<TSpace>::Abscissa
+DGtal::ChamferNorm2D<TSpace>::getUpperRayIntersection(const Vector &aP, const Vector &aQ,
+                                                      const Point &Lmin, const Point &Lmax,
+                                                      const Dimension aDimension) const
+{
+  ASSERT(Lmin[aDimension] < Lmax[aDimension]);
+  ASSERT(Lmin[(aDimension+1) %2] == Lmax[(aDimension+1)%2]);
+
+  // trace.info() <<"     Computing intersection ("<<aP<<" ," <<aQ << ")  "<<std::endl;
+  double slope, y;
+  if (aDimension == 1)
+  {
+    ASSERT( (aQ[0] - aP[0]) != NumberTraits<Abscissa>::ZERO);
+    slope = (aQ[1]-aP[1])/static_cast<double>((aQ[0] - aP[0]));
+    y=0.0;
+ 
+    y = slope * Lmin[0] + aP[1] - slope*aP[0];
+    //trace.info()<<"y="<<y<<" ";
+    /*if ( y < NumberTraits<Abscissa>::castToDouble(Lmin[1]))
+      return Lmin[1];
+    if ( y > NumberTraits<Abscissa>::castToDouble(Lmax[1]))
+      return Lmax[1];
+     */
+    
+    return static_cast<Abscissa>( ceil(y));
+  }
+  else
+  {
+    ASSERT( (aQ[0] - aP[0]) != NumberTraits<Abscissa>::ZERO);
+    slope = (aQ[1]-aP[1])/static_cast<double>((aQ[0] - aP[0]));
+    double x = (Lmin[1] - aP[1] + slope*aP[0]) / slope;
    //trace.info()<<"y="<<y<<" ";
-    if ( x < NumberTraits<Abscissa>::castToDouble(Lmin[0]))
+  /*  if ( x < NumberTraits<Abscissa>::castToDouble(Lmin[0]))
       return Lmin[0];
     if ( x > NumberTraits<Abscissa>::castToDouble(Lmax[0]))
       return Lmax[0];
-    
-    return static_cast<Abscissa>( floor(x));
+    */
+    return static_cast<Abscissa>( ceil(x));
   }
 }
 ///////////////////////////////////////////////////////////////////////////////
@@ -142,8 +190,7 @@ inline
 typename DGtal::ChamferNorm2D<TSpace>::Vector
 DGtal::ChamferNorm2D<TSpace>::canonicalRay(const Vector &aRay) const
 {
-  return Vector( (aRay[0]<0)? -aRay[0]:aRay[0],
-                (aRay[1]<0)? -aRay[1]:aRay[1]);
+  return Vector( (aRay[0]<0)? -aRay[0]:aRay[0], aRay[1] );
 }
 ///////////////////////////////////////////////////////////////////////////////
 template <typename TSpace>
@@ -173,8 +220,132 @@ DGtal::ChamferNorm2D<TSpace>::operator()(const Point &P,
   return ray[0]*normalDir[0] + ray[1]*normalDir[1];
 }
 ///////////////////////////////////////////////////////////////////////////////
-// Implementation of inline functions                                        //
+template <typename TSpace>
+inline
+typename DGtal::ChamferNorm2D<TSpace>::ConstIterator
+DGtal::ChamferNorm2D<TSpace>::shrinkPSubMask(ConstIterator aBegin,
+                                             ConstIterator aEnd,
+                                             const Vector &aP, const Vector &aQ,
+                                             const Point &Lmin, const Point &Lmax,
+                                             const Dimension aDimension) const
+{
+  ASSERT(Lmin[aDimension] < Lmax[aDimension]);
+  ASSERT(Lmin[(aDimension+1) %2] == Lmax[(aDimension+1)%2]);
+  ASSERT(aP[(aDimension+1) %2] <=Lmin[(aDimension+1) %2]);
+  ASSERT(aDimension == 1);
+  
+  trace.beginBlock();
+  trace.info()<<"Checking "<<*aBegin<<" -- "<< *aEnd << "  adimension="<<aDimension<<std::endl;
+  
+  if ((aEnd- aBegin) > 1)
+  {
+    //Mid
+    ConstIterator mid = aBegin + (aEnd - aBegin) / 2;
+    
+    trace.info() << "Mid direction= "<<*mid<<std::endl;
+    trace.info() << "Mid+1 direction= "<<*(mid+1)<<std::endl;
+    
+    //beginPoint, endPoint
+    Point midPoint,nextMidPoint;
+    Abscissa upperBegin,lowerEnd;
+    
+    midPoint = aP + (*mid);
+    nextMidPoint = aP + *(mid+1);
+    upperBegin = getUpperRayIntersection(aP, midPoint, Lmin, Lmax, aDimension);
+    lowerEnd = getLowerRayIntersection(aP, nextMidPoint, Lmin, Lmax, aDimension);
+    
+    midPoint = Lmin;
+    midPoint[aDimension] = upperBegin;
+    nextMidPoint = Lmin;
+    nextMidPoint[aDimension] = lowerEnd;
+    
+    //Distances w.r.t. Q, O(log(n)) per distance
+    double dmidQ = this->operator()(aQ, midPoint);
+    double dnextmidQ = this->operator()(aQ, nextMidPoint);
 
+    //Distance w.r.t. P, O(1) per distance
+    size_t pos = mid - myDirections.begin();
+    Vector normalDir = myNormals[pos];
+    double dmidP = midPoint[0]*normalDir[0] + midPoint[1]*normalDir[1];
+    normalDir = myNormals[pos+1];
+    double dnextmidP = nextMidPoint[0]*normalDir[0] + nextMidPoint[1]*normalDir[1];
+    
+    trace.info() << "Instersections  mid="<<midPoint<<"  and mid+1="<< nextMidPoint << std::endl;
+    
+    trace.info() << "Distances : P->("<<dmidP<<","<<dnextmidP<<")   Q->("<<dmidQ<<","<<dnextmidQ<<")" << std::endl;
+    bool PcloserMid = (dmidP < dmidQ);
+    bool PcloserNextMid = (dnextmidP < dnextmidQ);
+    
+    trace.info() << " mid in "<< (PcloserMid ? "P":"Q") <<"  and mid+1 in "<< (PcloserNextMid ? "P":"Q")<<std::endl;
+    
+    //We have localized the cone
+    if (PcloserMid != PcloserNextMid)
+    {
+      trace.endBlock();
+      return aBegin;
+    }
+    
+    //We decide to which direction we need to recurse
+    if ((dmidQ <= dnextmidQ) && (dmidP <= dnextmidP))
+    {
+      trace.info()<<"Recurse down"<<std::endl;
+      ConstIterator c = shrinkPSubMask(aBegin, mid, aP, aQ, Lmin, Lmax, aDimension);
+      trace.endBlock();
+      return c;
+    }
+    else
+    {
+      trace.info()<<"Recurse up"<<std::endl;
+      ConstIterator c = shrinkPSubMask(mid,aEnd,aP, aQ, Lmin, Lmax, aDimension);
+      trace.endBlock();
+      return c;
+    }
+  }
+  
+  return aBegin;
+  trace.endBlock();
+  
+}
+///////////////////////////////////////////////////////////////////////////////
+template <typename TSpace>
+inline
+typename DGtal::ChamferNorm2D<TSpace>::ConstIterator
+DGtal::ChamferNorm2D<TSpace>::shrinkP(ConstIterator aBegin,
+                                      ConstIterator aEnd,
+                                      const Vector &aP, const Vector &aQ,
+                                      const Point &Lmin, const Point &Lmax,
+                                      const Dimension aDimension) const
+{
+  ASSERT(Lmin[aDimension] < Lmax[aDimension]);
+  ASSERT(Lmin[(aDimension+1) %2] == Lmax[(aDimension+1)%2]);
+  
+  Point P,Q, Lm, LM;
+  
+  P = aP;
+  Q = aQ;
+  Lm = Lmin;
+  LM = Lmax;
+  
+  if (aDimension == 1)
+    if (aP[0] > Lmin[0])
+      P[0] = Lmin[0] - (aP[0] - Lmin[0]);
+  
+  
+  if (aDimension == 0)
+  {
+    Q[0] = aQ[1] ; Q[1] = aQ[0];
+    P[0] = aP[1] ; P[1] = aP[0];
+    Lm[0] = Lmin[1] ; Lm[1] = Lmin[0];
+    LM[0] = Lmax[1] ; LM[1] = Lmax[0];
+    
+    if (P[0] > Lm[0])
+      P[0] = Lm[0] - (P[0] - Lm[0]);
+  }
+  
+  return shrinkPSubMask(aBegin, aEnd, P, Q, Lm, LM, 1);
+}
+///////////////////////////////////////////////////////////////////////////////
+// Implementation of inline functions                                        //
 template <typename TSpace>
 inline
 std::ostream&
@@ -184,6 +355,5 @@ DGtal::operator<< ( std::ostream & out,
   object.selfDisplay( out );
   return out;
 }
-
 //                                                                           //
 ///////////////////////////////////////////////////////////////////////////////
