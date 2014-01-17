@@ -303,35 +303,351 @@ bool testShrink()
   Metric::ConstIterator itBeg = mask5711.begin();
   Metric::ConstIterator itEnd = mask5711.end();
   
-  Metric::ConstIterator cone = mask5711.shrinkPSubMask(itBeg, itEnd, P, Q, Lmin, Lmax, 1);
-  trace.info() <<"Shrink returns the cone "<< *cone<<" " <<*(cone+1)<<std::endl;
+  Point midPoint, nextMidPoint;
   
-  Metric::ConstIterator cone2 = mask5711.shrinkPSubMask(itBeg, itEnd, P, QQ, Lmin, Lmax, 1);
+  Metric::ConstIterator cone = mask5711.shrinkPSubMask(itBeg, itEnd, P, Q, Lmin, Lmax, 1, midPoint, nextMidPoint);
+  trace.info() <<"Shrink returns the cone "<< *cone<<" " <<*(cone+1)<<std::endl;
+  trace.info() <<"MidPoint "<< midPoint<<" " <<nextMidPoint<<std::endl<<std::endl;
+  nbok += ( midPoint == Point(10,0))  ? 1 : 0;
+  nb++;
+  trace.info() << "(" << nbok << "/" << nb << ") "
+  << "midPoint = (10,0)" << std::endl;
+  nbok += ( nextMidPoint == Point(10,5))  ? 1 : 0;
+  nb++;
+  trace.info() << "(" << nbok << "/" << nb << ") "
+  << "nextMidPoint = (10,5)" << std::endl;
+
+  
+  trace.warning()<<" Shrinking with QQ(1,2)"<<std::endl;
+  
+  Metric::ConstIterator cone2 = mask5711.shrinkPSubMask(itBeg, itEnd, P, QQ, Lmin, Lmax, 1, midPoint, nextMidPoint);
   trace.info() <<"Shrink returns the cone2 "<< *cone2<<" " <<*(cone2+1)<<std::endl;
+  trace.info() <<"MidPoint "<< midPoint<<" " <<nextMidPoint<<std::endl<<std::endl;
+  nbok += ( midPoint == Point(10,-5))  ? 1 : 0;
+  nb++;
+  trace.info() << "(" << nbok << "/" << nb << ") "
+  << "midPoint = (10,0)" << std::endl;
+  nbok += ( nextMidPoint == Point(10,0))  ? 1 : 0;
+  nb++;
+  trace.info() << "(" << nbok << "/" << nb << ") "
+  << "nextMidPoint = (10,5)" << std::endl;
+
   
   trace.beginBlock("Testing Symmetry");
   Point LLmin(-10,0);
   Point LLmax(-10,10);
-  Metric::ConstIterator cone3 = mask5711.shrinkP(itBeg, itEnd, P, Q, LLmin, LLmax, 1);
+  Point QQQ(-1,-2);
+  Metric::ConstIterator cone3 = mask5711.shrinkP(itBeg, itEnd, P, QQQ, LLmin, LLmax, 1, midPoint, nextMidPoint);
   trace.info() <<"Shrink returns the cone3 "<< *cone3<<" " <<*(cone3+1)<<std::endl;
+  trace.info() <<"MidPoint "<< midPoint<<" " <<nextMidPoint<<std::endl<<std::endl;
+  nbok += ( midPoint == Point(-10,0))  ? 1 : 0;
+  nb++;
+  trace.info() << "(" << nbok << "/" << nb << ") "
+  << "midPoint = (-10,0)" << std::endl;
+  nbok += ( nextMidPoint == Point(-10,5))  ? 1 : 0;
+  nb++;
+  trace.info() << "(" << nbok << "/" << nb << ") "
+  << "nextMidPoint = (-10,5)" << std::endl;
   trace.endBlock();
   
   //horizontal
+  trace.beginBlock("Testing H/V symmetry");
   Point LLLmin(0,10);
   Point LLLmax(10,10);
   Point Qhori(-2,1);
-  Metric::ConstIterator cone4 = mask5711.shrinkP(itBeg, itEnd, P, Q, LLLmin, LLLmax, 0);
+  Metric::ConstIterator cone4 = mask5711.shrinkP(itBeg, itEnd, P, Qhori, LLLmin, LLLmax, 0, midPoint, nextMidPoint);
   trace.info() <<"Shrink returns the cone3 "<< *cone4<<" " <<*(cone4+1)<<std::endl;
+  trace.info() <<"MidPoint "<< midPoint<<" " <<nextMidPoint<<std::endl<<std::endl;
   nbok += ( *cone4 == *cone)  ? 1 : 0;
   nb++;
   trace.info() << "(" << nbok << "/" << nb << ") "
   << "horiz==vert" << std::endl;
-  trace.endBlock();
+  nbok += ( midPoint == Point(0,10))  ? 1 : 0;
+  nb++;
+  trace.info() << "(" << nbok << "/" << nb << ") "
+  << "midPoint = (0,10)" << std::endl;
+  nbok += ( nextMidPoint == Point(5,10))  ? 1 : 0;
+  nb++;
+  trace.info() << "(" << nbok << "/" << nb << ") "
+  << "nextMidPoint = (5,10)" << std::endl;
   
+  Point LLLLmin(0,-10);
+  Point LLLLmax(10,-10);
+  Point QQhori(-2,-1);
+  Metric::ConstIterator cone5 = mask5711.shrinkP(itBeg, itEnd, P, QQhori, LLLLmin, LLLLmax, 0, midPoint, nextMidPoint);
+  trace.info() <<"Shrink returns the cone3 "<< *cone4<<" " <<*(cone4+1)<<std::endl;
+  trace.info() <<"MidPoint "<< midPoint<<" " <<nextMidPoint<<std::endl;
+  nbok += ( *cone5 == *cone)  ? 1 : 0;
+  nb++;
+  trace.info() << "(" << nbok << "/" << nb << ") "
+  << "horiz==vert" << std::endl;
+  nbok += ( midPoint == Point(0,-10))  ? 1 : 0;
+  nb++;
+  trace.info() << "(" << nbok << "/" << nb << ") "
+  << "midPoint = (0,-10)" << std::endl;
+  nbok += ( nextMidPoint == Point(5,-10))  ? 1 : 0;
+  nb++;
+  trace.info() << "(" << nbok << "/" << nb << ") "
+  << "nextMidPoint = (5,-10)" << std::endl;
+  trace.endBlock();
   
   trace.endBlock();
   return nbok == nb;
 }
+bool testDoubleShrink()
+{
+  unsigned int nbok = 0;
+  unsigned int nb = 0;
+  trace.beginBlock ( "Testing Double Shrinking...");
+  
+  //5-7-11 metic
+  typedef ChamferNorm2D<Z2i::Space> Metric;
+  Metric::Directions dirs5711;
+  Metric::Directions normals5711;
+  //5-7-11 mask
+  dirs5711.push_back(Z2i::Vector(0,-1));
+  dirs5711.push_back(Z2i::Vector(1,-2));
+  dirs5711.push_back(Z2i::Vector(1,-1));
+  dirs5711.push_back(Z2i::Vector(2,-1));
+  dirs5711.push_back(Z2i::Vector(1,0));
+  dirs5711.push_back(Z2i::Vector(2,1));
+  dirs5711.push_back(Z2i::Vector(1,1));
+  dirs5711.push_back(Z2i::Vector(1,2));
+  dirs5711.push_back(Z2i::Vector(0,1));
+  
+  normals5711.push_back(Z2i::Vector(1,-5));
+  normals5711.push_back(Z2i::Vector(3,-4));
+  normals5711.push_back(Z2i::Vector(4,-3));
+  normals5711.push_back(Z2i::Vector(5,-1));
+  normals5711.push_back(Z2i::Vector(5,1));
+  normals5711.push_back(Z2i::Vector(4,3));
+  normals5711.push_back(Z2i::Vector(3,4));
+  normals5711.push_back(Z2i::Vector(1,5));
+  
+  Metric mask5711(dirs5711,normals5711);
+  
+  //Setting:
+  trace.beginBlock("Tessting shrinking using Q");
+  Point P(0,0);
+  Point Q(1,-2), QQ(1,2);
+  Point Lmin(10,-10);
+  Point Lmax(10,10);
+  Point midPointP,nextMidPointP;
+  Point midPointQ,nextMidPointQ;
+  
+  Metric::ConstIterator itBeg = mask5711.begin();
+  Metric::ConstIterator itEnd = mask5711.end();
+  
+  Metric::ConstIterator cone = mask5711.shrinkP(itBeg, itEnd, P, Q, Lmin, Lmax, 1, midPointP, nextMidPointP);
+  trace.info() <<" P - Shrink returns the cone "<< *cone<<" " <<*(cone+1)<<std::endl;
+  trace.info() <<" P - MidPoint "<< midPointP<<" " <<nextMidPointP<<std::endl<<std::endl;
+  
+  Metric::ConstIterator cone2 = mask5711.shrinkP(itBeg, itEnd, Q, P, Lmin, Lmax, 1, midPointQ, nextMidPointQ);
+  trace.info() <<" Q - Shrink returns the cone "<< *cone2<<" " <<*(cone2+1)<<std::endl;
+  trace.info() <<" Q - MidPoint "<< midPointQ<<" " <<nextMidPointQ<<std::endl<<std::endl;
+  trace.info() << "Checking Voro cell" <<std::endl;
+  
+  double dpmidp = mask5711(P,midPointP);
+  double dqmidp = mask5711(Q,midPointP);
+  trace.info() << ((dpmidp < dqmidp) ? "MidP closer to P" : "Mid closer to Q") << std::endl;
+  double dpnextmidp = mask5711(P,nextMidPointP);
+  double dqnextmidp = mask5711(Q,nextMidPointP);
+  trace.info() << ((dpnextmidp < dqnextmidp) ? "NextMidP closer to P" : "Mid closer to Q") << std::endl;
+  nbok += ( (dpmidp < dqmidp) != (dpnextmidp < dqnextmidp))  ? 1 : 0;
+  nb++;
+  trace.info() << "(" << nbok << "/" << nb << ") "
+  << " Shrink P contains the Voronoi Edge" << std::endl;
+  
+  
+  double dpmidq = mask5711(P,midPointQ);
+  double dqmidq = mask5711(Q,midPointQ);
+  trace.info() << ((dpmidq < dqmidq) ? "MidQ closer to P" : "Mid closer to Q") << std::endl;
+  double dpnextmidq = mask5711(P,nextMidPointQ);
+  double dqnextmidq = mask5711(Q,nextMidPointQ);
+  trace.info() << ((dpnextmidq < dqnextmidq) ? "NextMidP closer to P" : "Mid closer to Q") << std::endl;
+  nbok += ( (dpmidq < dqmidq) != (dpnextmidq < dqnextmidq))  ? 1 : 0;
+  nb++;
+  trace.info() << "(" << nbok << "/" << nb << ") "
+  << " Shrink Q contains the Voronoi Edge" << std::endl;
+  trace.endBlock();
+  
+  //Setting2
+  trace.beginBlock("Testing double shrinking on QQ");
+  Metric::ConstIterator coneQQ = mask5711.shrinkP(itBeg, itEnd, P, QQ, Lmin, Lmax, 1, midPointP, nextMidPointP);
+  trace.info() <<" P - Shrink returns the cone "<< *coneQQ<<" " <<*(coneQQ+1)<<std::endl;
+  trace.info() <<" P - MidPoint "<< midPointP<<" " <<nextMidPointP<<std::endl;
+  trace.info() <<" P - cone distance to P("<< mask5711(midPointP,P)<<","
+  << mask5711(nextMidPointP,P)<<")" <<std::endl;
+  trace.info() <<" P - cone distance to QQ("<< mask5711(midPointP,QQ)<<","
+  << mask5711(nextMidPointP,QQ)<<")" <<std::endl<<std::endl;
+  
+  Metric::ConstIterator coneQQ2 = mask5711.shrinkP(itBeg, itEnd, QQ, P, Lmin, Lmax, 1, midPointQ, nextMidPointQ);
+  trace.info() <<" QQ - Shrink returns the cone "<< *coneQQ2<<" " <<*(coneQQ2+1)<<std::endl;
+  trace.info() <<" QQ - MidPoint "<< midPointQ<<" " <<nextMidPointQ<<std::endl;
+  trace.info() <<" QQ - cone distance to QQ("<< mask5711(midPointQ,QQ)<<","
+  << mask5711(nextMidPointQ,QQ)<<")" <<std::endl;
+  trace.info() <<" QQ - cone distance to P("<< mask5711(midPointQ,P)<<","
+  << mask5711(nextMidPointQ,P)<<")" <<std::endl;
+  trace.info() << "Checking Voro cell" <<std::endl<<std::endl;
+  
+  dpmidp = mask5711(P,midPointP);
+  dqmidp = mask5711(QQ,midPointP);
+  trace.info() << ((dpmidp < dqmidp) ? "MidP closer to P" : "MidP closer to QQ") << std::endl;
+  dpnextmidp = mask5711(P,nextMidPointP);
+  dqnextmidp = mask5711(QQ,nextMidPointP);
+  trace.info() << ((dpnextmidp < dqnextmidp) ? "NextMidP closer to P" : "NextMidP closer to QQ") << std::endl;
+  nbok += ( (dpmidp < dqmidp) != (dpnextmidp < dqnextmidp))  ? 1 : 0;
+  nb++;
+  trace.info() << "(" << nbok << "/" << nb << ") "
+  << " Shrink P contains the Voronoi Edge" << std::endl;
+  trace.info()<< "Distances : ConeP<->P("<<dpmidp<<","<<dpnextmidp<<")   ConeP<->Q("<<dqmidp<<","<<dqnextmidp<<")"<<std::endl;
+  
+  
+  dpmidq = mask5711(P,midPointQ);
+  dqmidq = mask5711(QQ,midPointQ);
+  trace.info() << ((dpmidq < dqmidq) ? "MidQ closer to P" : "MidQ closer to QQ") << std::endl;
+  dpnextmidq = mask5711(P,nextMidPointQ);
+  dqnextmidq = mask5711(QQ,nextMidPointQ);
+  trace.info() << ((dpnextmidq < dqnextmidq) ? "NextMidQ closer to P" : "NextMidQ closer to QQ") << std::endl;
+  nbok += ( (dpmidq < dqmidq) != (dpnextmidq < dqnextmidq))  ? 1 : 0;
+  nb++;
+  trace.info() << "(" << nbok << "/" << nb << ") "
+  << " Shrink QQ contains the Voronoi Edge" << std::endl;
+  trace.info()<< "Distances : ConeQ<->P("<<dpmidq<<","<<dpnextmidq<<")   ConeQ<->QQ("<<dqmidq<<","<<dqnextmidq<<")"<<std::endl;
+  trace.endBlock();
+  
+  
+  return nbok == nb;
+}
+
+
+bool testDoubleShrinkHorizontal()
+{
+  unsigned int nbok = 0;
+  unsigned int nb = 0;
+  trace.beginBlock ( "Testing Double Shrinking Horizontal...");
+  
+  //5-7-11 metic
+  typedef ChamferNorm2D<Z2i::Space> Metric;
+  Metric::Directions dirs5711;
+  Metric::Directions normals5711;
+  //5-7-11 mask
+  dirs5711.push_back(Z2i::Vector(0,-1));
+  dirs5711.push_back(Z2i::Vector(1,-2));
+  dirs5711.push_back(Z2i::Vector(1,-1));
+  dirs5711.push_back(Z2i::Vector(2,-1));
+  dirs5711.push_back(Z2i::Vector(1,0));
+  dirs5711.push_back(Z2i::Vector(2,1));
+  dirs5711.push_back(Z2i::Vector(1,1));
+  dirs5711.push_back(Z2i::Vector(1,2));
+  dirs5711.push_back(Z2i::Vector(0,1));
+  
+  normals5711.push_back(Z2i::Vector(1,-5));
+  normals5711.push_back(Z2i::Vector(3,-4));
+  normals5711.push_back(Z2i::Vector(4,-3));
+  normals5711.push_back(Z2i::Vector(5,-1));
+  normals5711.push_back(Z2i::Vector(5,1));
+  normals5711.push_back(Z2i::Vector(4,3));
+  normals5711.push_back(Z2i::Vector(3,4));
+  normals5711.push_back(Z2i::Vector(1,5));
+  
+  Metric mask5711(dirs5711,normals5711);
+
+  //Setting:
+  trace.beginBlock("Tessting shrinking using Q");
+  Point P(0,0);
+  Point Q(-2,1), QQ(2,1);
+  Point Lmin(-10,10);
+  Point Lmax(10,10);
+  Point midPointP,nextMidPointP;
+  Point midPointQ,nextMidPointQ;
+
+  Metric::ConstIterator itBeg = mask5711.begin();
+  Metric::ConstIterator itEnd = mask5711.end();
+  
+  Metric::ConstIterator cone = mask5711.shrinkP(itBeg, itEnd, P, Q, Lmin, Lmax, 0, midPointP, nextMidPointP);
+  trace.info() <<" P - Shrink returns the cone "<< *cone<<" " <<*(cone+1)<<std::endl;
+  trace.info() <<" P - MidPoint "<< midPointP<<" " <<nextMidPointP<<std::endl<<std::endl;
+  
+  Metric::ConstIterator cone2 = mask5711.shrinkP(itBeg, itEnd, Q, P, Lmin, Lmax, 0, midPointQ, nextMidPointQ);
+  trace.info() <<" Q - Shrink returns the cone "<< *cone2<<" " <<*(cone2+1)<<std::endl;
+  trace.info() <<" Q - MidPoint "<< midPointQ<<" " <<nextMidPointQ<<std::endl<<std::endl;
+  trace.info() << "Checking Voro cell" <<std::endl;
+  
+  double dpmidp = mask5711(P,midPointP);
+  double dqmidp = mask5711(Q,midPointP);
+  trace.info() << ((dpmidp < dqmidp) ? "MidP closer to P" : "Mid closer to Q") << std::endl;
+  double dpnextmidp = mask5711(P,nextMidPointP);
+  double dqnextmidp = mask5711(Q,nextMidPointP);
+  trace.info() << ((dpnextmidp < dqnextmidp) ? "NextMidP closer to P" : "Mid closer to Q") << std::endl;
+  nbok += ( (dpmidp < dqmidp) != (dpnextmidp < dqnextmidp))  ? 1 : 0;
+  nb++;
+  trace.info() << "(" << nbok << "/" << nb << ") "
+  << " Shrink P contains the Voronoi Edge" << std::endl;
+  
+  
+  double dpmidq = mask5711(P,midPointQ);
+  double dqmidq = mask5711(Q,midPointQ);
+  trace.info() << ((dpmidq < dqmidq) ? "MidQ closer to P" : "Mid closer to Q") << std::endl;
+  double dpnextmidq = mask5711(P,nextMidPointQ);
+  double dqnextmidq = mask5711(Q,nextMidPointQ);
+  trace.info() << ((dpnextmidq < dqnextmidq) ? "NextMidP closer to P" : "Mid closer to Q") << std::endl;
+  nbok += ( (dpmidq < dqmidq) != (dpnextmidq < dqnextmidq))  ? 1 : 0;
+  nb++;
+  trace.info() << "(" << nbok << "/" << nb << ") "
+  << " Shrink Q contains the Voronoi Edge" << std::endl;
+  trace.endBlock();
+  
+  //Setting2
+  trace.beginBlock("Testing double shrinking on QQ");
+  Metric::ConstIterator coneQQ = mask5711.shrinkP(itBeg, itEnd, P, QQ, Lmin, Lmax, 0, midPointP, nextMidPointP);
+  trace.info() <<" P - Shrink returns the cone "<< *coneQQ<<" " <<*(coneQQ+1)<<std::endl;
+  trace.info() <<" P - MidPoint "<< midPointP<<" " <<nextMidPointP<<std::endl;
+  trace.info() <<" P - cone distance to P("<< mask5711(midPointP,P)<<","
+               << mask5711(nextMidPointP,P)<<")" <<std::endl;
+  trace.info() <<" P - cone distance to QQ("<< mask5711(midPointP,QQ)<<","
+               << mask5711(nextMidPointP,QQ)<<")" <<std::endl<<std::endl;
+  
+  Metric::ConstIterator coneQQ2 = mask5711.shrinkP(itBeg, itEnd, QQ, P, Lmin, Lmax, 0, midPointQ, nextMidPointQ);
+  trace.info() <<" QQ - Shrink returns the cone "<< *coneQQ2<<" " <<*(coneQQ2+1)<<std::endl;
+  trace.info() <<" QQ - MidPoint "<< midPointQ<<" " <<nextMidPointQ<<std::endl;
+  trace.info() <<" QQ - cone distance to QQ("<< mask5711(midPointQ,QQ)<<","
+               << mask5711(nextMidPointQ,QQ)<<")" <<std::endl;
+  trace.info() <<" QQ - cone distance to P("<< mask5711(midPointQ,P)<<","
+                << mask5711(nextMidPointQ,P)<<")" <<std::endl;
+  trace.info() << "Checking Voro cell" <<std::endl<<std::endl;
+  
+  dpmidp = mask5711(P,midPointP);
+  dqmidp = mask5711(QQ,midPointP);
+  trace.info() << ((dpmidp < dqmidp) ? "MidP closer to P" : "MidP closer to QQ") << std::endl;
+  dpnextmidp = mask5711(P,nextMidPointP);
+  dqnextmidp = mask5711(QQ,nextMidPointP);
+  trace.info() << ((dpnextmidp < dqnextmidp) ? "NextMidP closer to P" : "NextMidP closer to QQ") << std::endl;
+  nbok += ( (dpmidp < dqmidp) != (dpnextmidp < dqnextmidp))  ? 1 : 0;
+  nb++;
+  trace.info() << "(" << nbok << "/" << nb << ") "
+  << " Shrink P contains the Voronoi Edge" << std::endl;
+  trace.info()<< "Distances : ConeP<->P("<<dpmidp<<","<<dpnextmidp<<")   ConeP<->Q("<<dqmidp<<","<<dqnextmidp<<")"<<std::endl;
+  
+  
+  dpmidq = mask5711(P,midPointQ);
+  dqmidq = mask5711(QQ,midPointQ);
+  trace.info() << ((dpmidq < dqmidq) ? "MidQ closer to P" : "MidQ closer to QQ") << std::endl;
+  dpnextmidq = mask5711(P,nextMidPointQ);
+  dqnextmidq = mask5711(QQ,nextMidPointQ);
+  trace.info() << ((dpnextmidq < dqnextmidq) ? "NextMidQ closer to P" : "NextMidQ closer to QQ") << std::endl;
+  nbok += ( (dpmidq < dqmidq) != (dpnextmidq < dqnextmidq))  ? 1 : 0;
+  nb++;
+  trace.info() << "(" << nbok << "/" << nb << ") "
+  << " Shrink QQ contains the Voronoi Edge" << std::endl;
+  trace.info()<< "Distances : ConeQ<->P("<<dpmidq<<","<<dpnextmidq<<")   ConeQ<->QQ("<<dqmidq<<","<<dqnextmidq<<")"<<std::endl;
+  trace.endBlock();
+
+  
+  return nbok == nb;
+}
+
+
 
 ///////////////////////////////////////////////////////////////////////////////
 // Standard services - public :
@@ -345,7 +661,9 @@ int main( int argc, char** argv )
   trace.info() << endl;
 
   bool res = testChamferSimple()  && checkCMetricConcept() && testBasicMasks() && testIntersection()
-      && testShrink(); // && ... other tests
+      && testShrink()
+      && testDoubleShrink()
+      && testDoubleShrinkHorizontal(); // && ... other tests
   trace.emphase() << ( res ? "Passed." : "Error." ) << endl;
   trace.endBlock();
   return res ? 0 : 1;

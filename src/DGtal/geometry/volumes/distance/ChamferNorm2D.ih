@@ -134,6 +134,15 @@ DGtal::ChamferNorm2D<TSpace>::getLowerRayIntersection(const Vector &aP, const Ve
 ///////////////////////////////////////////////////////////////////////////////
 template <typename TSpace>
 inline
+typename DGtal::ChamferNorm2D<TSpace>::Vector
+DGtal::ChamferNorm2D<TSpace>::getNormalFromCone(ConstIterator aCone) const
+{
+  size_t pos = aCone - myDirections.begin();
+  return  myNormals[pos];
+}
+///////////////////////////////////////////////////////////////////////////////
+template <typename TSpace>
+inline
 typename DGtal::ChamferNorm2D<TSpace>::Abscissa
 DGtal::ChamferNorm2D<TSpace>::getUpperRayIntersection(const Vector &aP, const Vector &aQ,
                                                       const Point &Lmin, const Point &Lmax,
@@ -203,19 +212,12 @@ DGtal::ChamferNorm2D<TSpace>::operator()(const Point &P,
   
   //The cone
   ConstIterator it = getCone(ray, myDirections.begin(), myDirections.end());
-
- /* trace.info() << "   getting cone "<< *it<<std::endl;
-  trace.info() << "   can. ray = "<< ray<<std::endl;
- */
   
   if ((it+1) == myDirections.end()) //aligned with Y axis
     --it;
   
-  size_t pos = it - myDirections.begin();
-  
   // v = dir_i/w_i
-  Vector normalDir = myNormals[pos];
-  
+  Vector normalDir = getNormalFromCone(it);
   //distance as the scalar product with the associated normal
   return ray[0]*normalDir[0] + ray[1]*normalDir[1];
 }
@@ -227,7 +229,9 @@ DGtal::ChamferNorm2D<TSpace>::shrinkPSubMask(ConstIterator aBegin,
                                              ConstIterator aEnd,
                                              const Vector &aP, const Vector &aQ,
                                              const Point &Lmin, const Point &Lmax,
-                                             const Dimension aDimension) const
+                                             const Dimension aDimension,
+                                             Point &midPoint,
+                                             Point &nextMidPoint) const
 {
   ASSERT(Lmin[aDimension] < Lmax[aDimension]);
   ASSERT(Lmin[(aDimension+1) %2] == Lmax[(aDimension+1)%2]);
@@ -235,7 +239,7 @@ DGtal::ChamferNorm2D<TSpace>::shrinkPSubMask(ConstIterator aBegin,
   ASSERT(aDimension == 1);
   
   trace.beginBlock();
-  trace.info()<<"Checking "<<*aBegin<<" -- "<< *aEnd << "  adimension="<<aDimension<<std::endl;
+  trace.info()<<"Checking "<<*aBegin<<" -- "<< *aEnd << "  adimension="<<aDimension << " P="<<aP<<" Q="<<aQ<<std::endl;
   
   if ((aEnd- aBegin) > 1)
   {
@@ -246,9 +250,7 @@ DGtal::ChamferNorm2D<TSpace>::shrinkPSubMask(ConstIterator aBegin,
     trace.info() << "Mid+1 direction= "<<*(mid+1)<<std::endl;
     
     //beginPoint, endPoint
-    Point midPoint,nextMidPoint;
     Abscissa upperBegin,lowerEnd;
-    
     midPoint = aP + (*mid);
     nextMidPoint = aP + *(mid+1);
     upperBegin = getUpperRayIntersection(aP, midPoint, Lmin, Lmax, aDimension);
@@ -263,15 +265,15 @@ DGtal::ChamferNorm2D<TSpace>::shrinkPSubMask(ConstIterator aBegin,
     double dmidQ = this->operator()(aQ, midPoint);
     double dnextmidQ = this->operator()(aQ, nextMidPoint);
 
+    
     //Distance w.r.t. P, O(1) per distance
-    size_t pos = mid - myDirections.begin();
-    Vector normalDir = myNormals[pos];
-    double dmidP = midPoint[0]*normalDir[0] + midPoint[1]*normalDir[1];
-    normalDir = myNormals[pos+1];
-    double dnextmidP = nextMidPoint[0]*normalDir[0] + nextMidPoint[1]*normalDir[1];
+    Vector normalDir = getNormalFromCone(mid);
+    
+    double dmidP = (midPoint[0]-aP[0])*normalDir[0] + (midPoint[1]-aP[1])*normalDir[1];
+    normalDir = getNormalFromCone(mid);
+    double dnextmidP = (nextMidPoint[0]-aP[0])*normalDir[0] + (nextMidPoint[1]-aP[1])*normalDir[1];
     
     trace.info() << "Instersections  mid="<<midPoint<<"  and mid+1="<< nextMidPoint << std::endl;
-    
     trace.info() << "Distances : P->("<<dmidP<<","<<dnextmidP<<")   Q->("<<dmidQ<<","<<dnextmidQ<<")" << std::endl;
     bool PcloserMid = (dmidP < dmidQ);
     bool PcloserNextMid = (dnextmidP < dnextmidQ);
@@ -282,23 +284,44 @@ DGtal::ChamferNorm2D<TSpace>::shrinkPSubMask(ConstIterator aBegin,
     if (PcloserMid != PcloserNextMid)
     {
       trace.endBlock();
-      return aBegin;
+      return mid;
     }
     
     //We decide to which direction we need to recurse
-    if ((dmidQ <= dnextmidQ) && (dmidP <= dnextmidP))
+    if (PcloserMid && PcloserNextMid)
     {
-      trace.info()<<"Recurse down"<<std::endl;
-      ConstIterator c = shrinkPSubMask(aBegin, mid, aP, aQ, Lmin, Lmax, aDimension);
-      trace.endBlock();
-      return c;
+      if (dmidQ < dnextmidQ)
+      {
+        trace.info()<<"Recurse down"<<std::endl;
+        ConstIterator c = shrinkPSubMask(aBegin, mid, aP, aQ, Lmin, Lmax, aDimension, midPoint, nextMidPoint);
+        trace.endBlock();
+        return c;
+      }
+      else
+      {
+        trace.info()<<"Recurse up"<<std::endl;
+        ConstIterator c = shrinkPSubMask(mid,aEnd,aP, aQ, Lmin, Lmax, aDimension, midPoint, nextMidPoint);
+        trace.endBlock();
+        return c;
+      }
     }
     else
     {
-      trace.info()<<"Recurse up"<<std::endl;
-      ConstIterator c = shrinkPSubMask(mid,aEnd,aP, aQ, Lmin, Lmax, aDimension);
-      trace.endBlock();
-      return c;
+      // mid and next in Q
+      if (dmidP < dnextmidP)
+      {
+        trace.info()<<"Recurse down"<<std::endl;
+        ConstIterator c = shrinkPSubMask(aBegin, mid, aP, aQ, Lmin, Lmax, aDimension, midPoint, nextMidPoint);
+        trace.endBlock();
+        return c;
+      }
+      else
+      {
+        trace.info()<<"Recurse up"<<std::endl;
+        ConstIterator c = shrinkPSubMask(mid,aEnd,aP, aQ, Lmin, Lmax, aDimension, midPoint, nextMidPoint);
+        trace.endBlock();
+        return c;
+      }
     }
   }
   
@@ -306,7 +329,7 @@ DGtal::ChamferNorm2D<TSpace>::shrinkPSubMask(ConstIterator aBegin,
   trace.endBlock();
   
 }
-///////////////////////////////////////////////////////////////////////////////
+  ///////////////////////////////////////////////////////////////////////////////
 template <typename TSpace>
 inline
 typename DGtal::ChamferNorm2D<TSpace>::ConstIterator
@@ -314,12 +337,15 @@ DGtal::ChamferNorm2D<TSpace>::shrinkP(ConstIterator aBegin,
                                       ConstIterator aEnd,
                                       const Vector &aP, const Vector &aQ,
                                       const Point &Lmin, const Point &Lmax,
-                                      const Dimension aDimension) const
+                                      const Dimension aDimension,
+                                      Point &midPoint,
+                                      Point &nextMidPoint) const
 {
   ASSERT(Lmin[aDimension] < Lmax[aDimension]);
   ASSERT(Lmin[(aDimension+1) %2] == Lmax[(aDimension+1)%2]);
   
   Point P,Q, Lm, LM;
+  ConstIterator c;
   
   P = aP;
   Q = aQ;
@@ -328,21 +354,41 @@ DGtal::ChamferNorm2D<TSpace>::shrinkP(ConstIterator aBegin,
   
   if (aDimension == 1)
     if (aP[0] > Lmin[0])
+    {
+      //Putting P to the left of L
       P[0] = Lmin[0] - (aP[0] - Lmin[0]);
-  
+      Q[0] = Lmin[0] - (aQ[0] - Lmin[0]);
+    }
   
   if (aDimension == 0)
   {
+    //Symmetry x<->y
     Q[0] = aQ[1] ; Q[1] = aQ[0];
     P[0] = aP[1] ; P[1] = aP[0];
     Lm[0] = Lmin[1] ; Lm[1] = Lmin[0];
     LM[0] = Lmax[1] ; LM[1] = Lmax[0];
-    
+    trace.info() << "       swapping x<->y"<<std::endl;
     if (P[0] > Lm[0])
+    {
       P[0] = Lm[0] - (P[0] - Lm[0]);
+      Q[0] = Lm[0] - (Q[0] - Lm[0]);
+    }
+    
+    c = shrinkPSubMask(aBegin, aEnd, P, Q, Lm, LM, 1,midPoint, nextMidPoint);
+    
+    //Setting back the midpoint
+    trace.warning()<<"transform back"<<std::endl;
+    Point mmid = midPoint;
+    midPoint[0] = mmid[1] ; midPoint[1] = mmid[0];
+    Point nextmid = nextMidPoint;
+    nextMidPoint[0] = nextmid[1] ; nextMidPoint[1] = nextmid[0];
+    
+    return c;
   }
   
-  return shrinkPSubMask(aBegin, aEnd, P, Q, Lm, LM, 1);
+  // 1str half space (x>0, verticaL)
+  c = shrinkPSubMask(aBegin, aEnd, P, Q, Lm, LM, 1,midPoint, nextMidPoint);
+  return c;
 }
 ///////////////////////////////////////////////////////////////////////////////
 // Implementation of inline functions                                        //

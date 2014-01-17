@@ -157,6 +157,13 @@ namespace DGtal
                           ConstIterator aBegin ,
                           ConstIterator aEnd ) const;
 
+    /**
+     *
+     * @param aCone the input cone
+     * @returns the normal associated with a cone (aCone, aCone+1)
+     */
+    Vector getNormalFromCone(ConstIterator aCone) const;
+    
     
     /**
      * Returns the cone associated to a direction (iterator @a it) in
@@ -309,17 +316,21 @@ namespace DGtal
     
     
     ConstIterator shrinkPSubMask(ConstIterator aBegin,
-                        ConstIterator aEnd,
-                        const Vector &aP, const Vector &aQ,
-                        const Point &Lmin, const Point &Lmax,
-                        const Dimension aDimension) const ;
+                                 ConstIterator aEnd,
+                                 const Vector &aP, const Vector &aQ,
+                                 const Point &Lmin, const Point &Lmax,
+                                 const Dimension aDimension,
+                                 Point &midPoint,
+                                 Point &nextMidPoint) const ;
     
     
     ConstIterator shrinkP(ConstIterator aBegin,
                           ConstIterator aEnd,
                           const Vector &aP, const Vector &aQ,
                           const Point &Lmin, const Point &Lmax,
-                          const Dimension aDimension) const ;
+                          const Dimension aDimension,
+                          Point &midPoint,
+                          Point &nextMidPoint) const ;
     
     
     // ------------------------- Directions iterators ------------------------------
