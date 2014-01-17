@@ -458,7 +458,6 @@ bool testDoubleShrink()
   trace.info() << "(" << nbok << "/" << nb << ") "
   << " Shrink P contains the Voronoi Edge" << std::endl;
   
-  
   double dpmidq = mask5711(P,midPointQ);
   double dqmidq = mask5711(Q,midPointQ);
   trace.info() << ((dpmidq < dqmidq) ? "MidQ closer to P" : "Mid closer to Q") << std::endl;
@@ -469,7 +468,27 @@ bool testDoubleShrink()
   nb++;
   trace.info() << "(" << nbok << "/" << nb << ") "
   << " Shrink Q contains the Voronoi Edge" << std::endl;
+
+  trace.beginBlock("Computing the lower");
+  Metric::Abscissa vorocell;
+  Metric::Vector normalP = mask5711.getNormalFromCone(cone);
+  Metric::Vector normalQ = mask5711.getNormalFromCone(cone2);
+  vorocell = static_cast<Metric::Abscissa>(floor((double) (P[1]*normalP[1] - Q[1]*normalQ[1] - (Lmin[0] - P[0])*normalP[0] + (Lmin[0] - Q[0])*normalQ[0])  /(normalP[1] - normalQ[1])  ));
+  Point voro(Lmin[0], vorocell);
+  
+  trace.emphase() << " Lower Voronoi Cell Point "<< voro << " absc = "<<vorocell<<std::endl;
+  nbok += ( (voro >= midPointP) && (voro<nextMidPointP)) ? 1 : 0;
+  nb++;
+  trace.info() << "(" << nbok << "/" << nb << ") "
+  << "  Voro cell in the cone of P" << std::endl;
+  nbok += ( (voro >= midPointQ) && (voro<nextMidPointQ)) ? 1 : 0;
+  nb++;
+  trace.info() << "(" << nbok << "/" << nb << ") "
+  << "  Voro cell in the cone of Q" << std::endl;
   trace.endBlock();
+  
+  trace.endBlock();
+  
   
   //Setting2
   trace.beginBlock("Testing double shrinking on QQ");
@@ -515,7 +534,6 @@ bool testDoubleShrink()
   << " Shrink QQ contains the Voronoi Edge" << std::endl;
   trace.info()<< "Distances : ConeQ<->P("<<dpmidq<<","<<dpnextmidq<<")   ConeQ<->QQ("<<dqmidq<<","<<dqnextmidq<<")"<<std::endl;
   trace.endBlock();
-  
   
   return nbok == nb;
 }
@@ -643,6 +661,7 @@ bool testDoubleShrinkHorizontal()
   trace.info()<< "Distances : ConeQ<->P("<<dpmidq<<","<<dpnextmidq<<")   ConeQ<->QQ("<<dqmidq<<","<<dqnextmidq<<")"<<std::endl;
   trace.endBlock();
 
+  
   
   return nbok == nb;
 }
