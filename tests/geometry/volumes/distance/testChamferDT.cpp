@@ -572,7 +572,7 @@ bool testDoubleShrinkHorizontal()
   Metric mask5711(dirs5711,normals5711);
 
   //Setting:
-  trace.beginBlock("Tessting shrinking using Q");
+  trace.beginBlock("Testing shrinking using Q");
   Point P(0,0);
   Point Q(-2,1), QQ(2,1);
   Point Lmin(-10,10);
@@ -667,6 +667,148 @@ bool testDoubleShrinkHorizontal()
 }
 
 
+bool testDoubleShrinkAligned()
+{
+  unsigned int nbok = 0;
+  unsigned int nb = 0;
+  
+  //5-7-11 metic
+  typedef ChamferNorm2D<Z2i::Space> Metric;
+  Metric::Directions dirs5711;
+  Metric::Directions normals5711;
+  //5-7-11 mask
+  dirs5711.push_back(Z2i::Vector(0,-1));
+  dirs5711.push_back(Z2i::Vector(1,-2));
+  dirs5711.push_back(Z2i::Vector(1,-1));
+  dirs5711.push_back(Z2i::Vector(2,-1));
+  dirs5711.push_back(Z2i::Vector(1,0));
+  dirs5711.push_back(Z2i::Vector(2,1));
+  dirs5711.push_back(Z2i::Vector(1,1));
+  dirs5711.push_back(Z2i::Vector(1,2));
+  dirs5711.push_back(Z2i::Vector(0,1));
+  
+  normals5711.push_back(Z2i::Vector(1,-5));
+  normals5711.push_back(Z2i::Vector(3,-4));
+  normals5711.push_back(Z2i::Vector(4,-3));
+  normals5711.push_back(Z2i::Vector(5,-1));
+  normals5711.push_back(Z2i::Vector(5,1));
+  normals5711.push_back(Z2i::Vector(4,3));
+  normals5711.push_back(Z2i::Vector(3,4));
+  normals5711.push_back(Z2i::Vector(1,5));
+  
+  Metric mask5711(dirs5711,normals5711);
+  
+  //Setting:
+  Point P(0,0);
+  Point Behind(-5,0), Ahead(5,0);
+  Point Lmin(10,-10);
+  Point Lmax(10,10);
+  Point midPointP,nextMidPointP;
+  Point midPointQ,nextMidPointQ;
+  
+  Metric::ConstIterator itBeg = mask5711.begin();
+  Metric::ConstIterator itEnd = mask5711.end();
+  
+  trace.beginBlock("Tessting shrinking using AHEAD");
+  Metric::ConstIterator cone = mask5711.shrinkP(itBeg, itEnd, P, Ahead, Lmin, Lmax, 1, midPointP, nextMidPointP);
+  trace.info() <<" P - Shrink returns the cone "<< *cone<<" " <<*(cone+1)<<std::endl;
+  trace.info() <<" P - MidPoint "<< midPointP<<" " <<nextMidPointP<<std::endl<<std::endl;
+  nbok += ( (midPointP == Ahead) && (cone == itEnd) )  ? 1 : 0;
+  nb++;
+  trace.info() << "(" << nbok << "/" << nb << ") "
+  << " Ahead is returned with cone=end()" << std::endl;
+  
+  Metric::ConstIterator cone2 = mask5711.shrinkP(itBeg, itEnd, Ahead, P, Lmin, Lmax, 1, midPointQ, nextMidPointQ);
+  trace.info() <<" Q - Shrink returns the cone "<< *cone2<<" " <<*(cone2+1)<<std::endl;
+  trace.info() <<" Q - MidPoint "<< midPointQ<<" " <<nextMidPointQ<<std::endl<<std::endl;
+  trace.info() << "Checking Voro cell" <<std::endl;
+  nbok += ( (midPointP == Ahead) && (cone2 == itEnd) )  ? 1 : 0;
+  nb++;
+  trace.info() << "(" << nbok << "/" << nb << ") "
+  << " Ahead is returned with cone2=end()" << std::endl;
+  trace.endBlock();
+ 
+  trace.beginBlock("Tessting shrinking using BEHIND");
+  Metric::ConstIterator cone3 = mask5711.shrinkP(itBeg, itEnd, P, Behind, Lmin, Lmax, 1, midPointP, nextMidPointP);
+  trace.info() <<" P - Shrink returns the cone "<< *cone3<<" " <<*(cone3+1)<<std::endl;
+  trace.info() <<" P - MidPoint "<< midPointP<<" " <<nextMidPointP<<std::endl<<std::endl;
+  nbok += ( (midPointP == P) && (cone3 == itEnd) )  ? 1 : 0;
+  nb++;
+  trace.info() << "(" << nbok << "/" << nb << ") "
+  << " P is returned with cone3=end()" << std::endl;
+  
+  Metric::ConstIterator cone4 = mask5711.shrinkP(itBeg, itEnd, Behind, P, Lmin, Lmax, 1, midPointQ, nextMidPointQ);
+  trace.info() <<" Q - Shrink returns the cone "<< *cone4<<" " <<*(cone4+1)<<std::endl;
+  trace.info() <<" Q - MidPoint "<< midPointQ<<" " <<nextMidPointQ<<std::endl<<std::endl;
+  trace.info() << "Checking Voro cell" <<std::endl;
+  nbok += ( (midPointP == P) && (cone4 == itEnd) )  ? 1 : 0;
+  nb++;
+  trace.info() << "(" << nbok << "/" << nb << ") "
+  << " P is returned with con4=end()" << std::endl;
+  trace.endBlock();
+  
+  return nbok == nb;
+}
+
+
+bool testDoubleShrinkOnSegment()
+{
+  unsigned int nbok = 0;
+  unsigned int nb = 0;
+  trace.beginBlock ( "Testing when Q belongs to the segment...");
+  
+  //5-7-11 metic
+  typedef ChamferNorm2D<Z2i::Space> Metric;
+  Metric::Directions dirs5711;
+  Metric::Directions normals5711;
+  //5-7-11 mask
+  dirs5711.push_back(Z2i::Vector(0,-1));
+  dirs5711.push_back(Z2i::Vector(1,-2));
+  dirs5711.push_back(Z2i::Vector(1,-1));
+  dirs5711.push_back(Z2i::Vector(2,-1));
+  dirs5711.push_back(Z2i::Vector(1,0));
+  dirs5711.push_back(Z2i::Vector(2,1));
+  dirs5711.push_back(Z2i::Vector(1,1));
+  dirs5711.push_back(Z2i::Vector(1,2));
+  dirs5711.push_back(Z2i::Vector(0,1));
+  
+  normals5711.push_back(Z2i::Vector(1,-5));
+  normals5711.push_back(Z2i::Vector(3,-4));
+  normals5711.push_back(Z2i::Vector(4,-3));
+  normals5711.push_back(Z2i::Vector(5,-1));
+  normals5711.push_back(Z2i::Vector(5,1));
+  normals5711.push_back(Z2i::Vector(4,3));
+  normals5711.push_back(Z2i::Vector(3,4));
+  normals5711.push_back(Z2i::Vector(1,5));
+  
+  Metric mask5711(dirs5711,normals5711);
+  
+  //Setting:
+  Point P(0,0);
+  Point Q(10,5);
+  Point Lmin(10,-10);
+  Point Lmax(10,10);
+  Point midPointP,nextMidPointP;
+  Point midPointQ,nextMidPointQ;
+  
+  Metric::ConstIterator itBeg = mask5711.begin();
+  Metric::ConstIterator itEnd = mask5711.end();
+  
+  Metric::ConstIterator cone = mask5711.shrinkP(itBeg, itEnd, P, Q, Lmin, Lmax, 1, midPointP, nextMidPointP);
+  trace.info() <<" P - Shrink returns the cone "<< *cone<<" " <<*(cone+1)<<std::endl;
+  trace.info() <<" P - MidPoint "<< midPointP<<" " <<nextMidPointP<<std::endl<<std::endl;
+  
+  Metric::ConstIterator cone2 = mask5711.shrinkP(itBeg, itEnd, Q, P, Lmin, Lmax, 1, midPointQ, nextMidPointQ);
+  trace.info() <<" Q - Shrink returns the cone "<< *cone2<<" " <<*(cone2+1)<<std::endl;
+  trace.info() <<" Q - MidPoint "<< midPointQ<<" " <<nextMidPointQ<<std::endl<<std::endl;
+  trace.info() << "Checking Voro cell" <<std::endl;
+  trace.endBlock();
+  trace.endBlock();
+  
+  return nbok == nb;
+}
+
+
 
 ///////////////////////////////////////////////////////////////////////////////
 // Standard services - public :
@@ -682,7 +824,9 @@ int main( int argc, char** argv )
   bool res = testChamferSimple()  && checkCMetricConcept() && testBasicMasks() && testIntersection()
       && testShrink()
       && testDoubleShrink()
-      && testDoubleShrinkHorizontal(); // && ... other tests
+      && testDoubleShrinkHorizontal()
+      && testDoubleShrinkAligned()
+      && testDoubleShrinkOnSegment(); // && ... other tests
   trace.emphase() << ( res ? "Passed." : "Error." ) << endl;
   trace.endBlock();
   return res ? 0 : 1;

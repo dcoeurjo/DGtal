@@ -81,7 +81,6 @@ namespace DGtal
     
     //Vector components type
     typedef typename Vector::Component Abscissa;
-
     
     
     /**
@@ -113,7 +112,6 @@ namespace DGtal
     {
       bool operator() (const Vector& a, const Vector& b) const
       {
-        //   std::cout<<"comparing "<<a<<"    "<<b<<" get = " << (int)(( a[0]*b[1] - a[1]*b[0] ) > 0)<<std::endl;
         return  (( a[0]*b[1] - a[1]*b[0] ) > 0);
       }
     };
@@ -145,26 +143,19 @@ namespace DGtal
      *
      * @pre We have *aBegin <= aDirection < *aEnd
      *
-     * @param aDirection the direction to probe
-     * @param aBegin the begin of the range in which the search is
+     * @param [in] aDirection the direction to probe
+     * @param [in] aBegin the begin of the range in which the search is
      * performed.
-     * @param aend the end of the range in which the search is
+     * @param [in] aEnd the end of the range in which the search is
      * performed.
      *
-     * @return a const iterator to the cone the direction belongs to.
+     * @return a ConstIterator to the cone the direction belongs to.
      */
     ConstIterator getCone(const Vector &aDirection,
                           ConstIterator aBegin ,
                           ConstIterator aEnd ) const;
 
-    /**
-     *
-     * @param aCone the input cone
-     * @returns the normal associated with a cone (aCone, aCone+1)
-     */
-    Vector getNormalFromCone(ConstIterator aCone) const;
-    
-    
+  
     /**
      * Returns the cone associated to a direction (iterator @a it) in
      * the whole mask.
@@ -185,6 +176,14 @@ namespace DGtal
       return getCone(aDirection, myDirections.begin(), myDirections.end());
     }
 
+    /**
+     *
+     * @param aCone the input cone
+     * @returns the normal associated with a cone (aCone, aCone+1)
+     */
+    Vector getNormalFromCone(ConstIterator aCone) const;
+    
+  
     /**
      * Return the canonical ray for a given ray.
      *
@@ -275,9 +274,9 @@ namespace DGtal
      * Compute the intersection between (@a aP,@a aQ) and 
      * (@a Lmin, @a Lmax). More precisely, if we suppose that
      *
-     * @pre  @f$ Lmin[aDimension] < Lmax[aDimension]@f$
-     * @pre  @f$ Lmin[(aDimension+1)%2] == Lmax[(aDimension+1)%2]@f$
-     * @pre  @f$ (aP,aQ) \cap (Lmin,Lmax) @f$
+     * @pre  We have @f$ Lmin[aDimension] < Lmax[aDimension]@f$
+     * @pre We have  @f$ Lmin[(aDimension+1)%2] == Lmax[(aDimension+1)%2]@f$
+     * @pre We have  @f$ (aP,aQ) \cap (Lmin,Lmax) @f$
      *
      * this method returns the lower rounding abscissa of the rational
      * intersection point.
@@ -296,9 +295,9 @@ namespace DGtal
      * Compute the intersection between (@a aP,@a aQ) and
      * (@a Lmin, @a Lmax). More precisely, if we suppose that
      *
-     * @pre  @f$ Lmin[aDimension] < Lmax[aDimension]@f$
-     * @pre  @f$ Lmin[(aDimension+1)%2] == Lmax[(aDimension+1)%2]@f$
-     * @pre  @f$ (aP,aQ) \cap (Lmin,Lmax) @f$
+     * @pre  We have @f$ Lmin[aDimension] < Lmax[aDimension]@f$
+     * @pre  We have @f$ Lmin[(aDimension+1)%2] == Lmax[(aDimension+1)%2]@f$
+     * @pre  We have @f$ (aP,aQ) \cap (Lmin,Lmax) @f$
      *
      * this method returns the upper rounding abscissa of the rational
      * intersection point.
@@ -315,6 +314,30 @@ namespace DGtal
     
     
     
+    /**
+     * Considering a vertical configuration (aDimension == 1, P[!dimension]<= Lmin[!dimension]),
+     * This method returns the cone (ConstIterator, ConstIterator+1) at @a P which contains
+     * the Voronoi Edge of P and Q. 
+     *
+    * @pre  We have aP[aDimension] != aQ[aDimension  (no alignement)
+     *
+     * This method runs in O(log^2(n)), n being the number of directions in the mask.
+     *
+     * @param [in] aBegin begin iterator on the current set of directions at P
+     * @param [in] aEnd end iterator on the current set of directions at P
+     *
+     * @param [in] aP center of the ball we are shrinking
+     * @param [in] aQ center of the second ball
+     * @apram [in]  Lmin first extremity point of the L segment
+     * @apram [in] Lmax first extremity point of the L segment
+     * @param [in] aDimension direction of the (Lmin,LMax segment)
+     * @param [out] midPoint the point, on the segment, corresponding to the intersection
+     * of the the first cone direction and the segment
+     * @param [out] nextMidPoint the point, on the segment, corresponding to the intersection
+     * of the second cone direction and the segment
+     * @return the ConstIterator to the cone direction the Voronoi Edge belongs to
+     *
+     */
     ConstIterator shrinkPSubMask(ConstIterator aBegin,
                                  ConstIterator aEnd,
                                  const Vector &aP, const Vector &aQ,
@@ -324,7 +347,26 @@ namespace DGtal
                                  Point &nextMidPoint) const ;
     
     
-    ConstIterator shrinkP(ConstIterator aBegin,
+    /**
+     *
+     *
+     *
+     * @param [in] aBegin begin iterator on the current set of directions at P
+     * @param [in] aEnd end iterator on the current set of directions at P
+     *
+     * @param [in] aP center of the ball we are shrinking
+     * @param [in] aQ center of the second ball
+     * @apram [in]  Lmin first extremity point of the L segment
+     * @apram [in] Lmax first extremity point of the L segment
+     * @param [in] aDimension direction of the (Lmin,LMax segment)
+     * @param [out] midPoint the point, on the segment, corresponding to the intersection
+     * of the the first cone direction and the segment
+     * @param [out] nextMidPoint the point, on the segment, corresponding to the intersection
+     * of the second cone direction and the segment
+     * @return the ConstIterator to the cone direction the Voronoi Edge belongs to
+     *
+     */
+     ConstIterator shrinkP(ConstIterator aBegin,
                           ConstIterator aEnd,
                           const Vector &aP, const Vector &aQ,
                           const Point &Lmin, const Point &Lmax,

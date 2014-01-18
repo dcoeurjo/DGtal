@@ -237,6 +237,7 @@ DGtal::ChamferNorm2D<TSpace>::shrinkPSubMask(ConstIterator aBegin,
   ASSERT(Lmin[(aDimension+1) %2] == Lmax[(aDimension+1)%2]);
   ASSERT(aP[(aDimension+1) %2] <=Lmin[(aDimension+1) %2]);
   ASSERT(aDimension == 1);
+  ASSERT(aP[aDimension] != aQ[aDimension]);
   
   trace.beginBlock();
   trace.info()<<"Checking "<<*aBegin<<" -- "<< *aEnd << "  adimension="<<aDimension << " P="<<aP<<" Q="<<aQ<<std::endl;
@@ -346,6 +347,15 @@ DGtal::ChamferNorm2D<TSpace>::shrinkP(ConstIterator aBegin,
   
   Point P,Q, Lm, LM;
   ConstIterator c;
+  
+  //Checking alignement : (PQ) orth. (LminLMax)
+  if (aP[aDimension] == aQ[aDimension])
+  {
+    Dimension ortho = (aDimension +1)%2;
+    bool Pcloser = std::abs(Lmin[ortho] - aP[ortho]) <= std::abs(Lmin[ortho] - aQ[ortho]);
+    nextMidPoint = midPoint = (Pcloser)?  aP : aQ;
+    return aEnd;
+  }
   
   P = aP;
   Q = aQ;
