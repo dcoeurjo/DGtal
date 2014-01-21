@@ -227,7 +227,7 @@ inline
 typename DGtal::ChamferNorm2D<TSpace>::ConstIterator
 DGtal::ChamferNorm2D<TSpace>::shrinkPSubMask(ConstIterator aBegin,
                                              ConstIterator aEnd,
-                                             const Vector &aP, const Vector &aQ,
+                                             const Point &aP, const Point &aQ,
                                              const Point &Lmin, const Point &Lmax,
                                              const Dimension aDimension,
                                              Point &midPoint,
@@ -336,7 +336,7 @@ inline
 typename DGtal::ChamferNorm2D<TSpace>::ConstIterator
 DGtal::ChamferNorm2D<TSpace>::shrinkP(ConstIterator aBegin,
                                       ConstIterator aEnd,
-                                      const Vector &aP, const Vector &aQ,
+                                      const Point &aP, const Point &aQ,
                                       const Point &Lmin, const Point &Lmax,
                                       const Dimension aDimension,
                                       Point &midPoint,
@@ -347,15 +347,6 @@ DGtal::ChamferNorm2D<TSpace>::shrinkP(ConstIterator aBegin,
   
   Point P,Q, Lm, LM;
   ConstIterator c;
-  
-  //Checking alignement : (PQ) orth. (LminLMax)
-  if (aP[aDimension] == aQ[aDimension])
-  {
-    Dimension ortho = (aDimension +1)%2;
-    bool Pcloser = std::abs(Lmin[ortho] - aP[ortho]) <= std::abs(Lmin[ortho] - aQ[ortho]);
-    nextMidPoint = midPoint = (Pcloser)?  aP : aQ;
-    return aEnd;
-  }
   
   P = aP;
   Q = aQ;
@@ -399,6 +390,60 @@ DGtal::ChamferNorm2D<TSpace>::shrinkP(ConstIterator aBegin,
   // 1str half space (x>0, verticaL)
   c = shrinkPSubMask(aBegin, aEnd, P, Q, Lm, LM, 1,midPoint, nextMidPoint);
   return c;
+}
+///////////////////////////////////////////////////////////////////////////////
+template <typename TSpace>
+inline
+typename DGtal::ChamferNorm2D<TSpace>::Abscissa
+DGtal::ChamferNorm2D<TSpace>::getLowerVoronoiEdgeAbscissa(const Point &P, const Point &Q,
+                                                          const Point &startingPoint, const Point &endPoint,
+                                                          const Dimension aDimension) const
+{
+  Point midPointP,nextMidPointP;
+  Point midPointQ,nextMidPointQ;
+  
+  ConstIterator itBeg = myDirections.begin();
+  ConstIterator itEnd = myDirections.end();
+  ConstIterator coneP = shrinkP(itBeg, itEnd, P, Q, startingPoint, endPoint, aDimension, midPointP, nextMidPointP);
+  ConstIterator coneQ = shrinkP(itBeg, itEnd, Q, P, startingPoint,endPoint,aDimension, midPointQ, nextMidPointQ);
+
+  Abscissa voroAbscissa;
+  Vector normalP = getNormalFromCone(coneP);
+  Vector normalQ = getNormalFromCone(coneQ);
+  if (aDimension == 1)
+    voroAbscissa = static_cast<Abscissa>(floor((double) (P[1]*normalP[1] - Q[1]*normalQ[1] - (startingPoint[0] - P[0])*normalP[0] + (startingPoint[0] - Q[0])*normalQ[0])  /(normalP[1] - normalQ[1])  ));
+  else
+    voroAbscissa = static_cast<Abscissa>(floor((double) (P[0]*normalP[0] - Q[0]*normalQ[0] - (startingPoint[1] - P[1])*normalP[1] + (startingPoint[1] - Q[1])*normalQ[1])  /(normalP[0] - normalQ[0])  ));
+  
+  return voroAbscissa;
+}
+///////////////////////////////////////////////////////////////////////////////
+template <typename TSpace>
+inline
+bool
+DGtal::ChamferNorm2D<TSpace>::hiddenBy(const Point &u, const Point &v, const Point &w,
+                                       const Point &startingPoint, const Point &endPoint,
+                                       const Dimension aDimension) const
+{
+  ASSERT( u[aDimension] < v[aDimension]);
+  ASSERT( u[aDimension] < w[aDimension]);
+  ASSERT( v[aDimension] < w[aDimension]);
+  
+  
+  Abscissa x_uv = getLowerVoronoiEdgeAbscissa(u, v, startingPoint, endPoint, aDimension);
+  trace.warning() << "x_uv=="<<x_uv<<std::endl;
+  
+  if ((x_uv < startingPoint[aDimension]) || (x_uv > endPoint[aDimension]))
+    return true;
+    
+  Abscissa x_vw = getLowerVoronoiEdgeAbscissa(v, w, startingPoint, endPoint, aDimension);
+  trace.warning() << "x_vw=="<<x_vw<<std::endl;
+  if ((x_vw > endPoint[aDimension]))
+    return true;
+  
+  
+  return (x_uv > x_vw);
+
 }
 ///////////////////////////////////////////////////////////////////////////////
 // Implementation of inline functions                                        //

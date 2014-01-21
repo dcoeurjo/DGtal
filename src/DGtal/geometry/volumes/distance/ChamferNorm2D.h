@@ -340,7 +340,7 @@ namespace DGtal
      */
     ConstIterator shrinkPSubMask(ConstIterator aBegin,
                                  ConstIterator aEnd,
-                                 const Vector &aP, const Vector &aQ,
+                                 const Point &aP, const Point &aQ,
                                  const Point &Lmin, const Point &Lmax,
                                  const Dimension aDimension,
                                  Point &midPoint,
@@ -368,15 +368,51 @@ namespace DGtal
      */
      ConstIterator shrinkP(ConstIterator aBegin,
                           ConstIterator aEnd,
-                          const Vector &aP, const Vector &aQ,
+                          const Point &aP, const Point &aQ,
                           const Point &Lmin, const Point &Lmax,
                           const Dimension aDimension,
                           Point &midPoint,
                           Point &nextMidPoint) const ;
     
     
-    // ------------------------- Directions iterators ------------------------------
     
+    /**
+     * @param u a site
+     * @param v a site
+     * @param startingPoint starting point of the segment
+     * @param endPoint end point of the segment
+     * @param dim direction of the straight line
+     *
+     * @return the abscissa on (startingPoint,endPoint) of the Voronoi cell.
+     */
+    Abscissa getLowerVoronoiEdgeAbscissa(const Point &u,
+                                         const Point &v,
+                                         const Point &startingPoint,
+                                         const Point &endPoint,
+                                         const Dimension dim) const;
+    
+    
+    
+    /**
+    * @param u a site
+    * @param v a site
+    * @param w a site
+    * @param startingPoint starting point of the segment
+    * @param endPoint end point of the segment
+    * @param dim direction of the straight line
+    *
+    * @return true if (u,w) hides v (strictly).
+    */
+    bool hiddenBy(const Point &u,
+                  const Point &v,
+                  const Point &w,
+                  const Point &startingPoint,
+                  const Point &endPoint,
+                  const Dimension dim) const;
+
+                                         
+                                         
+    // ------------------------- Directions iterators ------------------------------
     /**
      * @return the begin iterator to the mask direction set
      */
