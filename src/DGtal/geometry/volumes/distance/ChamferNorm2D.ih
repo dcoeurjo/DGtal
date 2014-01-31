@@ -29,6 +29,7 @@
 
 //////////////////////////////////////////////////////////////////////////////
 #include <cstdlib>
+#include "DGtal/arithmetic/IntegerComputer.h"
 //////////////////////////////////////////////////////////////////////////////
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -48,21 +49,38 @@ DGtal::ChamferNorm2D<TSpace>::ChamferNorm2D(const unsigned int N)
 {
   myDirections.reserve(N);
   myNormals.reserve(N);
+  int NN = N;
 
-  for(int i = 1; i < N; i++)
-  {
-    myDirections.push_back( Vector( i, N - i));
-    myDirections.push_back( Vector( i, -(N - i)));
-    
-    myNormals.push_back( Vector(1,1) );
-    myNormals.push_back( Vector(1,1) );
-  }
+  IntegerComputer<typename Vector::Component> IC;
+  
+  myDirections.push_back( Vector(0,-1));
 
+  for(int i = 1; i <= NN; i++)
+    for(int j = -NN; j <= NN; j++)
+    {
+      typename Vector::Component gc = IC.gcd( i,j );
+      if (gc == 1)
+      myDirections.push_back( Vector( i,j) ) ;
+    }
+  
+  //3-4 mask embedding
+  int nbperSlots  = myDirections.size() / 4;
+  for(unsigned int k=0; k < nbperSlots; k++)
+    myNormals.push_back( Vector(1,-3));
+  for(unsigned int k=0; k < nbperSlots; k++)
+    myNormals.push_back( Vector(3,-1));
+  for(unsigned int k=0; k < nbperSlots; k++)
+    myNormals.push_back( Vector(3,1));
+  for(unsigned int k=0; k < nbperSlots; k++)
+    myNormals.push_back( Vector(1,3));
+  
   //Sorting
   std::sort(myDirections.begin(), myDirections.end(), myLessThanAngular);
 
   //Display
-  std::copy( myDirections.begin(), myDirections.end(), std::ostream_iterator<Vector>(std::cout, "\n"));
+  // std::copy( myDirections.begin(), myDirections.end(), std::ostream_iterator<Vector>(std::cout, "\n"));
+  //trace.info()<<std::endl;
+  //std::copy( myNormals.begin(), myNormals.end(), std::ostream_iterator<Vector>(std::cout, "\n"));
 }
 ///////////////////////////////////////////////////////////////////////////////
 template <typename TSpace>
@@ -103,7 +121,13 @@ DGtal::ChamferNorm2D<TSpace>::getLowerRayIntersection(const Vector &aP, const Ve
   double slope, y;
   if (aDimension == 1)
   {
-    ASSERT( (aQ[0] - aP[0]) != NumberTraits<Abscissa>::ZERO);
+    if ((aQ[0] - aP[0]) == NumberTraits<Abscissa>::ZERO)
+    {
+      if (aQ[1] > aP[1])
+        return myInfinity;
+      else
+        return -myInfinity;
+    }
     slope = (aQ[1]-aP[1])/static_cast<double>((aQ[0] - aP[0]));
     y=0.0;
     
@@ -122,6 +146,15 @@ DGtal::ChamferNorm2D<TSpace>::getLowerRayIntersection(const Vector &aP, const Ve
     ASSERT( (aQ[0] - aP[0]) != NumberTraits<Abscissa>::ZERO);
     slope = (aQ[1]-aP[1])/static_cast<double>((aQ[0] - aP[0]));
     double x = (Lmin[1] - aP[1] + slope*aP[0]) / slope;
+ 
+    if ((aQ[1] - aP[1]) == NumberTraits<Abscissa>::ZERO)
+    {
+      if (aQ[0] > aP[0])
+        return myInfinity;
+      else
+        return -myInfinity;
+    }
+    
     //trace.info()<<"y="<<y<<" ";
     /*  if ( x < NumberTraits<Abscissa>::castToDouble(Lmin[0]))
      return Lmin[0];
@@ -155,18 +188,17 @@ DGtal::ChamferNorm2D<TSpace>::getUpperRayIntersection(const Vector &aP, const Ve
   double slope, y;
   if (aDimension == 1)
   {
-    ASSERT( (aQ[0] - aP[0]) != NumberTraits<Abscissa>::ZERO);
+    if ((aQ[0] - aP[0]) == NumberTraits<Abscissa>::ZERO)
+    {
+      if (aQ[1] > aP[1])
+        return myInfinity;
+      else
+        return -myInfinity;
+    }
     slope = (aQ[1]-aP[1])/static_cast<double>((aQ[0] - aP[0]));
     y=0.0;
  
     y = slope * Lmin[0] + aP[1] - slope*aP[0];
-    //trace.info()<<"y="<<y<<" ";
-    /*if ( y < NumberTraits<Abscissa>::castToDouble(Lmin[1]))
-      return Lmin[1];
-    if ( y > NumberTraits<Abscissa>::castToDouble(Lmax[1]))
-      return Lmax[1];
-     */
-    
     return static_cast<Abscissa>( ceil(y));
   }
   else
@@ -174,12 +206,16 @@ DGtal::ChamferNorm2D<TSpace>::getUpperRayIntersection(const Vector &aP, const Ve
     ASSERT( (aQ[0] - aP[0]) != NumberTraits<Abscissa>::ZERO);
     slope = (aQ[1]-aP[1])/static_cast<double>((aQ[0] - aP[0]));
     double x = (Lmin[1] - aP[1] + slope*aP[0]) / slope;
-   //trace.info()<<"y="<<y<<" ";
-  /*  if ( x < NumberTraits<Abscissa>::castToDouble(Lmin[0]))
-      return Lmin[0];
-    if ( x > NumberTraits<Abscissa>::castToDouble(Lmax[0]))
-      return Lmax[0];
-    */
+ 
+    if ((aQ[1] - aP[1]) == NumberTraits<Abscissa>::ZERO)
+    {
+      if (aQ[0] > aP[0])
+        return myInfinity;
+      else
+        return -myInfinity;
+    }
+
+    
     return static_cast<Abscissa>( ceil(x));
   }
 }
@@ -191,7 +227,7 @@ DGtal::ChamferNorm2D<TSpace>::getCone(const Vector &aDirection,
                                       ConstIterator aBegin,
                                       ConstIterator aEnd) const
 {
-  return std::upper_bound(aBegin, aEnd , canonicalRay(aDirection), myLessThanAngular) - 1;
+  return std::upper_bound(aBegin, aEnd , canonicalRay(aDirection), myLessThanAngular) -1;
 }
 ///////////////////////////////////////////////////////////////////////////////
 template <typename TSpace>
@@ -212,9 +248,6 @@ DGtal::ChamferNorm2D<TSpace>::operator()(const Point &P,
   
   //The cone
   ConstIterator it = getCone(ray, myDirections.begin(), myDirections.end());
-  
-  if ((it+1) == myDirections.end()) //aligned with Y axis
-    --it;
   
   // v = dir_i/w_i
   Vector normalDir = getNormalFromCone(it);
@@ -239,28 +272,28 @@ DGtal::ChamferNorm2D<TSpace>::shrinkPSubMask(ConstIterator aBegin,
   ASSERT(aDimension == 1);
   ASSERT(aP[aDimension] != aQ[aDimension]);
   
-  trace.beginBlock();
-  trace.info()<<"Checking "<<*aBegin<<" -- "<< *aEnd << "  adimension="<<aDimension << " P="<<aP<<" Q="<<aQ<<std::endl;
+  //trace.beginBlock();
+  //trace.info()<<"Checking "<<*aBegin<<" -- "<< *aEnd << "  adimension="<<aDimension << " P="<<aP<<" Q="<<aQ<<std::endl;
   
-  if ((aEnd- aBegin) > 1)
+  if ((aEnd - aBegin) > 1)
   {
     //Mid
     ConstIterator mid = aBegin + (aEnd - aBegin) / 2;
     
-    trace.info() << "Mid direction= "<<*mid<<std::endl;
-    trace.info() << "Mid+1 direction= "<<*(mid+1)<<std::endl;
+    // trace.info() << "Mid direction= "<<*mid<<std::endl;
+    // trace.info() << "Mid+1 direction= "<<*(mid+1)<<std::endl;
     
     //beginPoint, endPoint
-    Abscissa upperBegin,lowerEnd;
+    Abscissa upperMid,lowerNext;
     midPoint = aP + (*mid);
     nextMidPoint = aP + *(mid+1);
-    upperBegin = getUpperRayIntersection(aP, midPoint, Lmin, Lmax, aDimension);
-    lowerEnd = getLowerRayIntersection(aP, nextMidPoint, Lmin, Lmax, aDimension);
+    upperMid = getUpperRayIntersection(aP, midPoint, Lmin, Lmax, aDimension);
+    lowerNext = getLowerRayIntersection(aP, nextMidPoint, Lmin, Lmax, aDimension);
     
     midPoint = Lmin;
-    midPoint[aDimension] = upperBegin;
+    midPoint[aDimension] = upperMid;
     nextMidPoint = Lmin;
-    nextMidPoint[aDimension] = lowerEnd;
+    nextMidPoint[aDimension] = lowerNext;
     
     //Distances w.r.t. Q, O(log(n)) per distance
     double dmidQ = this->operator()(aQ, midPoint);
@@ -274,61 +307,72 @@ DGtal::ChamferNorm2D<TSpace>::shrinkPSubMask(ConstIterator aBegin,
     normalDir = getNormalFromCone(mid);
     double dnextmidP = (nextMidPoint[0]-aP[0])*normalDir[0] + (nextMidPoint[1]-aP[1])*normalDir[1];
     
-    trace.info() << "Instersections  mid="<<midPoint<<"  and mid+1="<< nextMidPoint << std::endl;
-    trace.info() << "Distances : P->("<<dmidP<<","<<dnextmidP<<")   Q->("<<dmidQ<<","<<dnextmidQ<<")" << std::endl;
+    //  trace.info() << "Instersections  mid="<<midPoint<<"  and mid+1="<< nextMidPoint << std::endl;
     bool PcloserMid = (dmidP < dmidQ);
     bool PcloserNextMid = (dnextmidP < dnextmidQ);
     
-    trace.info() << " mid in "<< (PcloserMid ? "P":"Q") <<"  and mid+1 in "<< (PcloserNextMid ? "P":"Q")<<std::endl;
+    // trace.info() << "Distances : P->("<<dmidP<<","<<dnextmidP<<")   Q->("<<dmidQ<<","<<dnextmidQ<<")" << std::endl;
+    //trace.info() << " mid in "<< (PcloserMid ? "P":"Q") <<"  and mid+1 in "<< (PcloserNextMid ? "P":"Q")<<std::endl;
     
     //We have localized the cone
     if (PcloserMid != PcloserNextMid)
     {
-      trace.endBlock();
+      //     trace.endBlock();
       return mid;
     }
     
     //We decide to which direction we need to recurse
     if (PcloserMid && PcloserNextMid)
     {
-      if (dmidQ < dnextmidQ)
+      if (aP[aDimension] < aQ[aDimension])
       {
-        trace.info()<<"Recurse down"<<std::endl;
-        ConstIterator c = shrinkPSubMask(aBegin, mid, aP, aQ, Lmin, Lmax, aDimension, midPoint, nextMidPoint);
-        trace.endBlock();
+        //trace.info()<<"Recurse up"<<std::endl;
+        ConstIterator c = shrinkPSubMask(mid,aEnd,aP, aQ, Lmin, Lmax, aDimension, midPoint, nextMidPoint);
+        //   trace.endBlock();
         return c;
       }
       else
       {
-        trace.info()<<"Recurse up"<<std::endl;
-        ConstIterator c = shrinkPSubMask(mid,aEnd,aP, aQ, Lmin, Lmax, aDimension, midPoint, nextMidPoint);
-        trace.endBlock();
+        // trace.info()<<"Recurse down"<<std::endl;
+        ConstIterator c = shrinkPSubMask(aBegin, mid, aP, aQ, Lmin, Lmax, aDimension, midPoint, nextMidPoint);
+        //    trace.endBlock();
         return c;
       }
     }
     else
     {
       // mid and next in Q
-      if (dmidP < dnextmidP)
+      if (aP[aDimension] < aQ[aDimension])
       {
-        trace.info()<<"Recurse down"<<std::endl;
+        //trace.info()<<"Recurse down"<<std::endl;
         ConstIterator c = shrinkPSubMask(aBegin, mid, aP, aQ, Lmin, Lmax, aDimension, midPoint, nextMidPoint);
-        trace.endBlock();
+        //     trace.endBlock();
         return c;
       }
       else
       {
-        trace.info()<<"Recurse up"<<std::endl;
+        //trace.info()<<"Recurse up"<<std::endl;
         ConstIterator c = shrinkPSubMask(mid,aEnd,aP, aQ, Lmin, Lmax, aDimension, midPoint, nextMidPoint);
-        trace.endBlock();
+        //   trace.endBlock();
         return c;
       }
     }
   }
+  //Distance w.r.t. P, O(1) per distance
   
+ /* double dmidP = this->operator()(aP, midPoint);
+  double dnextmidP =  this->operator()(aP,nextMidPoint);
+  double dmidQ = this->operator()(aQ, midPoint);
+  double dnextmidQ =  this->operator()(aQ,nextMidPoint);
+  */
+  //  trace.info() << "Instersections  mid="<<midPoint<<"  and mid+1="<< nextMidPoint << std::endl;
+  // bool PcloserMid = (dmidP < dmidQ);
+  //bool PcloserNextMid = (dnextmidP < dnextmidQ);
+  //trace.info() << "Distances : P->("<<dmidP<<","<<dnextmidP<<")   Q->("<<dmidQ<<","<<dnextmidQ<<")" << std::endl;
+  //trace.info() << " mid in "<< (PcloserMid ? "P":"Q") <<"  and mid+1 in "<< (PcloserNextMid ? "P":"Q")<<std::endl;
+  
+  //trace.endBlock();
   return aBegin;
-  trace.endBlock();
-  
 }
   ///////////////////////////////////////////////////////////////////////////////
 template <typename TSpace>
@@ -344,6 +388,22 @@ DGtal::ChamferNorm2D<TSpace>::shrinkP(ConstIterator aBegin,
 {
   ASSERT(Lmin[aDimension] < Lmax[aDimension]);
   ASSERT(Lmin[(aDimension+1) %2] == Lmax[(aDimension+1)%2]);
+  
+  //Special case P in L
+  if (aP[(aDimension +1)%2] == Lmin[(aDimension+1)%2])
+  {
+    //  trace.emphase() << "Special Case P on L"<<std::endl;
+    midPoint = aP;
+    nextMidPoint = aP;
+    if (aP[aDimension] > aQ[aDimension])
+      return aBegin;
+    else
+    {
+      //We retrun the last cone (t,t+1) such that t+1 == aEnd
+      ConstIterator preEnd =  aEnd - 1;
+      return preEnd;
+    }
+  }
   
   Point P,Q, Lm, LM;
   ConstIterator c;
@@ -368,7 +428,7 @@ DGtal::ChamferNorm2D<TSpace>::shrinkP(ConstIterator aBegin,
     P[0] = aP[1] ; P[1] = aP[0];
     Lm[0] = Lmin[1] ; Lm[1] = Lmin[0];
     LM[0] = Lmax[1] ; LM[1] = Lmax[0];
-    trace.info() << "       swapping x<->y"<<std::endl;
+    // trace.info() << "       swapping x<->y"<<std::endl;
     if (P[0] > Lm[0])
     {
       P[0] = Lm[0] - (P[0] - Lm[0]);
@@ -378,7 +438,7 @@ DGtal::ChamferNorm2D<TSpace>::shrinkP(ConstIterator aBegin,
     c = shrinkPSubMask(aBegin, aEnd, P, Q, Lm, LM, 1,midPoint, nextMidPoint);
     
     //Setting back the midpoint
-    trace.warning()<<"transform back"<<std::endl;
+    // trace.warning()<<"transform back"<<std::endl;
     Point mmid = midPoint;
     midPoint[0] = mmid[1] ; midPoint[1] = mmid[0];
     Point nextmid = nextMidPoint;
@@ -405,16 +465,139 @@ DGtal::ChamferNorm2D<TSpace>::getLowerVoronoiEdgeAbscissa(const Point &P, const 
   ConstIterator itBeg = myDirections.begin();
   ConstIterator itEnd = myDirections.end();
   ConstIterator coneP = shrinkP(itBeg, itEnd, P, Q, startingPoint, endPoint, aDimension, midPointP, nextMidPointP);
+  //trace.info()<< "       CONEP DONE "<< *coneP<<std::endl;
+  
+  
   ConstIterator coneQ = shrinkP(itBeg, itEnd, Q, P, startingPoint,endPoint,aDimension, midPointQ, nextMidPointQ);
+  //trace.info()<< "       CONE -Q DONE"<<std::endl;
 
+  
   Abscissa voroAbscissa;
   Vector normalP = getNormalFromCone(coneP);
   Vector normalQ = getNormalFromCone(coneQ);
-  if (aDimension == 1)
-    voroAbscissa = static_cast<Abscissa>(floor((double) (P[1]*normalP[1] - Q[1]*normalQ[1] - (startingPoint[0] - P[0])*normalP[0] + (startingPoint[0] - Q[0])*normalQ[0])  /(normalP[1] - normalQ[1])  ));
-  else
-    voroAbscissa = static_cast<Abscissa>(floor((double) (P[0]*normalP[0] - Q[0]*normalQ[0] - (startingPoint[1] - P[1])*normalP[1] + (startingPoint[1] - Q[1])*normalQ[1])  /(normalP[0] - normalQ[0])  ));
   
+  //if ((aDimension == 1) && (startingPoint[0]==11))
+  {
+ /* trace.warning() << "midPoint P"<< midPointP<<" next = "<<nextMidPointP<<" coneP="<<*coneP<<std::endl;
+  trace.warning() << "dist midPoint P"<< this->operator()(P,midPointP)<<" next = "<<this->operator()(P,nextMidPointP)<<std::endl;
+  
+  trace.warning() << "midPoint Q"<< midPointQ<<" next = "<<nextMidPointQ<<" coneQ="<<*coneQ<<std::endl;
+  trace.warning() << "dist midPoint Q"<< this->operator()(Q,midPointQ)<<" next = "<<this->operator()(Q,nextMidPointQ)<<std::endl;
+
+  trace.warning() << "normal P="<<normalP<<"   normal   Q="<<normalQ<<std::endl;
+ */
+  }
+  
+  if (aDimension == 1)
+  {
+    //Symmetry w.r.t. L is necessary
+    if (P[0] > startingPoint[0])
+      normalP[0] *= -1;
+    if (Q[0] > startingPoint[0])
+      normalQ[0] *= -1;
+    
+    if (normalP[1] == normalQ[1])
+    {
+      //same cone, Voro edge should be on cone extermities
+      //We first recompute the cone edges
+      Abscissa upperMid,lowerNext;
+      Point midPointPP, nextMidPointPP;
+      Point midPointQQ, nextMidPointQQ;
+     /*
+      midPointPP = P + (*coneP);
+      nextMidPointPP = P + *(coneP+1);
+      upperMid = getUpperRayIntersection(P, midPointPP, startingPoint, endPoint, aDimension);
+      lowerNext = getLowerRayIntersection(P, nextMidPointPP, startingPoint, endPoint, aDimension);
+      midPointPP = startingPoint;
+      midPointPP[aDimension] = upperMid;
+      nextMidPointPP = startingPoint;
+      nextMidPointPP[aDimension] = lowerNext;
+      
+      midPointQQ = Q + (*coneQ);
+      nextMidPointQQ = Q + *(coneQ+1);
+      upperMid = getUpperRayIntersection(Q, midPointQQ, startingPoint, endPoint, aDimension);
+      lowerNext = getLowerRayIntersection(Q, nextMidPointQQ, startingPoint, endPoint, aDimension);
+      midPointQQ = startingPoint;
+      midPointQQ[aDimension] = upperMid;
+      nextMidPointQQ = startingPoint;
+      nextMidPointQQ[aDimension] = lowerNext;
+*/
+   /*   trace.info()<< "SPECIAL NORMAL CONE CASE "<<std::endl;
+      trace.info()<< "    CONEP = "<<midPointP<<" ("<< this->operator()(P,midPointP)<<")"<<"("<< this->operator()(Q,midPointP)<<") -  "
+                  << nextMidPointP<<" ("<< this->operator()(P,nextMidPointP)<<")"<<"("<< this->operator()(Q,nextMidPointP)<<") "<<std::endl;
+   
+      trace.info()<< "    CONEQ = "<<midPointQ<<" ("<< this->operator()(P,midPointQ)<<") "<<"("<< this->operator()(Q,midPointQ)<<") - "
+                  <<nextMidPointQ<<" ("<< this->operator()(P,nextMidPointQ)<<")"<<"("<< this->operator()(Q,nextMidPointQ)<<") "<<std::endl;
+      
+     */
+      if (coneP == itBeg)  // and thus coneQ=itBeg
+      {
+        //Return lowest valid cone abscissa
+        if ((nextMidPointP != P)  && (nextMidPointQ !=Q))   //P on
+          return (nextMidPointQ[1]<nextMidPointP[1])? nextMidPointQ[1]:nextMidPointP[1];
+        
+        if (nextMidPointP == P)
+          return nextMidPointQ[1];
+        
+        return nextMidPointP[1];
+      }
+    
+      if ((coneP +1) == itEnd)  // and thus (coneQ+1)=itEnd
+      {
+        //Return highest valid cone abscissa
+        if ((midPointP != P)  && (midPointQ !=Q))   //P on
+          return (midPointQ[1]> midPointP[1])?  midPointQ[1] : midPointP[1];
+        
+        if (midPointP == P)
+        {
+          //trace.info()<< " midPointP===P trick"<<std::endl;
+        return midPointQ[1];
+        }
+        return midPointP[1];
+      }
+
+      double dpm = this->operator()(P, midPointP);//, dpn = this->operator()(P,nextMidPointP);
+      double dqm = this->operator()(Q, midPointQ);//   //same cone, Voro edge should be on cone extermities
+                                                  //  trace.info()<< "SPECIAL NORMAL CONE CASE "<< dpm<<"  " <<dqm<<std::endl;
+      if (dpm == dqm)
+        return midPointP[1];
+      else
+        return nextMidPointP[1];
+      
+    }
+    else
+       voroAbscissa = static_cast<Abscissa>(floor((double) (P[1]*normalP[1] - Q[1]*normalQ[1] - (startingPoint[0] - P[0])*normalP[0] + (startingPoint[0] - Q[0])*normalQ[0])  /(normalP[1] - normalQ[1] )  ));
+  }
+  else
+  {
+    //Symmetry w.r.t. L if necessary
+    //Symmetry x<->y
+    
+    Abscissa tmp = normalP[0];
+    normalP[0] = normalP[1];
+    normalP[1] = tmp;
+    
+    tmp = normalQ[0];
+    normalQ[0] = normalQ[1];
+    normalQ[1] = tmp;
+    
+    if (P[1] > startingPoint[1])
+      normalP[1] *= -1;
+    if (Q[1] > startingPoint[1])
+      normalQ[1] *= -1;
+    
+    if (normalP[0] == normalQ[0])
+    {
+      //same cone, Voro edge should be on cone extermities
+      double dpm = this->operator()(P, midPointP);//, dpn = this->operator()(P,nextMidPointP);
+      double dqm = this->operator()(Q, midPointQ);//, dqn = this->operator()(Q,nextMidPointQ);
+      if (dpm == dqm)
+        return midPointP[0];
+      else return nextMidPointP[0];
+      
+    }
+    else voroAbscissa = static_cast<Abscissa>(floor((double) (P[0]*normalP[0] - Q[0]*normalQ[0] - (startingPoint[1] - P[1])*normalP[1] + (startingPoint[1] - Q[1])*normalQ[1])  /(normalP[0] - normalQ[0])  ));
+  }
   return voroAbscissa;
 }
 ///////////////////////////////////////////////////////////////////////////////
@@ -430,19 +613,30 @@ DGtal::ChamferNorm2D<TSpace>::hiddenBy(const Point &u, const Point &v, const Poi
   ASSERT( v[aDimension] < w[aDimension]);
   
   
+  // trace.info()<<" HiddenBy: "<<u<< " -- "<< v<<" -- "<<w<< " ["<<startingPoint<<" - "<<endPoint<<"]"<<std::endl;
+  
   Abscissa x_uv = getLowerVoronoiEdgeAbscissa(u, v, startingPoint, endPoint, aDimension);
-  trace.warning() << "x_uv=="<<x_uv<<std::endl;
+  // trace.warning() << "x_uv=="<<x_uv<<std::endl;
   
-  if ((x_uv < startingPoint[aDimension]) || (x_uv > endPoint[aDimension]))
+  if ((x_uv > endPoint[aDimension]))
+  {
+    //    trace.info() <<" ==> outside1 ==> true"<<std::endl;
     return true;
-    
+  }
+  
   Abscissa x_vw = getLowerVoronoiEdgeAbscissa(v, w, startingPoint, endPoint, aDimension);
-  trace.warning() << "x_vw=="<<x_vw<<std::endl;
-  if ((x_vw > endPoint[aDimension]))
+  //trace.warning() << "x_vw=="<<x_vw<<std::endl;
+  if ((x_vw < startingPoint[aDimension]))
+  {
+    //   trace.info() <<" ==> outside ==> true"<<std::endl;
     return true;
+  }
   
-  
-  return (x_uv > x_vw);
+ /* if (x_uv > x_vw)
+      trace.info() <<" ==> true"<<std::endl;
+  else
+    trace.info() << " ===> false"<<std::endl;
+  */return (x_uv > x_vw);
 
 }
 ///////////////////////////////////////////////////////////////////////////////

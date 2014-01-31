@@ -11,6 +11,7 @@ SET(DGTAL_TESTS_SRC
   testReducedMedialAxis
   testSeparableMetricAdapter
   testChamferDT
+  testChamferVoro
   )
 
 

@@ -428,6 +428,16 @@ namespace DGtal
     {
       return myDirections.end();
     }
+    
+    /*
+     * @return the mask size
+     */
+    inline
+    unsigned int size() const
+    {
+      return myDirections.size();
+    }
+    
     // ------------------------- Other services ------------------------------
     /**
      * Writes/Displays the object on an output stream.
@@ -463,6 +473,9 @@ namespace DGtal
     //Instance of comparator functor
     static LessThanAngular myLessThanAngular;
 
+    BOOST_STATIC_CONSTANT(Abscissa, myInfinity = 32562);
+    
+    
   }; // end of class ChamferNorm2D
 
 

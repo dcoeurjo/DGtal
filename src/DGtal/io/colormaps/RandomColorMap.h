@@ -91,10 +91,6 @@ public:
      const Color &aFirstColor=Color::White, const Color &aLastColor=Color::Red);
 
 
-  //  RandomColorMap(const unsigned int &aFirstIndex, const unsigned int & aLastIndex);
-  
-
-  
   /** 
    * Adds a color to the list of color steps.
    * 
