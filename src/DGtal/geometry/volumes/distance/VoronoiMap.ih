@@ -162,7 +162,7 @@ DGtal::VoronoiMap<S,P,TSep, TImage>::computeOtherStep1D ( const Point &startingP
 
   ASSERT(dim < S::dimension);
 
-  
+  :
   //Reserve
   Sites.reserve( myUpperBoundCopy[dim] - myLowerBoundCopy[dim] +1);
 
@@ -211,18 +211,6 @@ DGtal::VoronoiMap<S,P,TSep, TImage>::computeOtherStep1D ( const Point &startingP
 
   int k = 0;
 
-  if((dim == 1) && (startingPoint[0 ]==-17))
-  {
-    trace.info()<<std::endl;
-    trace.error() << " Got "<<nbSites <<" sites."<<std::endl;
-    for(unsigned int i = 0 ;  i < nbSites ;  i++)
-    {
-      trace.error()<< Sites[i]<<std::endl;
-    }
-    
-    trace.info()<<std::endl;
-  }
-  
   //Rewriting
   point[dim] = myLowerBoundCopy[dim];
   for(Abscissa i = myLowerBoundCopy[dim] ;  i <= myUpperBoundCopy[dim] ;  i++)
@@ -233,8 +221,6 @@ DGtal::VoronoiMap<S,P,TSep, TImage>::computeOtherStep1D ( const Point &startingP
         k++;
 
       myImagePtr->setValue(point, Sites[k]);
-      if((dim == 1) && (startingPoint[0 ]==-17))
-        trace.warning() << " Writing "<<Sites[k]<<std::endl;
       point[dim]++;
     }
 }
