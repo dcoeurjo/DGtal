@@ -162,7 +162,7 @@ DGtal::VoronoiMap<S,P,TSep, TImage>::computeOtherStep1D ( const Point &startingP
 
   ASSERT(dim < S::dimension);
 
-  :
+
   //Reserve
   Sites.reserve( myUpperBoundCopy[dim] - myLowerBoundCopy[dim] +1);
 
