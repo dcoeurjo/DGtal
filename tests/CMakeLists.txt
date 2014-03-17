@@ -28,7 +28,7 @@ configure_file(${PROJECT_SOURCE_DIR}/tests/ConfigTest.h.in
 
 #add_subdirectory(base)
 #add_subdirectory(kernel)
-#add_subdirectory(math)
+add_subdirectory(math)
 add_subdirectory(arithmetic)
 #add_subdirectory(geometry)
 #add_subdirectory(graph)
