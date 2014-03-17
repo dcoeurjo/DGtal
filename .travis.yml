@@ -49,4 +49,4 @@ script:
 
 after_script:
   - make test
-  - coveralls --exclude lib --exclude tests -e /usr/include
+  - coveralls --exclude lib --exclude tests -e /usr/include --encoding latin-1
