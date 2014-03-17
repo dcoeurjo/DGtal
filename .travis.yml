@@ -48,5 +48,5 @@ script:
   - make
 
 after_script:
-  - "make test"
-  - coveralls --exclude lib --exclude tests
+  - make test
+  - coveralls --exclude lib --exclude tests -e /usr/include
