@@ -17,10 +17,11 @@ before_script:
 ## libcairo2-dev libgraphicsmagick++1-dev libboost-system-dev libgmp-dev libqglviewer-qt4-dev
 
 before_install:
-  - git clone https://github.com/dcoeurjo/cpp-coveralls.git
-  - cd cpp-coveralls
-  - sudo python setup.py install
-  - cd ..
+  - sudo pip install cpp-coveralls --use-mirrors
+ # - git clone https://github.com/dcoeurjo/cpp-coveralls.git
+ # - cd cpp-coveralls
+ # - sudo python setup.py install
+ # - cd ..
 
 
 matrix:
