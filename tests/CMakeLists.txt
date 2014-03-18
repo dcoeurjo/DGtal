@@ -26,12 +26,12 @@ configure_file(${PROJECT_SOURCE_DIR}/tests/ConfigTest.h.in
 
 #------TESTS subdirectories ------
 
-add_subdirectory(base)
-add_subdirectory(kernel)
-add_subdirectory(math)
-add_subdirectory(arithmetic)
-add_subdirectory(geometry)
-add_subdirectory(graph)
+#add_subdirectory(base)
+#add_subdirectory(kernel)
+#add_subdirectory(math)
+#add_subdirectory(arithmetic)
+#add_subdirectory(geometry)
+#add_subdirectory(graph)
 add_subdirectory(topology)
 add_subdirectory(io)
 add_subdirectory(images)
