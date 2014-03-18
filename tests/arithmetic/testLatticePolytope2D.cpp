@@ -48,11 +48,10 @@ using namespace DGtal;
 
 template <typename LatticePolytope2D>
 bool
-checkCut( LatticePolytope2D & cip, 
+checkCut( LatticePolytope2D & cip,
           typename LatticePolytope2D::HalfSpace hs )
 {
   trace.beginBlock ( "Check cut, see <cip.eps> and <cip2.eps>" );
-  typedef typename LatticePolytope2D::Space Space;
   typedef typename LatticePolytope2D::Domain Domain;
   typedef typename DigitalSetSelector< Domain, BIG_DS+HIGH_BEL_DS >::Type DigitalSet;
   typedef typename DigitalSet::ConstIterator ConstIterator;
@@ -86,13 +85,13 @@ checkCut( LatticePolytope2D & cip,
   board << SetMode( cip.className(), "Transparent" ) << cip;
   board.saveEPS( "cip2.eps" );
 #endif
-  
+
   unsigned int nbok = 0;
   unsigned int nb = 0;
   for ( ConstIterator it = cipSet2.begin(), it_end = cipSet2.end();
         it != it_end; ++it )
     {
-      nbok += ( cipSet.find( *it ) != cipSet.end() ) ? 1 : 0; 
+      nbok += ( cipSet.find( *it ) != cipSet.end() ) ? 1 : 0;
       ++nb;
       nbok += hs( *it );
       ++nb;
@@ -106,10 +105,10 @@ checkCut( LatticePolytope2D & cip,
         nbok += hs( *it );
       ++nb;
     }
-  trace.info() << "(" << nbok << "/" << nb << ")" 
+  trace.info() << "(" << nbok << "/" << nb << ")"
                << " cip.size()=" << cip.size()
-               << " #before=" << cipSet.size() 
-               << " #after=" << cipSet2.size() 
+               << " #before=" << cipSet.size()
+               << " #after=" << cipSet2.size()
                << std::endl;
   trace.endBlock();
   return nbok == nb;
@@ -124,7 +123,7 @@ bool testLatticePolytope2D()
 {
   unsigned int nbok = 0;
   unsigned int nb = 0;
-  
+
   trace.beginBlock ( "Testing block LatticePolytope2D area and centroid" );
   typedef typename Space::Point Point;
   typedef typename Space::Vector Vector;
@@ -143,12 +142,12 @@ bool testLatticePolytope2D()
   cip.pushBack( Point( 0, 3 ) );
   Integer area2 = cip.twiceArea();
   trace.info() << "- 2*area   = " << area2 << std::endl;
-  ++nb, nbok += ( area2 == 15 ) ? 1 : 0; 
+  ++nb, nbok += ( area2 == 15 ) ? 1 : 0;
   trace.info() << "(" << nbok << "/" << nb << ") "
 	       << "2*area == 15" << std::endl;
   Point3I c = cip.centroid( area2 );
   trace.info() << "- centroid = " << c << std::endl;
-  ++nb, nbok += ( c == Point3I( 75, 45, 45 ) ) ? 1 : 0; 
+  ++nb, nbok += ( c == Point3I( 75, 45, 45 ) ) ? 1 : 0;
   trace.info() << "(" << nbok << "/" << nb << ") "
 	       << "centroid == [75,45,45]" << std::endl;
   Domain d = cip.boundingBoxDomain();
@@ -175,7 +174,8 @@ bool testLatticePolytope2D()
         << aSet;
   board << SetMode( cip.className(), "Transparent" ) << cip;
   Iterator itA1, itB2;
-  SizeCouple nbs = cip.findCut( itA1, itB2, h );
+  //SizeCouple nbs =
+  cip.findCut( itA1, itB2, h );
   Iterator itB1 = itA1; ++itB1;
   if ( itB1 == cip.end() ) itB1 = cip.begin();
   Iterator itA2 = itB2; ++itA2;
@@ -195,6 +195,7 @@ bool testLatticePolytope2D()
   board << SetMode( d.className(), "Grid" ) << d;
   board << SetMode( cip.className(), "Transparent" ) << cip;
   bool wasCut = cip.cut( h );
+  FATAL_ERROR(wasCut);
   board << SetMode( cip.className(), "Filled" ) << cip;
   board.saveEPS( "cip2.eps" );
   board.saveSVG( "cip2.svg" );
@@ -219,7 +220,7 @@ bool exhaustiveTestLatticePolytope2D()
 {
   unsigned int nbok = 0;
   unsigned int nb = 0;
-  
+
   trace.beginBlock ( "Testing block LatticePolytope2D area and centroid" );
   typedef typename Space::Point Point;
   typedef typename Space::Vector Vector;
@@ -228,9 +229,6 @@ bool exhaustiveTestLatticePolytope2D()
   typedef typename CIP::Point3I Point3I;
   typedef typename CIP::Domain Domain;
   typedef typename CIP::HalfSpace HalfSpace;
-  typedef typename CIP::ConstIterator ConstIterator;
-  typedef typename CIP::SizeCouple SizeCouple;
-  typedef typename DigitalSetSelector< Domain, BIG_DS+HIGH_BEL_DS >::Type DigitalSet;
 
   CIP cip;
   cip.pushBack( Point( 0, 0 ) );
@@ -261,10 +259,10 @@ bool exhaustiveTestLatticePolytope2D()
         }
       int g = IntegerComputer<int>::staticGcd( x , y );
       x /= g; y /= g;
-      int c = myRandom( 4 ) *x + myRandom( 4 ) * y + myRandom( 40 ) + 40;
-      for ( unsigned int i = 0; i < 10; ++i, c -= myRandom( 40 ) )
+      int cc = myRandom( 4 ) *x + myRandom( 4 ) * y + myRandom( 40 ) + 40;
+      for ( unsigned int i = 0; i < 10; ++i, cc -= myRandom( 40 ) )
         {
-          HalfSpace h( Vector( x, y ), c );
+          HalfSpace h( Vector( x, y ), cc );
           trace.info() << "[" << j << " size=" << cip2.size() << "]"
                        << " cut by (" << x << "," << y << ")," << c << std::endl;
           ++nb, nbok += checkCut( cip2, h ) ? 1 : 0;
@@ -288,17 +286,13 @@ bool specificTestLatticePolytope2D()
 {
   unsigned int nbok = 0;
   unsigned int nb = 0;
-  
+
   typedef typename Space::Point Point;
   typedef typename Space::Vector Vector;
-  typedef typename Space::Integer Integer;
   typedef LatticePolytope2D<Space> CIP;
-  typedef typename CIP::Point3I Point3I;
   typedef typename CIP::Domain Domain;
   typedef typename CIP::HalfSpace HalfSpace;
-  typedef typename CIP::Iterator Iterator;
   typedef typename CIP::ConstIterator ConstIterator;
-  typedef typename CIP::SizeCouple SizeCouple;
   typedef typename DigitalSetSelector< Domain, BIG_DS+HIGH_BEL_DS >::Type DigitalSet;
 
   CIP cip;
@@ -344,7 +338,6 @@ checkOutputConvexHullBorder()
   typedef typename Space::Vector Vector;
   typedef typename Space::Integer Integer;
   typedef LatticePolytope2D<Space> CIP;
-  typedef typename CIP::Point3I Point3I;
   typedef typename CIP::Domain Domain;
   typedef typename CIP::HalfSpace HalfSpace;
   typedef typename DigitalSetSelector< Domain, BIG_DS+HIGH_BEL_DS >::Type DigitalSet;

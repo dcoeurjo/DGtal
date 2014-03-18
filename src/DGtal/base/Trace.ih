@@ -14,14 +14,14 @@
  *
  **/
 
-/** 
+/**
  * @file Trace.ih
  * @author David Coeurjolly (\c david.coeurjolly@liris.cnrs.fr )
  * Laboratoire d'InfoRmatique en Image et Systèmes d'information - LIRIS (CNRS, UMR 5205), CNRS, France
  *
  * @date 2009/12/19
- * 
- * Implementation of inline methods defined in Trace.h 
+ *
+ * Implementation of inline methods defined in Trace.h
  *
  * This file is part of the DGtal library.
  */
@@ -49,21 +49,22 @@
  * @param outputStream  the output stream that will receive the traces.
  */
 inline
-DGtal::Trace::Trace(DGtal::TraceWriter &writer):  
-  myCurrentLevel(0), myCurrentPrefix (""),  myWriter(writer)
+DGtal::Trace::Trace(DGtal::TraceWriter &writer):
+  myCurrentLevel(0), myCurrentPrefix (""),  myWriter(writer), myProgressBarCurrent(-1), myProgressBarRotation(0), myStyle(false)
 {
 }
 
 /**
  * Destructor.
- * 
+ *
  * We send a last postfixReset to prevent bugs in some TraceWriterTerm
  * terminals.
  */
 inline
 DGtal::Trace::~Trace()
 {
-  myWriter.outputStream() << myWriter.postfixReset();
+  if (myStyle)
+    myWriter.outputStream() << myWriter.postfixReset();
 }
 
 
@@ -98,13 +99,16 @@ inline
 void
 DGtal::Trace::reset()
 {
+  myProgressBarCurrent = -1;
+  myProgressBarRotation = 0;
   myCurrentLevel = 0;
   myCurrentPrefix = "";
+  //FIXME may leak??
   while( !myKeywordStack.empty() )
       myKeywordStack.pop();
   while( !myClockStack.empty() )
     myClockStack.pop();
-  
+
 }
 
 /**
@@ -116,7 +120,7 @@ inline
 void
 DGtal::Trace::beginBlock(const std::string &keyword)
 {
-  myWriter.outputStream()<< myCurrentPrefix 
+  myWriter.outputStream()<< myCurrentPrefix
                          << myWriter.prefixEmphase()
                          << "New Block ["<<keyword << "]"
                          << myWriter.postfixReset()
@@ -124,6 +128,8 @@ DGtal::Trace::beginBlock(const std::string &keyword)
   myCurrentLevel++;
   myCurrentPrefix += TRACE_PATTERN;
   myKeywordStack.push(keyword);
+  myProgressBarCurrent = -1;
+  myProgressBarRotation = 0;
 
   //Block timer start
   Clock *c = new(Clock);
@@ -138,24 +144,24 @@ DGtal::Trace::beginBlock(const std::string &keyword)
  * @return  the ellapsed time in the block in milliseconds (Class Clock).
  *
  */
-inline long
+inline double
 DGtal::Trace::endBlock()
 {
   double tick;
   Clock *localClock;
 
   ASSERT (myCurrentLevel >0);
-  
+
   localClock =  myClockStack.top();
   tick = localClock->stopClock();
-  
+
   myCurrentLevel--;
   myCurrentPrefix = "";
   for(unsigned int i = 0; i < myCurrentLevel; i++)
     myCurrentPrefix += TRACE_PATTERN;
- 
-  myWriter.outputStream() << myCurrentPrefix 
-                          << myWriter.prefixEmphase() 
+
+  myWriter.outputStream() << myCurrentPrefix
+                          << myWriter.prefixEmphase()
                           << "EndBlock [" << myKeywordStack.top()
                           << "] (" << tick<<" ms)"
                           << myWriter.postfixReset()<< std::endl;
@@ -171,9 +177,10 @@ DGtal::Trace::endBlock()
  * @return the output stream with the prefix
  */
 inline std::ostream &
-DGtal::Trace::warning() const
+DGtal::Trace::warning()
 {
   myWriter.outputStream() <<  myCurrentPrefix << myWriter.prefixWarning();
+  myStyle = true;
   return  myWriter.outputStream();
 }
 
@@ -184,9 +191,10 @@ DGtal::Trace::warning() const
  * @return the output stream with the prefix
  */
 inline std::ostream &
-DGtal::Trace::error() const
+DGtal::Trace::error()
 {
   myWriter.outputStream() <<  myCurrentPrefix << myWriter.prefixError();
+  myStyle = true;
   return  myWriter.outputStream();
 }
 
@@ -197,9 +205,10 @@ DGtal::Trace::error() const
  * @return the output stream with the prefix
  */
 inline std::ostream &
-DGtal::Trace::emphase() const
+DGtal::Trace::emphase()
 {
   myWriter.outputStream() <<  myCurrentPrefix << myWriter.prefixEmphase();
+  myStyle = true;
   return  myWriter.outputStream();
 }
 
@@ -208,9 +217,14 @@ DGtal::Trace::emphase() const
  * @return the cerr output stream with the prefix
  */
 inline std::ostream &
-DGtal::Trace::info() const
+DGtal::Trace::info()
 {
-  myWriter.outputStream() <<  myCurrentPrefix << myWriter.prefixInfo();
+  myWriter.outputStream() <<  myCurrentPrefix;
+
+  if (myStyle)
+    myWriter.outputStream() << myWriter.prefixInfo();
+
+  myStyle = false;
   return  myWriter.outputStream();
 }
 
@@ -221,17 +235,20 @@ DGtal::Trace::progressBar(const double currentValue, const double maximumValue)
   double fraction = currentValue /maximumValue;
 
   // part of the progressmeter that's already "full"
-  int dotz = (int)floor(fraction * PROGRESSBARWIDTH);
-  if (dotz == PROGRESSBARWIDTH)
-    return;
+  int dotz = static_cast<int>(floor(fraction * PROGRESSBARWIDTH));
+  if (dotz > PROGRESSBARWIDTH) dotz = PROGRESSBARWIDTH;
+
+  // if the fullness hasn't changed skip display
+  if (dotz == myProgressBarCurrent) return;
 
   myProgressBarCurrent = dotz;
+  myProgressBarRotation++;
 
   // create the "meter"
   int ii=0;
   myWriter.outputStream() << myCurrentPrefix<<"[";
   // part  that's full already
-  for ( ; ii < dotz;ii++) 
+  for ( ; ii < dotz;ii++)
     {
       myWriter.outputStream()<< "#";
     }
@@ -241,7 +258,11 @@ DGtal::Trace::progressBar(const double currentValue, const double maximumValue)
       myWriter.outputStream()<< " ";
     }
   // and back to line begin - do not forget the fflush to avoid output buffering problems!
-  myWriter.outputStream()<< "]  "<< (int)(fraction*100)<<"/100\r";
+
+  BOOST_STATIC_CONSTANT(std::string, rotation_string = "|\\-/");
+  myProgressBarRotation %= 4;
+
+  myWriter.outputStream()<< "] " << rotation_string[myProgressBarRotation] << " " << (int)(fraction*100)<<"/100\r";
   myWriter.outputStream().flush();
 }
 
@@ -258,7 +279,7 @@ DGtal::Trace::progressBar(const double currentValue, const double maximumValue)
  */
 inline
 std::ostream&
-DGtal::operator<<( std::ostream & out, 
+DGtal::operator<<( std::ostream & out,
                    const Trace & object )
 {
   object.selfDisplay( out );
@@ -267,5 +288,3 @@ DGtal::operator<<( std::ostream & out,
 
 //                                                                           //
 ///////////////////////////////////////////////////////////////////////////////
-
-

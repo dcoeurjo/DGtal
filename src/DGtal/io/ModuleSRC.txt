@@ -6,18 +6,19 @@
 #### boards
 ##########################################
 
-SET(DGTAL_SRC ${DGTAL_SRC} 
+SET(DGTAL_SRC ${DGTAL_SRC}
   DGtal/io/Color)
 
 
-SET(DGTALIO_SRC ${DGTALIO_SRC} 
+SET(DGTALIO_SRC ${DGTALIO_SRC}
   DGtal/io/boards/Board2D
+  DGtal/io/boards/Board3D
   DGtal/io/Display2DFactory
   DGtal/io/Display3DFactory)
 
 
 if( WITH_CAIRO )
-SET(DGTALIO_SRC ${DGTALIO_SRC} 
+SET(DGTALIO_SRC ${DGTALIO_SRC}
     DGtal/io/boards/Board3DTo2D)
 endif( WITH_CAIRO )
 
@@ -26,13 +27,8 @@ endif( WITH_CAIRO )
 #### viewers
 ##########################################
 
-if( WITH_VISU3D_IV )
-  SET(DGTALIO_SRC ${DGTALIO_SRC} 
-    DGtal/io/viewers/IVViewer  )
-endif( WITH_VISU3D_IV )
-
 if( WITH_VISU3D_QGLVIEWER )
-SET(DGTALIO_SRC ${DGTALIO_SRC} 
+SET(DGTALIO_SRC ${DGTALIO_SRC}
     DGtal/io/viewers/Viewer3D )
 endif( WITH_VISU3D_QGLVIEWER )
 
@@ -46,3 +42,12 @@ SET(DGTALIO_SRC ${DGTALIO_SRC}
     DGtal/io/readers/HDF5Reader)
 endif( WITH_HDF5 )
 
+
+##########################################
+#### writers
+##########################################
+
+if( WITH_HDF5 )
+SET(DGTALIO_SRC ${DGTALIO_SRC} 
+    DGtal/io/writers/HDF5Writer)
+endif( WITH_HDF5 )

@@ -16,7 +16,7 @@
 
 /**
  * @file testCombinDSS.cpp
- * @brief Tests for the class CombinatorialDSS
+ * @brief Tests for the class OneBalancedWordComputer
  * @ingroup Tests
  * @author Xavier Provençal (\c xavier.provencal@univ-savoie.fr )
  * Laboratory of Mathematics (CNRS, UMR 5807), University of Savoie, France
@@ -39,8 +39,8 @@
 #include "DGtal/base/Common.h"
 #include "DGtal/helpers/StdDefs.h"
 #include "DGtal/io/boards/Board2D.h"
-#include "DGtal/geometry/curves/CombinatorialDSS.h"
-#include "DGtal/geometry/curves/ArithmeticalDSS.h"
+#include "DGtal/geometry/curves/OneBalancedWordComputer.h"
+#include "DGtal/geometry/curves/ArithmeticalDSSComputer.h"
 #include "ConfigTest.h"
 #include "DGtal/geometry/curves/CDynamicBidirectionalSegmentComputer.h"
 #include "DGtal/geometry/curves/GreedySegmentation.h"
@@ -64,15 +64,14 @@ typedef FreemanChain<int>::Vector Vector;
 /**
  * Test exted and retract function on a complex chape
  */
-bool testCombinatorialDSS() 
+bool testOneBalancedWordComputer() 
 {
-  typedef Contour::ConstIterator ConstIterator;
   typedef string::const_iterator codeIterator;
-  typedef CombinatorialDSS< list<char>::iterator, int> CombinatorialDSS_list;
-  typedef CombinatorialDSS<codeIterator, int> CombinatorialDSS_string;
+  typedef OneBalancedWordComputer< list<char>::iterator, int> OneBalancedWordComputer_list;
+  typedef OneBalancedWordComputer<codeIterator, int> OneBalancedWordComputer_string;
 
-  BOOST_CONCEPT_ASSERT(( CDynamicBidirectionalSegmentComputer<CombinatorialDSS_list> ));
-  BOOST_CONCEPT_ASSERT(( CDynamicBidirectionalSegmentComputer<CombinatorialDSS_string> ));
+  BOOST_CONCEPT_ASSERT(( CDynamicBidirectionalSegmentComputer<OneBalancedWordComputer_list> ));
+  BOOST_CONCEPT_ASSERT(( CDynamicBidirectionalSegmentComputer<OneBalancedWordComputer_string> ));
 
   trace.beginBlock ( "Test different initialization methods" );
 
@@ -89,34 +88,34 @@ bool testCombinatorialDSS()
 
   list<char>::iterator it = l.begin();
 
-  CombinatorialDSS_list C1;
+  OneBalancedWordComputer_list C1;
   C1.init( it, theContour.firstPoint() );
 
-  CombinatorialDSS_list C2;
+  OneBalancedWordComputer_list C2;
   C2.init( C1.begin() );
 
-  CombinatorialDSS_string C3;
+  OneBalancedWordComputer_string C3;
   C3.init( theContour );
 
-  CombinatorialDSS_string C4;
+  OneBalancedWordComputer_string C4;
   C4.init( theContour.begin() );
 
   int nbRetract = 0;
   while ( C3.end() != theContour.chain.end() )
     {
-      bool b1 = C1.extendForward();
-      bool b2 = C2.extendForward();
-      bool b3 = C3.extendForward();
-      bool b4 = C4.extendForward();
+      bool b1 = C1.extendFront();
+      bool b2 = C2.extendFront();
+      bool b3 = C3.extendFront();
+      bool b4 = C4.extendFront();
       if ( b1 && b2 && b3 && b4 )
         {
         }
       else if ( !b1 && !b2 && !b3 && !b4 )
         {
-          C1.retractForward();
-          C2.retractForward();
-          C3.retractForward();
-          C4.retractForward();
+          C1.retractBack();
+          C2.retractBack();
+          C3.retractBack();
+          C4.retractBack();
           ++nbRetract;
         }
       else
@@ -135,16 +134,16 @@ bool testCombinatorialDSS()
 
 
 /**
- * Builds CombinatorialDSS and ArithmeticalDSS in the fourth quadrants and
+ * Builds OneBalancedWordComputer and ArithmeticalDSSComputer in the fourth quadrants and
  * compares them, if both are equals, the test is passed.
  */
 bool CompareToArithmetical()
 {
   typedef string::const_iterator codeIterator;
-  typedef CombinatorialDSS<codeIterator, int> TestedType;
-  typedef ArithmeticalDSS<Contour::ConstIterator,int,4> ReferenceType;
+  typedef OneBalancedWordComputer<codeIterator, int> TestedType;
+  typedef ArithmeticalDSSComputer<Contour::ConstIterator,int,4> ReferenceType;
 
-  trace.beginBlock ( "Comparing to ArithmeticalDSS" );
+  trace.beginBlock ( "Comparing to ArithmeticalDSSComputer" );
 
   std::string filename = testPath + "samples/manche.fc";
   std::fstream fst;
@@ -153,13 +152,13 @@ bool CompareToArithmetical()
   Contour::ConstIterator it = theContour.begin();
   TestedType C;
   C.init( it );
-  ArithmeticalDSS<FreemanChain<int>::ConstIterator, int, 4> A(it);
-  A.extendForward(); 
+  ReferenceType A(it);
+  A.extendFront(); 
   bool res = true;
   while ( C.end() != theContour.chain.end() ) 
     {
-      bool a = A.extendForward();
-      bool c = C.extendForward();
+      bool a = A.extendFront();
+      bool c = C.extendFront();
       if ( a ^ c )
         {
           res = false;
@@ -168,34 +167,34 @@ bool CompareToArithmetical()
         }
       else if ( ! a )
         {
-          A.retractForward();
-          C.retractForward();
+          A.retractBack();
+          C.retractBack();
         }
       // Compare positions
-      if ( ( C.getFirstPoint() != A.getFirstPoint() ) || ( C.getLastPoint() != A.getLastPoint() )  )
+      if ( ( C.back() != A.back() ) || ( C.front() != A.front() )  )
         {
           res = false;
           cout << "Equality test error\n";
           break;
         }
       // Compare arithmetic parameters
-      if ( ( C.getA() != A.getA() ) || ( C.getB() != A.getB() ) ||
-           ( C.getMu() != A.getMu() ) || ( C.getOmega() != A.getOmega() ) ||
-           ( C.getUf() != A.getUf() ) || ( C.getUl() != A.getUl() ) ||
-           ( C.getLf() != A.getLf() ) || ( C.getLl() != A.getLl() ) 
+      if ( ( C.getA() != A.a() ) || ( C.getB() != A.b() ) ||
+           ( C.getMu() != A.mu() ) || ( C.getOmega() != A.omega() ) ||
+           ( C.Uf() != A.Uf() ) || ( C.Ul() != A.Ul() ) ||
+           ( C.Lf() != A.Lf() ) || ( C.Ll() != A.Ll() ) 
          )
         {
           cout << "Arithmetic parameters error\n";
           cout <<  C << endl;
           cout <<  A << endl;
-          cout << "getA()    " <<  C.getA()     << " --- " <<  A.getA() << "\n";
-          cout << "getB()    " <<  C.getB()     << " --- " <<  A.getB() << "\n";
-          cout << "getMu()   " <<  C.getMu()    << " --- " <<  A.getMu() << "\n";
-          cout << "getOmega()" <<  C.getOmega() << " --- " <<  A.getOmega() << "\n";
-          cout << "getUf()   " <<  C.getUf()    << " --- " <<  A.getUf() << "\n";
-          cout << "getUl()   " <<  C.getUl()    << " --- " <<  A.getUl() << "\n";
-          cout << "getLf()   " <<  C.getLf()    << " --- " <<  A.getLf() << "\n";
-          cout << "getLl()   " <<  C.getLl()    << " --- " <<  A.getLl() << endl;
+          cout << "a()    " <<  C.getA()     << " --- " <<  A.a() << "\n";
+          cout << "b()    " <<  C.getB()     << " --- " <<  A.b() << "\n";
+          cout << "mu()   " <<  C.getMu()    << " --- " <<  A.mu() << "\n";
+          cout << "omega()" <<  C.getOmega() << " --- " <<  A.omega() << "\n";
+          cout << "Uf()   " <<  C.Uf()    << " --- " <<  A.Uf() << "\n";
+          cout << "Ul()   " <<  C.Ul()    << " --- " <<  A.Ul() << "\n";
+          cout << "Lf()   " <<  C.Lf()    << " --- " <<  A.Lf() << "\n";
+          cout << "Ll()   " <<  C.Ll()    << " --- " <<  A.Ll() << endl;
           res = false;
           break;
         }
@@ -209,7 +208,7 @@ bool CompareToArithmetical()
 bool testInGreedySegmentation( )
 {
 
-  typedef CombinatorialDSS<string::const_iterator, int> combinDSS;
+  typedef OneBalancedWordComputer<string::const_iterator, int> combinDSS;
   typedef GreedySegmentation<combinDSS> combinSegmentation;
 
   std::string filename = testPath + "samples/BigBall.fc";
@@ -217,7 +216,7 @@ bool testInGreedySegmentation( )
   fst.open (filename.c_str(), std::ios::in);
   Contour theContour(fst);
 
-  trace.beginBlock ( "Test CombinatorialDSS in greedy segmentation" );
+  trace.beginBlock ( "Test OneBalancedWordComputer in greedy segmentation" );
   combinSegmentation combin_dec( theContour.chain.begin(), theContour.chain.end(), combinDSS() );
   vector<combinDSS> theCombinDSS;
   for ( combinSegmentation::SegmentComputerIterator i = combin_dec.begin();
@@ -234,21 +233,21 @@ bool testInGreedySegmentation( )
 
 
 /**
- * This test is an adaptation to CombinatorialDSS of
+ * This test is an adaptation to OneBalancedWordComputer of
  * 'examples/geometre/curves/greedy-dss-decomposition.cpp' where
  * is uses ArithmeticDSS.
  *
  * It produces a slightly different decomposition since in a greedy-segmentation,
- * consecutive ArithmeticDSS overlap a single point while CombinatorialDSS 
+ * consecutive ArithmeticDSS overlap a single point while OneBalancedWordComputer 
  * overlap on a code and thus on two points.
  */
 bool showGreedySegmantation()
 {
   trace.beginBlock ( "Example testCombinDSS-greedy" );
 
-  typedef CombinatorialDSS<string::const_iterator,int> combinDSS;
+  typedef OneBalancedWordComputer<string::const_iterator,int> combinDSS;
   typedef GreedySegmentation<combinDSS> Decomposition;
-  typedef ArithmeticalDSS< combinDSS::ConstPointIterator, int, 4> arithDSS;
+  typedef StandardDSS4<int> arithDSS;
 
   std::stringstream ss(stringstream::in | stringstream::out);
   ss << "31 16 11121212121212212121212212122122222322323233323333333323333323303330330030300000100010010010001000101010101111" << endl;
@@ -264,8 +263,6 @@ bool showGreedySegmantation()
    << SetMode( "PointVector", "Grid" )
    << theContour;
   //for each segment
-  aBoard << SetMode( "ArithmeticalDSS", "BoundingBox" );
-  string className = "ArithmeticalDSS/BoundingBox";
   Point p;
   p[0] = 31;
   p[1] = 16;
@@ -279,14 +276,15 @@ bool showGreedySegmantation()
       // the penultimate point of the current one.
       p = *( --( --( segment.pointEnd() )));
 
-      // Build an ArithmeticDSS from the CombinatorialDSS.
-      arithDSS toShow( segment.pointBegin() );
-      while( toShow.end() != segment.pointEnd() )
-        {
-          toShow.extendForward();
-        }
-      aBoard << CustomStyle( className, new CustomPenColor( Color::Blue ) ) 
-        << toShow; // draw each segment
+      // Build an ArithmeticDSS from the OneBalancedWordComputer.
+      arithDSS toShow( *segment.pointBegin(), *segment.pointBegin() );
+      for (combinDSS::ConstPointIterator it = segment.pointBegin(), 
+	     itEnd = segment.pointEnd(); it != itEnd; ++it )
+	toShow.extendFront( *it );
+      
+      aBoard << SetMode( toShow.className(), "BoundingBox" )
+	     << CustomStyle( toShow.className()+"/BoundingBox", new CustomPenColor( Color::Blue ) ) 
+	     << toShow; // draw each segment
     } 
   aBoard.saveSVG("testCombinDSS-greedy.svg");
   trace.endBlock();
@@ -304,7 +302,7 @@ int main( int argc, char** argv )
     trace.info() << " " << argv[ i ];
   trace.info() << endl;
 
-  bool res = testCombinatorialDSS()     
+  bool res = testOneBalancedWordComputer()     
     && CompareToArithmetical() 
     && testInGreedySegmentation()
     && showGreedySegmantation();

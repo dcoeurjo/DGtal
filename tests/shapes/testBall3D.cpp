@@ -59,8 +59,6 @@
    typedef Space::RealPoint RealPoint;
    typedef Ball3D<Space> EuclideanShape;
    typedef GaussDigitizer<Space,EuclideanShape> DigitalShape;
-   typedef ImageContainerBySTLVector<Domain,DGtal::uint8_t> Image;
-
     
    
    // -------------------------------------------------------------------------- Creating the shape
@@ -90,7 +88,6 @@
     typedef KSpace::Surfel Surfel;
     typedef KSpace::SurfelSet SurfelSet;
     typedef SetOfSurfels< KSpace, SurfelSet > MySetOfSurfels;
-    typedef DigitalSurface< MySetOfSurfels > MyDigitalSurface;
 
 
     // -------------------------------------------------------------------------- Tracking the boudnadry
@@ -115,7 +112,7 @@
 
   double minCurv=1;
   double maxCurv=0;
-  SCellToMidPoint<KSpace> midpoint(K);
+  CanonicSCellEmbedder<KSpace> midpoint(K);
   for ( std::set<SCell>::iterator it = theSetOfSurfels.begin(), it_end = theSetOfSurfels.end(); 
 	it != it_end; ++it)
   {

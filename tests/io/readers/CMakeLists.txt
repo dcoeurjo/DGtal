@@ -1,9 +1,10 @@
 SET(DGTAL_TESTS_SRC_IO_READERS
        testPNMReader
        testVolReader
-       testRawReader     
+       testRawReader
        testGenericReader
-       testPointListReader 
+       testPointListReader
+       testTableReader
        testMeshReader
        testMPolynomialReader )
 
@@ -44,3 +45,16 @@ IF(HDF5_FOUND)
 
 ENDIF(HDF5_FOUND)
 
+IF(ITK_FOUND)
+
+  SET(DGTAL_TESTS_SRC_IO_READERS_DICOM
+    testDicomReader
+    )
+
+  FOREACH(FILE ${DGTAL_TESTS_SRC_IO_READERS_DICOM})
+    add_executable(${FILE} ${FILE})
+    target_link_libraries (${FILE} DGtal DGtalIO ${DGtalLibDependencies})
+    add_test(${FILE} ${FILE})
+  ENDFOREACH(FILE)
+
+ENDIF(ITK_FOUND)

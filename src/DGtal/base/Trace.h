@@ -21,7 +21,7 @@
  * Laboratoire d'InfoRmatique en Image et Systèmes d'information - LIRIS (CNRS, UMR 5205), CNRS, France
  *
  * @date 2009/12/19
- * 
+ *
  * Header file for module Trace.cpp
  *
  * This file is part of the DGtal library.
@@ -46,21 +46,20 @@
 
 #include "DGtal/base/Config.h"
 #include "DGtal/base/Clock.h"
-#include "DGtal/base/Assert.h"
 #include "DGtal/base/TraceWriter.h"
 #include "DGtal/base/TraceWriterTerm.h"
 //////////////////////////////////////////////////////////////////////////////
 
 
-namespace DGtal 
+namespace DGtal
 {
-  
+
   /////////////////////////////////////////////////////////////////////////////
   // class Trace
-  /** 
+  /**
    * Description of class 'Trace' <p>
    * Aim: @brief implementation of basic methods to trace out messages with indentation levels.
-   * 
+   *
    * Trace objects use a TraceWriter to switch between terminal and file outputs.
    * Methods postfixed with "Debug" contain no code if the compilation flag DEBUG is not set.
    *
@@ -85,13 +84,13 @@ namespace DGtal
      * Constructor.
      *
      * @param writer  the output writer that will receive the traces.
-     * 
+     *
      */
     Trace(TraceWriter & writer);
 
 
     /**
-     * Destructor. 
+     * Destructor.
      */
     ~Trace();
 
@@ -115,20 +114,20 @@ namespace DGtal
      *
      * @return  the ellapsed time in the block in milliseconds (Class Clock).
      */
-    long endBlock();
- 
+    double endBlock();
+
     /**
      * Create a string with an indentation prefix for a normal trace.
      * @return the cerr output stream with the prefix
      */
-    std::ostream & info() const;
+    std::ostream & info();
 
     /**
      * Create a string with an indentation prefix for a warning trace.
      *  the string is postfixed by the keyword "[WRNG]"
      * @return the cerr output stream with the prefix
      */
-     std::ostream & warning() const;
+     std::ostream & warning();
 
 
     /**
@@ -136,7 +135,7 @@ namespace DGtal
      *  the string is postfixed by the keyword "[ERR]"
      * @return the cerr output stream with the prefix
      */
-    std::ostream &  error() const;
+    std::ostream &  error();
 
 
     /**
@@ -144,17 +143,17 @@ namespace DGtal
      *
      * @return the cerr output stream with the prefix
      */
-    std::ostream &  emphase() const;
+    std::ostream &  emphase();
 
-    /** 
+    /**
      * Display a progress bar in the terminal.
-     * 
+     *
      * @param currentValue current step of the progress bar
      * @param maximalValue expected maximal value (must be >0)
      */
-    void progressBar(const double currentValue, 
+    void progressBar(const double currentValue,
                      const double maximalValue);
-    
+
 
    // ----------------------- Interface --------------------------------------
   public:
@@ -190,7 +189,13 @@ namespace DGtal
     std::stack<Clock*> myClockStack;
 
     ///Progress bar current position
-    unsigned int myProgressBarCurrent;
+    int myProgressBarCurrent;
+
+    ///Progress bar rotation position
+    unsigned int myProgressBarRotation;
+
+    ///True if the style has changed
+    bool myStyle;
 
     // ------------------------- Hidden services ------------------------------
   protected:
@@ -214,7 +219,7 @@ namespace DGtal
 
 
 
-  
+
     // ------------------------- Internals ------------------------------------
   private:
 
@@ -230,9 +235,10 @@ namespace DGtal
   std::ostream&
   operator<<( std::ostream & out, const Trace & object );
 
-  
+
 } // namespace DGtal
 
+#include "DGtal/base/Assert.h"
 
 ///////////////////////////////////////////////////////////////////////////////
 // Includes inline functions

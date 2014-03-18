@@ -115,7 +115,6 @@ bool testPublicSercives()
 {
   typedef FreemanChain<int> FreemanChain;
   typedef FreemanChain::Point Point;
-  typedef FreemanChain::Vector Vector;
   typedef FreemanChain::ConstIterator Iterator;
 
   trace.beginBlock ( "Testing public sercives" );
@@ -161,14 +160,14 @@ bool testPublicSercives()
   //    findQuadrantChange( OrderedAlphabet & A ) const;
   OrderedAlphabet oa( '0', 4 );
   Iterator it = fc.findQuadrantChange( oa );
-  test = ( it.getPosition() == 4 );
+  test = ( it.position() == 4 );
   nbOk += (test) ? 1 : 0;
   trace.info() << "Test 6 " << ((test) ? "passed" : "failed" ) << endl;
 
   //  typename Self::ConstIterator 
   //    findQuadrantChange4( OrderedAlphabet & A ) const;
   it = fc.findQuadrantChange4( oa );
-  test = ( it.getPosition() == 9 );
+  test = ( it.position() == 9 );
   nbOk += (test) ? 1 : 0;
   trace.info() << "Test 7 " << ((test) ? "passed" : "failed" ) << endl;
 
@@ -336,8 +335,6 @@ bool testStaticServices()
 {
   typedef FreemanChain<int> FreemanChain;
   typedef FreemanChain::Point Point;
-  typedef FreemanChain::Vector Vector;
-  typedef FreemanChain::ConstIterator Iterator;
   typedef std::vector<unsigned int> numVector;
   bool test = false;
   int nbOk = 0;

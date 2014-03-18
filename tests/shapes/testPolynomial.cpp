@@ -132,8 +132,6 @@ int main( int argc, char** argv )
   typedef KSpace::Surfel Surfel;
   typedef KSpace::SurfelSet SurfelSet;
   typedef SetOfSurfels< KSpace, SurfelSet > MySetOfSurfels;
-  typedef DigitalSurface< MySetOfSurfels > MyDigitalSurface;
-
 
   MySetOfSurfels theSetOfSurfels( K, surfAdj );
   Surfel bel = Surfaces< KSpace >::findABel( K, dshape, 100000 );
@@ -157,7 +155,7 @@ int main( int argc, char** argv )
 
   double minCurv = 1;
   double maxCurv = 0;
-  SCellToMidPoint< KSpace > midpoint( K );
+  CanonicSCellEmbedder< KSpace > midpoint( K );
   for ( std::set< SCell >::iterator it = theSetOfSurfels.begin(), it_end = theSetOfSurfels.end();
         it != it_end; ++it)
   {

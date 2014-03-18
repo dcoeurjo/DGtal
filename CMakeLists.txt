@@ -14,7 +14,7 @@ ENDIF()
 # -----------------------------------------------------------------------------
 SET(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${PROJECT_SOURCE_DIR}/cmake")
 SET(DGtal_VERSION_MAJOR 0)
-SET(DGtal_VERSION_MINOR 7)
+SET(DGtal_VERSION_MINOR 8)
 SET(DGtal_VERSION_PATCH beta)
 SET(DGTAL_VERSION "${DGtal_VERSION_MAJOR}.${DGtal_VERSION_MINOR}.${DGtal_VERSION_PATCH}")
 SET(PROJECT_VERSION "${DGtal_VERSION_MAJOR}.${DGtal_VERSION_MINOR}.${DGtal_VERSION_PATCH}")
@@ -40,7 +40,7 @@ INCLUDE(CheckDGtalDependencies)
 INCLUDE(CheckDGtalOptionalDependencies)
 
 # -----------------------------------------------------------------------------
-# Cpack and Ctest settings
+# Debug, Cpack and Ctest settings
 # -----------------------------------------------------------------------------
 INCLUDE(CpackCtest)
 
@@ -54,10 +54,10 @@ INCLUDE(GeneratorSpecific)
 #------------------------------------------------------------------------------
 add_subdirectory(${PROJECT_SOURCE_DIR}/src)
 
-OPTION(BUILD_EXAMPLES "Build examples." ON)
-IF (BUILD_EXAMPLES)
-  add_subdirectory (${PROJECT_SOURCE_DIR}/examples)
-ENDIF(BUILD_EXAMPLES)
+#------------------------------------------------------------------------------
+# Examples
+#------------------------------------------------------------------------------
+INCLUDE(BuildExamples)
 
 # -----------------------------------------------------------------------------
 # Install settings

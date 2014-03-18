@@ -44,7 +44,7 @@
 #include <list>
 #include "DGtal/kernel/CInteger.h"
 #include "DGtal/kernel/PointVector.h"
-#include "DGtal/geometry/curves/ArithmeticalDSS.h"
+#include "DGtal/geometry/curves/ArithmeticalDSSComputer.h"
 #include "DGtal/base/Circulator.h"
 #include "DGtal/base/Exceptions.h"
 #include "DGtal/base/Common.h"
@@ -58,7 +58,7 @@ namespace DGtal
   {
     /////////////////////////////////////////////////////////////////////////////
     /**
-     * \brief Aim: Abstract DSSDecorator for ArithmeticalDSS.
+     * \brief Aim: Abstract DSSDecorator for ArithmeticalDSSComputer.
      * Has 2 virtual methods returning the first and last leaning point: 
      * - firstLeaningPoint()
      * - lastLeaningPoint()
@@ -67,7 +67,7 @@ namespace DGtal
      * 
      * @tparam TDSS type devoted to DSS recognition
      * Must have a nested type 'Point' and four accessors: 
-     *  getUf(), getUl(), getLf(), getLl()
+     *  Uf(), Ul(), Lf(), Ll()
      *
      */
     template <typename TDSS>
@@ -88,27 +88,27 @@ namespace DGtal
        * Tells whether the underlying segment can be extended or not
        * @return 'true' if extendable, 'false' otherwise
        */
-      bool isExtendableForward() const
+      bool isExtendableFront() const
       {
-        return myDSS->isExtendableForward(); 
+        return myDSS->isExtendableFront(); 
       }
       /**
        * Extends the underlying segment (if possible)
        * @return 'true' if the segment has been extended,
        * 'false' otherwise
        */
-      bool extendForward()
+      bool extendFront()
       {
-        return myDSS->extendForward(); 
+        return myDSS->extendFront(); 
       }
       /**
        * Retracts the underlying segment (if possible)
        * @return 'true' if the segment has been retracted,
        * 'false' otherwise
        */
-      bool retractForward()
+      bool retractBack()
       {
-        return myDSS->retractForward(); 
+        return myDSS->retractBack(); 
       }
       /**
        * End of the underlying segment
@@ -152,7 +152,7 @@ namespace DGtal
      * 
      * @tparam TDSS type devoted to DSS recognition
      * Must have a nested type 'Point' and four accessors: 
-     *  getUf(), getUl(), getLf(), getLl()
+     *  Uf(), Ul(), Lf(), Ll()
      *
      * @see DSSDecorator FP
      */
@@ -174,7 +174,7 @@ namespace DGtal
        */
       typename TDSS::Point firstLeaningPoint() const 
       {
-        return this->myDSS->getUf();
+        return this->myDSS->Uf();
       }
       /**
        * Last leaning point accessor 
@@ -182,7 +182,7 @@ namespace DGtal
        */
       typename TDSS::Point lastLeaningPoint() const
       {
-        return this->myDSS->getUl();
+        return this->myDSS->Ul();
       }
       /**
        * Tells whether it adapts a DSS computer for convex parts or not
@@ -203,7 +203,7 @@ namespace DGtal
      * 
      * @tparam TDSS type devoted to DSS recognition
      * Must have a nested type 'Point' and four accessors: 
-     *  getUf(), getUl(), getLf(), getLl()
+     *  Uf(), Ul(), Lf(), Ll()
      *
      * @see DSSDecorator FP
      */
@@ -225,7 +225,7 @@ namespace DGtal
        */
       typename TDSS::Point firstLeaningPoint() const 
       {
-        return this->myDSS->getLf();
+        return this->myDSS->Lf();
       }
       /**
        * Last leaning point accessor 
@@ -233,7 +233,7 @@ namespace DGtal
        */
       typename TDSS::Point lastLeaningPoint() const
       {
-        return this->myDSS->getLl();
+        return this->myDSS->Ll();
       }
       /**
        * Tells whether it adapts a DSS computer for convex parts or not
@@ -265,7 +265,7 @@ namespace DGtal
    * leaning points of segments that are maximal at the front or at the back are also
    * vertices of the FP.
    * 
-   * @see ArithmeticalDSS DSSDecorator DSSDecorator4ConvexPart DSSDecorator4ConcavePart
+   * @see ArithmeticalDSSComputer DSSDecorator DSSDecorator4ConvexPart DSSDecorator4ConcavePart
    *
    * @note T. ROUSSILLON and I. SIVIGNON, 
    * Faithful polygonal representation of the convex and concave parts of a digital curve, 
@@ -304,7 +304,7 @@ namespace DGtal
     typedef DGtal::PointVector<2, double> RealPoint;
     typedef DGtal::PointVector<2, double> RealVector;
     
-    typedef DGtal::ArithmeticalDSS<TIterator,TInteger,connectivity> DSSComputer;
+    typedef DGtal::ArithmeticalDSSComputer<TIterator,TInteger,connectivity> DSSComputer;
     
     typedef std::list<Point> Polygon;
     

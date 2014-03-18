@@ -16,7 +16,7 @@
 
 #pragma once
 
-/** 
+/**
  * @file Clock.h
  * @author Jacques-Olivier Lachaud (\c jacques-olivier.lachaud@univ-savoie.fr )
  * Laboratory of Mathematics (CNRS, UMR 5807), University of Savoie, France
@@ -24,19 +24,19 @@
  * Laboratoire d'InfoRmatique en Image et Systèmes d'information - LIRIS (CNRS, UMR 5205), CNRS, France
  *
  * @date 2009/12/11
- * 
+ *
  * Header file for module Clock.cpp
  *
  * This file is part of the DGtal library (backported from Imagene)
  */
 
-#if defined(Clock_RECURSES)
+#ifdef Clock_RECURSES
 #error Recursive header files inclusion detected in Clock.h
 #else // defined(Clock_RECURSES)
 /** Prevents recursive inclusion of headers. */
 #define Clock_RECURSES
 
-#if !defined Clock_h
+#ifndef Clock_h
 /** Prevents repeated inclusion of headers. */
 #define Clock_h
 
@@ -55,7 +55,7 @@
 #include <mach/mach.h>
 #endif
 
-#if ( (defined(WIN32)) )
+#ifdef WIN32
 #include <time.h>
 #endif
 
@@ -63,12 +63,12 @@
 
 //////////////////////////////////////////////////////////////////////////////
 
-namespace DGtal 
+namespace DGtal
 {
 
   /////////////////////////////////////////////////////////////////////////////
   // class Clock
-  /** 
+  /**
    * Description of class 'Clock' <p>
    * Aim: To provide functions to start and stop a timer. Is useful to get
    * performance of algorithms.
@@ -104,18 +104,24 @@ namespace DGtal
 
     /**
      * Stops the clock.
-     * @return the time (in ms) since the last 'startClock()'.
+     * @return the time (in ms) since the last 'startClock()' or 'restartClock()'.
      */
-    double stopClock();
-    
+    double stopClock() const;
+
+    /**
+     * Restart the clock.
+     * @return the time (in ms) since the last 'startClock()' or 'restartClock()'.
+     */
+    double restartClock();
+
     /**
      * Constructor.
      *
      */
     Clock();
-    
+
     /**
-     * Destructor. 
+     * Destructor.
      */
     ~Clock();
 
@@ -138,14 +144,12 @@ namespace DGtal
   private:
 
     ///internal timer object;
-#if ( (defined(UNIX)||defined(unix)||defined(linux) || defined(__MACH__) ) )
+#ifdef WIN32
+    clock_t myFirstTick;
+#else
     struct timespec myTimerStart;
 #endif
 
-#if ( (defined(WIN32)) )
-    clock_t myFirstTick;
-#endif
-    
   }; // end of class Clock
 
 
@@ -162,8 +166,8 @@ namespace DGtal
       object.selfDisplay( out );
       return out;
     }
-  
-  
+
+
 } // namespace DGtal
 
 ///////////////////////////////////////////////////////////////////////////////

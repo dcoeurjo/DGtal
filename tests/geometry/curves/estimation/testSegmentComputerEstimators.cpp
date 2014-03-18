@@ -35,8 +35,8 @@
 #include "DGtal/base/Common.h"
 
 
-#include "DGtal/geometry/curves/ArithmeticalDSS.h"
-#include "DGtal/geometry/curves/GeometricalDCA.h"
+#include "DGtal/geometry/curves/ArithmeticalDSSComputer.h"
+#include "DGtal/geometry/curves/StabbingCircleComputer.h"
 #include "DGtal/geometry/curves/estimation/SegmentComputerEstimators.h"
 
 #include "DGtal/io/boards/Board2D.h"
@@ -84,7 +84,7 @@ bool testTangentFromDSS(
     TangentAngleFromDSSEstimator<DSSComputer> f; 
     f.attach(dss); 
     double q1 = f.eval(itb); 
-    double q2 = std::atan2((double)dss.getA(),(double)dss.getB());
+    double q2 = std::atan2((double)dss.a(),(double)dss.b());
     trace.info() << "Tangent orientation : " << q1 << " == " << q2 << endl;
     nbok += (std::abs(q1 - q2) < epsilon)?1:0;
     nb++; 
@@ -96,7 +96,7 @@ bool testTangentFromDSS(
     typedef typename TangentVectorFromDSSEstimator<DSSComputer>::Quantity Quantity; 
     f.attach(dss); 
     Quantity q1 = f.eval(itb); 
-    Quantity q2 = Quantity(dss.getB(), dss.getA()); 
+    Quantity q2 = Quantity(dss.b(), dss.a()); 
     trace.info() << "Tangent vector : " << q1 << " == " << q2 << endl;
     nbok += (q1 == q2)?1:0; 
     nb++; 
@@ -108,8 +108,8 @@ bool testTangentFromDSS(
     typedef typename TangentFromDSSEstimator<DSSComputer>::Quantity Quantity; 
     f.attach(dss); 
     Quantity q1 = f.eval(itb); 
-    double n = std::sqrt( (double)dss.getA()*dss.getA() + (double)dss.getB()*dss.getB() );
-    Quantity q2 = Quantity((double)dss.getB()/n, (double)dss.getA()/n); 
+    double n = std::sqrt( (double)dss.a()*dss.a() + (double)dss.b()*dss.b() );
+    Quantity q2 = Quantity((double)dss.b()/n, (double)dss.a()/n); 
     trace.info() << "Normalized tangent vector : " << q1 << " == " << q2 << endl;
     nbok += ((std::abs(q1[0] - q2[0]) < epsilon)&&(std::abs(q1[1] - q2[1]) < epsilon))?1:0; 
     nb++; 
@@ -219,8 +219,8 @@ int main( int argc, char** argv )
   {
     typedef std::vector<Point> Range;
     typedef Range::iterator ConstIterator;
-    typedef ArithmeticalDSS<ConstIterator,int,4> DSS4;  
-    typedef ArithmeticalDSS<ConstIterator,int,8> DSS8;  
+    typedef ArithmeticalDSSComputer<ConstIterator,int,4> DSS4;  
+    typedef ArithmeticalDSSComputer<ConstIterator,int,8> DSS8;  
 
     //input points
     Range curve4;
@@ -258,7 +258,7 @@ int main( int argc, char** argv )
     typedef std::pair<Point,Point> Pair; 
     typedef std::vector<Pair> Range;
     typedef Range::const_iterator ConstIterator; 
-    typedef GeometricalDCA<ConstIterator> DCA;  
+    typedef StabbingCircleComputer<ConstIterator> DCA;  
 
     Range curve; 
     curve.push_back(std::make_pair(Point(0,0),Point(0,1))); 

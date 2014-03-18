@@ -97,7 +97,7 @@ parameter.
   
 \subsection dgtal_dgtalboard_sec13 Mode selection: the example of digital objects
   
-Some digital elements (like Object, PointVector, ArithmeticalDSS)
+Some digital elements (like Object, PointVector, ArithmeticalDSSComputer)
 may have several possible ways to be rendered as a graphical
 object. For instance, a pixel may be seen more as a point or more
 as a unit square in the plane. In the same idea, a digital object
@@ -165,7 +165,7 @@ ArithmeticalDSS, you may use the line
  board << SetMode( dss.className(), "BoundingBox" );
  \endcode
 
- If you wish to display both the points of a DSS an its bounding
+ If you wish to display both the points of a DSS and its bounding
  box, you must draw it twice, as follows:
  \code
  board << SetMode( dss.className(), "BoundingBox" ) << dss
@@ -316,11 +316,8 @@ This program (see full source at dgtalBoard2D-4-colormaps.cpp) outputs the follo
   
 More precisely, several styles may be applied before some drawable element is displayed. They are called in this order.
   1. the default style (always applied)
- 
   2. the user-specified style for default mode (when defined)
-
   3. the default style for the current mode (applied only if mode is not default, i.e. different from "")
-
   4. the user-specified style for the current mode (applied only if mode is not default, i.e. different from "", and defined)
   
 Therefore, if you change the drawing \b mode of a drawable element and if you wish to have a specific behavior, you must attach the custom style to the mode style of your object. For instance, if your object is \c p and the mode is "Special", there is some line:
@@ -329,7 +326,7 @@ Therefore, if you change the drawing \b mode of a drawable element and if you wi
  board << CustomStyle( p.className() +"/Special", new ... );
  \endcode
   
-Another example involving ArithmeticDSS is greedy-dss-decomposition.cpp. It outputs the following graphics:
+Another example involving ArithmeticalDSS is greedy-dss-decomposition.cpp. It outputs the following graphics:
   
 \image html dgtalboard-5-greedy-dss.png "Greedy DSS Decomposition "
 \image latex dgtalboard-5-greedy-dss.png "Greedy DSS Decomposition" width=5cm
@@ -501,6 +498,7 @@ included in DGtal. Its classes are grouped into the namespace Board.
 This simple example shows the basic usage of a Board2D to
 export graphical representations of dgtal objects (here, a
 HyperRectDomain and three points exported as SVG and EPS).
+   \image html  dgtalboard-1-points.png  "visualization of one of the  resulting export."
  */
 
   /**
@@ -512,6 +510,7 @@ digital set and a digital object). Note also the use of different
 modes that may be defined for some classes. An object may thus be
 displayed just as a set of points, but also as a set of points
 with neighborhood structure (a graph).
+   \image html  dgtalboard-2-sets-1.png  "visualization of resulting export (first export dgtalBoard2D-2-sets-1)."
  */
 
   /**
@@ -522,6 +521,7 @@ elements. You just have to create an instance of CustomColors,
 CustomPenColor, CustomFillColor or CustomPen and you attach this
 style to your drawable element type with an instance of CustomStyle
 outputed in the Board2D stream.
+   \image html  dgtalboard-3-custom-classes.png  "visualization of resulting export."
  */
 
   /**
@@ -533,6 +533,7 @@ gives in its method \c setStyle the specific style
 parameters. Then, you attach this style to your drawable elements
 with an instance of CustomStyle outputed in the Board2D
 stream.
+   \image html  dgtalboard-3-custom-points.png  "visualization of resulting export."
  */
 
   /**
@@ -541,6 +542,7 @@ stream.
 This example shows you how to use colormaps with Board2D
 streams. Note how we redefine the style of a specific mode for
 the drawable element.
+   \image html  dgtalboard-4-colormaps.png  "visualization of resulting export."
  */
 
   /**
@@ -554,6 +556,7 @@ element ArithmeticDSS is redefined.
 \example logoDGtal.cpp
   
 Simple example to generate DGtal logo in DGtal.
+   \image html  logo_DGtal_small.png   "visualization of resulting export."
  */
 
 

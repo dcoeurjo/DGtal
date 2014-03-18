@@ -22,8 +22,27 @@ OPTION(WITH_ITK "With Insight Toolkit ITK." OFF)
 OPTION(WITH_CAIRO "With CairoGraphics." OFF)
 OPTION(WITH_HDF5 "With HDF5." OFF)
 OPTION(WITH_QGLVIEWER "With LibQGLViewer for 3D visualization (Qt required)." OFF)
-OPTION(WITH_COIN3D-SOQT "With COIN3D & SOQT for 3D visualization (Qt required)." OFF)
 
+
+
+#----------------------------------
+# Checking clang version on APPLE
+#
+# When using clang 5.0, DGtal must
+# be compiled with C11 features
+#----------------------------------
+IF (APPLE)
+  if ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang")
+    EXECUTE_PROCESS( COMMAND ${CMAKE_CXX_COMPILER} --version OUTPUT_VARIABLE clang_full_version_string )
+    string (REGEX REPLACE ".*LLVM version ([0-9]).*" "\\1" CLANG_VERSION_STRING ${clang_full_version_string})
+    if (CLANG_VERSION_STRING VERSION_GREATER 4)
+      SET(WITH_C11 ON)
+      MESSAGE(STATUS "You are using Clang >= 5.0, I'm forcing the WITH_C11 option")
+    endif()
+  endif()
+endif()
+MESSAGE(STATUS " ")
+#---------------------------------
 
 IF(WITH_C11)
 SET (LIST_OPTION ${LIST_OPTION} [c++11]\ )
@@ -97,14 +116,6 @@ ELSE(WITH_QGLVIEWER)
 message(STATUS "      WITH_QGLVIEWER    false   (Qt/QGLViewer based 3D Viewer)")
 ENDIF(WITH_QGLVIEWER)
 
-IF(WITH_COIN3D-SOQT)
-SET (LIST_OPTION ${LIST_OPTION} [COIN3D-SOQT]\ )
-message(STATUS "      WITH_COIN3D-SOQT  true    (OpenInventor based 3D Viewer)")
-ELSE(WITH_COIN3D-SOQT)
-message(STATUS "      WITH_COIN3D-SOQT  false   (OpenInventor based 3D Viewer)")
-ENDIF(WITH_COIN3D-SOQT)
-
-
 message(STATUS "")
 message(STATUS "Checking the dependencies: ")
 
@@ -138,12 +149,16 @@ IF(WITH_C11)
       SET(C11_ARRAY 1)
       SET(C11_FEATURES "${C11_FEATURES} std::array")
     ENDIF()
+    IF (CPP11_RREF_MOVE)
+      SET(C11_RREF_MOVE 1)
+      SET(C11_FEATURES "${C11_FEATURES} std::move rvalue-reference(&&)")
+    ENDIF()
     MESSAGE(STATUS "Supported c++11 features: [${C11_FEATURES} ]")
+    ADD_DEFINITIONS("-DWITH_C11 ")
   ELSE()
     MESSAGE(FATAL_ERROR "Your compiler does not support any c++11 feature. Please specify another C++ compiler of disable this WITH_C11 option.")
   ENDIF()
 ENDIF(WITH_C11)
-
 
 # -----------------------------------------------------------------------------
 # Look for GMP (The GNU Multiple Precision Arithmetic Library)
@@ -162,6 +177,25 @@ IF(WITH_GMP)
   ELSE(GMP_FOUND)
     message(FATAL_ERROR "GMP not found. Check the cmake variables associated to this package or disable it." )
   ENDIF(GMP_FOUND)
+
+  try_compile(
+    GMP_HAS_IOSTREAM
+    ${CMAKE_BINARY_DIR}
+    ${PROJECT_SOURCE_DIR}/cmake/src/gmp/gmpstream.cpp
+    CMAKE_FLAGS
+    -DINCLUDE_DIRECTORIES:STRING=${GMP_INCLUDE_DIR}
+    -DLINK_LIBRARIES:STRING=${GMPXX_LIBRARIES}\;${GMP_LIBRARIES}
+    OUTPUT_VARIABLE OUTPUT
+    )
+
+  if ( GMP_HAS_IOSTREAM )
+    add_definitions("-DGMP_HAS_IOSTREAM")
+    message(STATUS "   * GMPXX has iostream capabilities")
+  ELSE(GMP_HAS_IOSTREAM)
+    message(STATUS ${OUTPUT})
+    message(STATUS "   * GMPXX does not have iostream capabilities")
+    message(FATAL_ERROR "GMP has been found but there is a link isuse with some g++ versions. Please check your system or disable the GMP dependency." )
+  endif (GMP_HAS_IOSTREAM )
 ENDIF(WITH_GMP)
 
 # -----------------------------------------------------------------------------
@@ -283,43 +317,6 @@ ELSE(WITH_HDF5)
 ENDIF(WITH_HDF5)
 
 # -----------------------------------------------------------------------------
-# Look for Coin3D, SoQt for 3D display.
-# (They are not compulsory).
-# -----------------------------------------------------------------------------
-SET(COIN3D_FOUND_DGTAL 0)
-SET(SOQT_FOUND_DGTAL 0)
- IF(WITH_COIN3D-SOQT)
-  find_package(COIN3D REQUIRED)
-  if ( COIN3D_FOUND )
-    set(COIN3D_FOUND_DGTAL 1)
-    message(STATUS "Coin3d found.")
-    ADD_DEFINITIONS(-DWITH_COIN3D)
-    include_directories( ${COIN3D_INCLUDE_DIR} )
-    SET(DGtalLibDependencies ${DGtalLibDependencies} ${COIN3D_LIBRARY})
-    SET(DGtalLibInc ${DGtalLibInc} ${COIN3D_INCLUDE_DIR})
-  else ( COIN3D_FOUND )
-    message(FATAL_ERROR " Coin3d not found. Check the cmake variables associated to this package or disable it." )
-  endif ( COIN3D_FOUND )
-
-  find_package(SOQT REQUIRED)
-  if ( SOQT_FOUND )
-    SET(SOQT_FOUND_DGTAL 1)
-    message(STATUS  "SoQt found. ")
-    ADD_DEFINITIONS("-DWITH_SOQT ")
-    include_directories( ${SOQT_INCLUDE_DIR} )
-    SET(DGtalLibDependencies ${DGtalLibDependencies} ${SOQT_LIBRARY})
-    SET(DGtalLibInc ${DGtalLibInc} ${SOQT_INCLUDE_DIR})
-  else ( SOQT_FOUND )
-    message(FATAL_ERROR  "SoQt not found." Check the cmake variables associated to this package or disable it. )
-  endif ( SOQT_FOUND )
-ENDIF(WITH_COIN3D-SOQT)
-
-if ( COIN3D_FOUND AND SOQT_FOUND )
-  SET ( WITH_VISU3D_IV 1 )
-  ADD_DEFINITIONS("-DWITH_VISU3D_IV")
-endif( COIN3D_FOUND  AND SOQT_FOUND )
-
-# -----------------------------------------------------------------------------
 # Look for QGLViewer for 3D display.
 # (They are not compulsory).
 # -----------------------------------------------------------------------------
@@ -360,7 +357,7 @@ endif(NOT WITH_VISU3D_QGLVIEWER)
 # Look for Qt (if LibqglViewer or coin3D are set).
 # -----------------------------------------------------------------------------
 set(QT4_FOUND_DGTAL 0)
-IF( WITH_COIN3D-SOQT OR WITH_QGLVIEWER)
+IF( WITH_QGLVIEWER)
   find_package(Qt4  COMPONENTS QtCore QtGUI QtXml QtOpenGL REQUIRED)
   if ( QT4_FOUND )
     set(QT4_FOUND_DGTAL 1)
@@ -373,7 +370,7 @@ IF( WITH_COIN3D-SOQT OR WITH_QGLVIEWER)
   else ( QT4_FOUND )
     message(FATAL_ERROR  "Qt4 not found.  Check the cmake variables associated to this package or disable it." )
   endif ( QT4_FOUND )
-ENDIF( WITH_COIN3D-SOQT OR WITH_QGLVIEWER)
+ENDIF( WITH_QGLVIEWER)
 
 # -----------------------------------------------------------------------------
 # Look for OpenMP
@@ -420,13 +417,15 @@ IF(WITH_CGAL)
     message(FATAL_ERROR "CGAL needs GMP and Eigen3. You must active WITH_GMP and WITH_EIGEN flags and have the associated package installed.")
   ENDIF()
 
-  find_package(CGAL COMPONENTS Core Eigen3)
+  find_package(CGAL COMPONENTS Core Eigen3 BLAS LAPACK)
   IF(CGAL_FOUND)
     include( ${CGAL_USE_FILE} )
     SET(CGAL_FOUND_DGTAL 1)
     ADD_DEFINITIONS("-DCGAL_EIGEN3_ENABLED   ")
     ADD_DEFINITIONS("-DWITH_CGAL ")
     SET(DGtalLibDependencies ${DGtalLibDependencies} ${CGAL_LIBRARIES} ${CGAL_3D_PARTY-LIBRARIES} )
+    ## Making sure that CGAL got the Eigen3 flag
+    ADD_DEFINITIONS("-DWITH_Eigen3 -DWITH_LAPACK ")
     message(STATUS "CGAL found.")
   ENDIF(CGAL_FOUND)
 ENDIF(WITH_CGAL)

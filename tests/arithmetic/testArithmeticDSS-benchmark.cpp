@@ -36,7 +36,7 @@
 #include "DGtal/arithmetic/SternBrocot.h"
 #include "DGtal/arithmetic/Pattern.h"
 #include "DGtal/arithmetic/StandardDSLQ0.h"
-#include "DGtal/geometry/curves/ArithmeticalDSS.h"
+#include "DGtal/geometry/curves/ArithmeticalDSSComputer.h"
 ///////////////////////////////////////////////////////////////////////////////
 
 using namespace std;
@@ -51,23 +51,18 @@ bool checkSubArithmeticDSS( const DSL & D,
                             const typename DSL::Point & A, 
                             const typename DSL::Point & B ) 
 {
-  typedef typename DSL::Fraction Fraction;
   typedef typename DSL::Integer Integer;
-  typedef typename DSL::Quotient Quotient;
-  typedef typename DSL::Point Point;
   typedef typename DSL::ConstIterator ConstIterator;
-  typedef typename DSL::Point2I Point2I;
-  typedef typename DSL::Vector2I Vector2I;
-  typedef ArithmeticalDSS<ConstIterator, Integer, 4> ADSS;
+  typedef ArithmeticalDSSComputer<ConstIterator, Integer, 4> ADSS;
 
   ConstIterator it = D.begin( A );
   ConstIterator it_end = D.end( B );
   ADSS dss;
   dss.init( it );
   while ( ( dss.end() != it_end )
-          && ( dss.extendForward() ) ) {}
+          && ( dss.extendFront() ) ) {}
   std::cout << D.a() << " " << D.b() << " " << D.mu() << " "
-            << dss.getA() << " " << dss.getB() << " " << dss.getMu() << " "
+            << dss.a() << " " << dss.b() << " " << dss.mu() << " "
             << A[0] << " " << A[1] << " " << B[0] << " " << B[1] 
             << std::endl;
 
@@ -118,12 +113,7 @@ bool testSubStandardDSLQ0( unsigned int nbtries,
 {
   typedef StandardDSLQ0<Fraction> DSL;
   typedef typename Fraction::Integer Integer;
-  typedef typename Fraction::Quotient Quotient;
   typedef typename DSL::Point Point;
-  typedef typename DSL::ConstIterator ConstIterator;
-  typedef typename DSL::Point2I Point2I;
-  typedef typename DSL::Vector2I Vector2I;
-  typedef ArithmeticalDSS<ConstIterator, Integer, 4> ADSS;
   IntegerComputer<Integer> ic;
 
   std::cout << "# a b mu a1 b1 mu1 Ax Ay Bx By" << std::endl;
