@@ -65,4 +65,4 @@ script:
 
 after_script:
   - make test
-  - coveralls --exclude lib --exclude tests -e /usr/include --encoding latin-1
+  - coveralls --exclude lib --exclude tests -e /usr/include --encoding latin-1 --verbose
