@@ -21,7 +21,7 @@ before_script:
 before_install:
   - sudo pip install cpp-coveralls --use-mirrors
   - gem install coveralls-lcov
-  - sudo apt-get install -y lcov piconv
+  - sudo apt-get install -y lcov
 
  # - git clone https://github.com/dcoeurjo/cpp-coveralls.git
  # - cd cpp-coveralls
