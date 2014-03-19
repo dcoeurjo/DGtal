@@ -21,7 +21,7 @@ before_script:
 before_install:
   - sudo pip install cpp-coveralls --use-mirrors
   - gem install coveralls-lcov
-  - sudo apt-get install -y lcov
+  - sudo apt-get install -y lcov piconv
 
  # - git clone https://github.com/dcoeurjo/cpp-coveralls.git
  # - cd cpp-coveralls
@@ -71,4 +71,5 @@ after_script:
   - make lcov
  # - coveralls --exclude lib --exclude tests -e /usr/include --encoding latin-1 -e examples -e CMakeFiles
 #  - lcov --compat-libtool --directory . --capture --output-file coverage.info
-  - coveralls-lcov coverage/stap.info
+  - piconv -f latin-1 -t UTF-8 < coverage/stap.info > coverage/stap2.info
+  - coveralls-lcov coverage/stap2.info
