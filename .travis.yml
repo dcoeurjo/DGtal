@@ -56,8 +56,8 @@ matrix:
 
 
 script:
-  - find . -iname '*.*h' -exec sh -c 'piconv -f latin-1 -t UTF-8 "{}" > "{}" ' \;
-  - find . -iname '*.*cpp' -exec sh -c 'piconv -f latin-1 -t UTF-8 "{}" > "{}" ' \;
+  - find . -iname '*.*h' -exec sh -c 'piconv -f latin-1 -t UTF-8 "{}" > hop ; mv hop "{}" ' \;
+  - find . -iname '*.*cpp' -exec sh -c 'piconv -f latin-1 -t UTF-8 "{}" > hop ; mv hop "{}" ' \;
   - cmake . $BTYPE
   - make DGtal
   - make DGtalIO
