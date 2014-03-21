@@ -56,8 +56,8 @@ matrix:
 
 
 script:
-  - find . -iname '*.*h' -exec sh -c 'piconv -f latin-1 -t latin-1 "{}" > hop ; mv hop "{}" ' \;
-  - find . -iname '*.*cpp' -exec sh -c 'piconv -f latin-1 -t latin-1 "{}" > hop ; mv hop "{}" ' \;
+#  - find . -iname '*.*h' -exec sh -c 'piconv -f latin-1 -t latin-1 "{}" > hop ; mv hop "{}" ' \;
+#  - find . -iname '*.*cpp' -exec sh -c 'piconv -f latin-1 -t latin-1 "{}" > hop ; mv hop "{}" ' \;
   - cmake . $BTYPE
   - make DGtal
   - make DGtalIO
@@ -73,4 +73,4 @@ after_script:
   - make lcov
  # - coveralls --exclude lib --exclude tests -e /usr/include --encoding latin-1 -e examples -e CMakeFiles
 #  - lcov --compat-libtool --directory . --capture --output-file coverage.info
-  - coveralls-lcov coverage/stap.info
+  - coveralls-lcov --source-encoding=ISO-8859-1 coverage/stap.info
