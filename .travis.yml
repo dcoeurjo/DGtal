@@ -8,10 +8,10 @@ compiler:
 cache: apt
 
 env:
-#  - BTYPE="-DCMAKE_BUILD_TYPE=Debug -DWITH_QGLVIEWER=true -DBUILD_TESTING=OFF"
-#  - BTYPE="-DCMAKE_BUILD_TYPE=Debug -DWITH_CAIRO=true -DBUILD_TESTING=OFF"
-#  - BTYPE="-DCMAKE_BUILD_TYPE=Debug -DWITH_MAGICK=true -DWITH_GMP=true -DBUILD_TESTING=OFF"
-#  - BTYPE="-DCMAKE_BUILD_TYPE=Release  -DBUILD_TESTING=OFF"
+  - BTYPE="-DCMAKE_BUILD_TYPE=Debug -DWITH_QGLVIEWER=true -DBUILD_TESTING=OFF"
+  - BTYPE="-DCMAKE_BUILD_TYPE=Debug -DWITH_CAIRO=true -DBUILD_TESTING=OFF"
+  - BTYPE="-DCMAKE_BUILD_TYPE=Debug -DWITH_MAGICK=true -DWITH_GMP=true -DBUILD_TESTING=OFF"
+  - BTYPE="-DCMAKE_BUILD_TYPE=Release  -DBUILD_TESTING=OFF"
   - BTYPE="-DCMAKE_BUILD_TYPE=Debug -DBUILD_TESTING=ON -DBUILD_EXAMPLES=OFF"
 
 before_script:
@@ -56,8 +56,6 @@ matrix:
 
 
 script:
-#  - find . -iname '*.*h' -exec sh -c 'piconv -f latin-1 -t latin-1 "{}" > hop ; mv hop "{}" ' \;
-#  - find . -iname '*.*cpp' -exec sh -c 'piconv -f latin-1 -t latin-1 "{}" > hop ; mv hop "{}" ' \;
   - cmake . $BTYPE
   - make DGtal
   - make DGtalIO
@@ -65,12 +63,7 @@ script:
   - make
   - cd ../tests
   - make
-  - cd ..
-  - make
 
 after_script:
-#  - make test
   - make lcov
- # - coveralls --exclude lib --exclude tests -e /usr/include --encoding latin-1 -e examples -e CMakeFiles
-#  - lcov --compat-libtool --directory . --capture --output-file coverage.info
   - coveralls-lcov --source-encoding=ISO-8859-1 coverage/stap.info
