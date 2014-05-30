@@ -1,0 +1,55 @@
+/**
+ * @file moduleDECOperators.dox
+ * @author David Coeurjolly (\c david.coeurjolly@liris.cnrs.fr )
+ * Laboratoire d'InfoRmatique en Image et Systemes d'information - LIRIS (CNRS, UMR 5205), CNRS, France
+ *
+ * @date 2014/04/04
+ *
+ * Documentation file for feature DECOperators
+ *
+ * This file is part of the DGtal library.
+ */
+
+/*
+ * Useful to avoid writing DGtal:: in front of every class.
+ * Do not forget to add an entry in src/DGtal/base/Config.h.in !
+ */
+namespace DGtal {
+//----------------------------------------
+/*!
+@page moduleDECOperators Documentation of basic DEC operators
+@writers Pierre Gueth
+
+
+[TOC]
+
+\section sectDECOperators1 Basic Operators
+
+\image html operators_3d.png "DEC operators with definition cells for a rectangular grid."
+
+
+\subsection subsectDECOperators11 Hodge duality operator
+
+Hodge operators take primal (resp. dual) k-forms as input and create dual (resp. primal) k-forms.
+The order is preserved and the duality is negated.
+
+\subsection subsectDECOperators12 Exterior derivative
+
+Exterior derivatives take k-forms as inputs and create (k+1)-forms.
+Input and output forms have the same duality.
+Operators therefore come in two flavors, primal and dual.
+
+\section sectDECOperators2 Combining operator
+
+\subsection subsectDECOperators21 Vector space
+
+Linear operators form vector spaces and can be added together and scaled by a scalar.
+
+\subsection subsectDECOperators22  Laplace operator
+
+\image html operators_3d_laplace.png "DEC operators with definition cells for a rectangular grid. Highlighted dual laplace operator."
+
+
+*/
+
+}
