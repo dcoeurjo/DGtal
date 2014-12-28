@@ -124,7 +124,6 @@ bool testQuadNorm()
 
   board.saveOBJ("dgtalBoard3D-quad.obj");
 
-
   nbok += true ? 1 : 0;
   nb++;
   trace.info() << "(" << nbok << "/" << nb << ") "
@@ -135,7 +134,7 @@ bool testQuadNorm()
 }
 
 
-bool testNormaliation()
+bool testNormalization()
 {
   trace.beginBlock ( "Testing normalization ..." );
 
@@ -162,10 +161,27 @@ bool testNormaliation()
   return true;
 }
 
-
-bool testShapes()
+bool testLinel()
 {
- trace.beginBlock ( "Testing shapes ..." );
+  trace.beginBlock ( "Testing linel ..." );
+
+  KSpace k;
+
+  k.init(Point(0,0,0), Point(6,6,6), true);
+  Board3D<Space,KSpace> board(k);
+
+  board << k.uCell(KSpace::Point(3,2,2 ));
+  // board << k.sCell(KSpace::Point(1,4,4 ));
+  
+  board.saveOBJ("dgtalBoard3D-linel.obj");
+  trace.endBlock();
+
+  return true;
+}
+
+bool testLine()
+{
+ trace.beginBlock ( "Testing Line ..." );
 
   RealPoint p1( 0, 0, 0 );
   RealPoint p2(10, 10, 0);
@@ -173,9 +189,28 @@ bool testShapes()
   Board3D<Space,KSpace> board;
 
   board.setLineColor(Color::Red);
-  board.addLine(p1,p2, 0.5);
+  board.addLine(p1,p2, 0.05);
   
   board.saveOBJ("dgtalBoard3D-line.obj");
+
+  trace.endBlock();
+
+  return true;
+}
+
+bool testCylinder()
+{
+ trace.beginBlock ( "Testing cylinder ..." );
+
+  RealPoint p1( 0, 0, 0 );
+  RealPoint p2(10, 10, 0);
+
+  Board3D<Space,KSpace> board;
+
+  board.setLineColor(Color::Red);
+  board.addCylinder(p1,p2, 0.05);
+  
+  board.saveOBJ("dgtalBoard3D-cylinder.obj");
 
   trace.endBlock();
 
@@ -195,9 +230,11 @@ int main( int argc, char** argv )
     trace.info() << " " << argv[ i ];
   trace.info() << endl;
 
-bool res = testBoard3D() && testQuadNorm()
-                  && testNormaliation()
-                  && testShapes(); // && ... other tests
+  bool res = testBoard3D() && testQuadNorm()
+    && testNormalization()
+    && testLine()
+    && testLinel()
+    && testCylinder(); // && ... other tests
   trace.emphase() << ( res ? "Passed." : "Error." ) << endl;
   trace.endBlock();
   return res ? 0 : 1;

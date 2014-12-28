@@ -914,7 +914,7 @@ DGtal::Display3D< Space ,KSpace >::addCylinder(const RealPoint &p1, const RealPo
   updateBoundingBox(p2);
 
   int nbPoints = 6; //the number of point on the base of the cone
-  double degree = 360 / nbPoints; // the angle between two points
+  double degree = 360.0 / (double)nbPoints; // the angle between two points
   double radian = degree * M_PI/180.0;
   double norm; // norm of the vectors
 

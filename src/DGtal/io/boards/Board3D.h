@@ -133,6 +133,22 @@ namespace DGtal
 
 
 
+    /**
+     * Overloading of addLine to dislay a cylinder
+     * @param p1 the 1st point
+     * @param p2  the 2nd point
+     * @param width the line width
+     *
+     */
+    void addLine(const typename Display3D<Space,KSpace>::RealPoint &p1,
+                 const typename Display3D<Space,KSpace>::RealPoint &p2,
+                 const double width=0.03)
+    {
+      this->addCylinder(p1,p2,width);
+    }
+
+
+    
     DGtal::Color myDefaultColor;  //!< default color
 
 
