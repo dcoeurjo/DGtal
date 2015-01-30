@@ -15,7 +15,7 @@
  **/
 
 /**
- * @file testIntegralInvariantMeanCurvatureFromSurfaceAreaEstimator.cpp
+ * @file testIntegralInvariantFeatureFromSurfaceAreaEstimator.cpp
  * @ingroup Tests
  * @author David Coeurjolly (\c david.coeurjolly@liris.cnrs.fr )
  * Laboratoire d'InfoRmatique en Image et Systemes d'information - LIRIS (CNRS, UMR 5205), CNRS, France
@@ -49,7 +49,7 @@
 #include "DGtal/topology/LightImplicitDigitalSurface.h"
 
 //Main include
-#include "DGtal/geometry/surfaces/estimation/estimationFunctors/IntegralInvariantMeanCurvatureFromSurfaceAreaEstimator.h"
+#include "DGtal/geometry/surfaces/estimation/estimationFunctors/IntegralInvariantFeatureFromSurfaceAreaEstimator.h"
 
 
 #include "DGtal/geometry/surfaces/estimation/estimationFunctors/ElementaryConvolutionNormalVectorEstimator.h"
@@ -129,7 +129,7 @@ bool testFitting()
 
   
   trace.beginBlock("Creating  mean curvature adapter from normal vector field");
-  typedef functors::IntegralInvariantMeanCurvatureFromSurfaceAreaEstimator<Surfel, CanonicSCellEmbedder<KSpace> , NormalCache> Functor;
+  typedef functors::IntegralInvariantFeatureFromSurfaceAreaEstimator<Surfel, CanonicSCellEmbedder<KSpace> , NormalCache> Functor;
   typedef functors::ConstValue< double > ConvFunctor;
   typedef LocalEstimatorFromSurfelFunctorAdapter<SurfaceContainer, Z3i::L2Metric, Functor, ConvFunctor> Reporter;
 

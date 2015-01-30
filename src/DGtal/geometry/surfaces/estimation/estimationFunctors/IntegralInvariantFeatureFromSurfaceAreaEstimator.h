@@ -17,29 +17,29 @@
 #pragma once
 
 /**
- * @file IntegralInvariantMeanCurvatureFromSurfaceAreaEstimator.h
+ * @file IntegralInvariantFeatureFromSurfaceAreaEstimator.h
  * @brief Computes the true quantity to each element of a range associated to a parametric shape.
  * @author David Coeurjolly (\c david.coeurjolly@liris.cnrs.fr )
  * Laboratoire d'InfoRmatique en Image et Systèmes d'information - LIRIS (CNRS, UMR 5205), CNRS, France
  *
  * @date 2015/01/24
  *
- * Header file for module IntegralInvariantMeanCurvatureFromSurfaceAreaEstimator.cpp
+ * Header file for module IntegralInvariantFeatureFromSurfaceAreaEstimator.cpp
  *
  * This file is part of the DGtal library.
  *
  * @see testLengthEstimators.cpp, testTrueLocalEstimator.cpp
  */
 
-#if defined(IntegralInvariantMeanCurvatureFromSurfaceAreaEstimator_RECURSES)
-#error Recursive header files inclusion detected in IntegralInvariantMeanCurvatureFromSurfaceAreaEstimator.h
-#else // defined(IntegralInvariantMeanCurvatureFromSurfaceAreaEstimator_RECURSES)
+#if defined(IntegralInvariantFeatureFromSurfaceAreaEstimator_RECURSES)
+#error Recursive header files inclusion detected in IntegralInvariantFeatureFromSurfaceAreaEstimator.h
+#else // defined(IntegralInvariantFeatureFromSurfaceAreaEstimator_RECURSES)
 /** Prevents recursive inclusion of headers. */
-#define IntegralInvariantMeanCurvatureFromSurfaceAreaEstimator_RECURSES
+#define IntegralInvariantFeatureFromSurfaceAreaEstimator_RECURSES
 
-#if !defined IntegralInvariantMeanCurvatureFromSurfaceAreaEstimator_h
+#if !defined IntegralInvariantFeatureFromSurfaceAreaEstimator_h
 /** Prevents repeated inclusion of headers. */
-#define IntegralInvariantMeanCurvatureFromSurfaceAreaEstimator_h
+#define IntegralInvariantFeatureFromSurfaceAreaEstimator_h
 
 //////////////////////////////////////////////////////////////////////////////
 // Inclusions
@@ -53,10 +53,10 @@ namespace DGtal
   namespace functors
   {
     /////////////////////////////////////////////////////////////////////////////
-    // template class IntegralInvariantMeanCurvatureFromSurfaceAreaEstimator
+    // template class IntegralInvariantFeatureFromSurfaceAreaEstimator
     /**
-     * Description of template class 'IntegralInvariantMeanCurvatureFromSurfaceAreaEstimator' <p>
-     * \brief Aim: Estimate the mean curvature using integral
+     * Description of template class 'IntegralInvariantFeatureFromSurfaceAreaEstimator' <p>
+     * \brief Aim: Estimate the feature (k1 - k2)^2 using integral
      * invariant estimator from local patch surface area. This
      * functor needs a normal vector estimator (or cache) to evaluate
      * the surface area of the given patch.
@@ -74,7 +74,7 @@ namespace DGtal
     template <typename TSurfel,
               typename TEmbedder,
               typename TNormalVectorEstimator>
-    class IntegralInvariantMeanCurvatureFromSurfaceAreaEstimator
+    class IntegralInvariantFeatureFromSurfaceAreaEstimator
     {
     public:
 
@@ -102,21 +102,21 @@ namespace DGtal
        * @param [in] radius integration ball radius (Euclidean)
        * @param [in] anEstimator a normal vector estimator
        */
-      IntegralInvariantMeanCurvatureFromSurfaceAreaEstimator(ConstAlias<SCellEmbedder> anEmbedder,
+      IntegralInvariantFeatureFromSurfaceAreaEstimator(ConstAlias<SCellEmbedder> anEmbedder,
                                                              const double h,
                                                              const double radius,
                                                              ConstAlias<NormalVectorEstimator> anEstimator):
         myEmbedder(&anEmbedder), myH2(h*h), myRadius(radius), myNormalEstimatorCache(&anEstimator), myArea(0.0)
       {
-        myRatio = myH2 / (M_PI*myRadius*myRadius*myRadius);
-        myShift = 2.0/myRadius;
+        myShift = -32.0/(myRadius*myRadius);
+        myRatio = 32.0*myH2 / (M_PI*myRadius*myRadius*myRadius*myRadius);
       }
       
 
       /**
        * Destructor.
        */
-      ~IntegralInvariantMeanCurvatureFromSurfaceAreaEstimator( )
+      ~IntegralInvariantFeatureFromSurfaceAreaEstimator( )
       { }
       
       /**
@@ -144,13 +144,14 @@ namespace DGtal
       }
 
       /**
-       * Evaluate the surfaca area of the local patch.
+       * Evaluate the surface area of the local patch.
        *
        * @return the surface area
        */
       Quantity eval() const
       {
-        return (myShift - myArea*myRatio);
+        // return (32.0/(myRadius*myRadius))*((std::abs(myArea)*myH2)/(M_PI*myRadius*myRadius)-1);
+        return (myShift + myArea*myRatio);
       }
                              
       
@@ -186,7 +187,7 @@ namespace DGtal
       ///Shift (internal)
       double myShift;
       
-    }; // end of class IntegralInvariantMeanCurvatureFromSurfaceAreaEstimator
+    }; // end of class IntegralInvariantFeatureFromSurfaceAreaEstimator
   }
 } // namespace DGtal
 
@@ -194,7 +195,7 @@ namespace DGtal
 //                                                                           //
 ///////////////////////////////////////////////////////////////////////////////
 
-#endif // !defined IntegralInvariantMeanCurvatureFromSurfaceAreaEstimator_h
+#endif // !defined IntegralInvariantFeatureFromSurfaceAreaEstimator_h
 
-#undef IntegralInvariantMeanCurvatureFromSurfaceAreaEstimator_RECURSES
-#endif // else defined(IntegralInvariantMeanCurvatureFromSurfaceAreaEstimator_RECURSES)
+#undef IntegralInvariantFeatureFromSurfaceAreaEstimator_RECURSES
+#endif // else defined(IntegralInvariantFeatureFromSurfaceAreaEstimator_RECURSES)
