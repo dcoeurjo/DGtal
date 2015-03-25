@@ -64,7 +64,7 @@ before_script:
 # Main rules
 ############
 script:
-  - cmake . $BTYPE
+  - cmake . $BTYPE -G Ninja
   - echo $DOC
   - echo $BTYPE
   - if [ $NEEDBUILD == "true" ]; then  ninja DGtal && ninja DGtalIO; fi
