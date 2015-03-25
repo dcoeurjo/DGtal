@@ -55,9 +55,9 @@ before_install:
 # Deps.
 ########
 before_script:
-  - if [ $TRAVIS_OS_NAME == linux ]; then  sudo apt-get -qq update &&  sudo apt-get -qq install libhdf5-serial-dev libboost-program-options-dev libcairo2-dev doxygen graphviz libgraphicsmagick++1-dev libboost-system-dev libgmp-dev libqglviewer-qt4-dev libinsighttoolkit3-dev libgdcm2-dev lcov;  fi
+  - if [ $TRAVIS_OS_NAME == linux ]; then  sudo apt-get -qq update &&  sudo apt-get -qq install ninja libhdf5-serial-dev libboost-program-options-dev libcairo2-dev doxygen graphviz libgraphicsmagick++1-dev libboost-system-dev libgmp-dev libqglviewer-qt4-dev libinsighttoolkit3-dev libgdcm2-dev lcov;  fi
   - if [ $COVERAGE == "true" ]; then  gem install coveralls-lcov; fi
-  - if [ $TRAVIS_OS_NAME == osx ]; then brew update; brew install boost doxygen hdf5 graphviz graphicsmagick homebrew/science/insighttoolkit gmp libqglviewer; echo "done";fi
+  - if [ $TRAVIS_OS_NAME == osx ]; then brew update; brew install ninja boost doxygen hdf5 graphviz graphicsmagick homebrew/science/insighttoolkit gmp libqglviewer; echo "done";fi
 
 
 ############
@@ -67,16 +67,16 @@ script:
   - cmake . $BTYPE
   - echo $DOC
   - echo $BTYPE
-  - if [ $NEEDBUILD == "true" ]; then  make DGtal && make DGtalIO; fi
-  - if [ $NEEDBUILD == "true" ]; then  cd examples && make  ; fi
-  - if [ $NEEDBUILD == "true" ]; then  cd ../tests &&  make &&  cd .. ; fi
-  - if [ $NEEDBUILD == "true" ]; then  make test;  fi
+  - if [ $NEEDBUILD == "true" ]; then  ninja DGtal && ninja DGtalIO; fi
+  - if [ $NEEDBUILD == "true" ]; then  cd examples && ninja  ; fi
+  - if [ $NEEDBUILD == "true" ]; then  cd ../tests &&  ninja &&  cd .. ; fi
+  - if [ $NEEDBUILD == "true" ]; then  ninja test;  fi
 
 ############
 # Coverage
 ############
 after_script:
-  - if [ $COVERAGE == "true" ]; then make lcov; fi
+  - if [ $COVERAGE == "true" ]; then ninja lcov; fi
   - if [ $COVERAGE == "true" ]; then coveralls-lcov --source-encoding=ISO-8859-1 coverage/stap.info; fi
 
 
@@ -84,7 +84,7 @@ after_script:
 ## Building the documentation
 ###########
 after_success:
-  - if [ $DOC == "true" ]; then  make doc; fi
+  - if [ $DOC == "true" ]; then  ninja doc; fi
   - if [ $DOC == "true" ]; then rsync -azv --delete --delete-after -e 'ssh -oStrictHostKeyChecking=no -i  .travis/dgtal_rsa' html/ dgtal@liris.cnrs.fr:/home/dgtal/public_html/doc/nightly/;  fi
-  - if [ $DOC == "true" ]; then cd html; make ; wget http://dgtal.org/doc/docset/template.tgz ; tar zxvf template.tgz ; mv template/* org.dgtal.docset ; tar zcvf DGtal-devel.tgz org.dgtal.docset ; cd .. ;rsync  -azv --delete --delete-after -e 'ssh -oStrictHostKeyChecking=no -i  .travis/dgtal_rsa' html/DGtal-devel.tgz dgtal@liris.cnrs.fr:/home/dgtal/public_html/doc/docset ;   fi
+  - if [ $DOC == "true" ]; then cd html; make; wget http://dgtal.org/doc/docset/template.tgz ; tar zxvf template.tgz ; mv template/* org.dgtal.docset ; tar zcvf DGtal-devel.tgz org.dgtal.docset ; cd .. ;rsync  -azv --delete --delete-after -e 'ssh -oStrictHostKeyChecking=no -i  .travis/dgtal_rsa' html/DGtal-devel.tgz dgtal@liris.cnrs.fr:/home/dgtal/public_html/doc/docset ;   fi
   - echo "All done..."
