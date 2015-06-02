@@ -90,21 +90,30 @@ bool testBallQuad()
   unsigned int nbsurfels = 0;
 
   Board3D<Space,KSpace> board(K);
+  Board3D<Space,KSpace> board_orig(K);
 
+  board_orig << SetMode3D(boundary.begin()->className(), "Basic");
+ 
   for ( ConstIterator it = boundary.begin(), it_end = boundary.end();
         it != it_end; ++it )
     {
       ++nbsurfels;
 
+      //with normals
       Display3DFactory<>::drawOrientedSurfelWithNormal(board,
                                                        *it,
                                                        board.embedKS(*it).getNormalized());
+
+      //without normals
+      board_orig << *it;
     }
 
   trace.info() << nbsurfels << " surfels found." << std::endl;
 
+  trace.info()<<"Saving with normal vectors..."<<std::endl;
   board.saveOBJ("testball.obj");
-
+  trace.info()<<"Saving without normal vectors..."<<std::endl;
+  board_orig.saveOBJ("testball-orig.obj");
 
   nbok += true ? 1 : 0;
   nb++;
