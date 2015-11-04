@@ -23,8 +23,8 @@ OPTION(WITH_CAIRO "With CairoGraphics." OFF)
 OPTION(WITH_HDF5 "With HDF5." OFF)
 OPTION(WITH_QGLVIEWER "With LibQGLViewer for 3D visualization (Qt4 required)." OFF)
 OPTION(WITH_PATATE "With Patate library for geometry OFF (Eigen required)." processing)
-OPTION(WITH_BENCHMARK "With Google Benchmark." OFF)
 OPTION(WITH_QT5 "Using Qt5." OFF)
+OPTION(WITH_BENCHMARK "With Google Benchmark." OFF)
 
 #----------------------------------
 # Checking clang version on APPLE
@@ -44,6 +44,17 @@ IF (APPLE)
 endif()
 MESSAGE(STATUS " ")
 #---------------------------------
+
+#----------------------------------
+# Removing -frounding-math compile flag for clang
+#----------------------------------
+IF ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang")
+    MESSAGE( STATUS "Removing -frounding-math flag when compiling with Clang" )
+    STRING( REPLACE "-frounding-math" "" CMAKE_CXX_FLAGS ${CMAKE_CXX_FLAGS} )
+    MESSAGE( STATUS " " )
+ENDIF()
+#---------------------------------
+
 
 IF(WITH_C11)
 SET (LIST_OPTION ${LIST_OPTION} [c++11]\ )
@@ -153,8 +164,10 @@ SET(C11_ARRAY 0)
 IF(WITH_C11)
   INCLUDE(CheckCPP11)
   IF (CPP11_INITIALIZER_LIST OR CPP11_AUTO OR CP11_FORWARD_LIST)
-    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++0x ")
-    SET(C11_FOUND_DGTAL 1)
+    IF(NOT(MSVC))
+      set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++0x ")
+    ENDIF(NOT(MSVC))
+  SET(C11_FOUND_DGTAL 1)
     IF (CPP11_AUTO)
       SET(C11_AUTO_DGTAL 1)
       SET(C11_FEATURES "${C11_FEATURES} auto")
@@ -180,7 +193,11 @@ IF(WITH_C11)
   ELSE()
     MESSAGE(FATAL_ERROR "Your compiler does not support any c++11 feature. Please specify another C++ compiler of disable this WITH_C11 option.")
   ENDIF()
+ELSE(WITH_C11)
+    ADD_DEFINITIONS("-DCATCH_CONFIG_NO_CPP11 ")  
 ENDIF(WITH_C11)
+
+
 
 # -----------------------------------------------------------------------------
 # Look for GMP (The GNU Multiple Precision Arithmetic Library)
@@ -436,14 +453,14 @@ ENDIF(WITH_OPENMP)
 # -----------------------------------------------------------------------------
 SET(EIGEN_FOUND_DGTAL 0)
 IF(WITH_EIGEN)
-  FIND_PACKAGE(Eigen3 3.1.1 REQUIRED)
+  FIND_PACKAGE(Eigen3 3.2.1 REQUIRED)
   IF(EIGEN3_FOUND)
     SET(EIGEN_FOUND_DGTAL 1)
     ADD_DEFINITIONS("-DWITH_EIGEN ")
     include_directories( ${EIGEN3_INCLUDE_DIR})
     message(STATUS "Eigen3 (version ${EIGEN3_VERSION}) found.")
   ELSE(EIGEN3_FOUND)
-    message(FATAL_ERROR "Eigen3 is not found or the installed version (${EIGEN3_VERSION}) is below 3.1.1. ")
+    message(FATAL_ERROR "Eigen3 is not found or the installed version (${EIGEN3_VERSION}) is below 3.2.1. ")
   ENDIF(EIGEN3_FOUND)
 ENDIF(WITH_EIGEN)
 

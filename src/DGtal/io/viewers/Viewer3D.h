@@ -147,7 +147,9 @@ namespace DGtal
      * Constructor
      */
     Viewer3D() :QGLViewer(), Display3D<Space, KSpace>()
-    {};
+    {
+      resize(800,600);
+    };
 
     /**
      *Constructor with a khalimsky space
@@ -725,8 +727,8 @@ namespace DGtal
      * @param needToUpdateBoundingBox flag to update the bounding box
      */
     void updateList ( bool needToUpdateBoundingBox=true );
-    
-    
+
+
     /**
      * Draw a linel by using the [gluCShere] primitive.
      * @param pointel the pointel to draw
