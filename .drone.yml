@@ -1,6 +1,8 @@
 build:
   image: mugen/ubuntu-build-essential
   commands:
-    - apt-get install  cmake libboost-dev
+    - apt-get install  cmake libboost-dev g++4.8
+    - echo 2 | sudo update-alternatives --config g++
+    - g++ --version
     - cmake .
     - make
