@@ -1,0 +1,6 @@
+build:
+  image: mugen/ubuntu-build-essential
+  commands:
+    - apt-get install  cmake libboost-dev
+    - cmake .
+    - make
