@@ -164,7 +164,6 @@ namespace DGtal
     typedef TPointPredicate PointPredicate; 
 
     //points
-    typedef typename Image::Point Vector;
     typedef typename Image::Point Point;
     BOOST_STATIC_ASSERT(( boost::is_same< Point, typename AcceptedPointSet::Point >::value ));
     BOOST_STATIC_ASSERT(( boost::is_same< Point, typename PointPredicate::Point >::value ));
@@ -184,7 +183,7 @@ namespace DGtal
     typedef std::pair<Point, Value> PointValue; 
     typedef std::set<PointValue,
 		     detail::PointValueCompare<PointValue> > CandidatePointSet; 
-    typedef unsigned long Area;
+    typedef DGtal::uint64_t Area;
 
     // ------------------------- Private Datas --------------------------------
   private:

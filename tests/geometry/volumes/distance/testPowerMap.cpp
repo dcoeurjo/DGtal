@@ -36,6 +36,7 @@
 #include "DGtal/kernel/sets/DigitalSetDomain.h"
 #include "DGtal/images/ImageContainerBySTLMap.h"
 #include "DGtal/images/ImageContainerBySTLVector.h"
+#include "DGtal/kernel/sets/DigitalSetBySTLSet.h"
 ///////////////////////////////////////////////////////////////////////////////
 
 using namespace std;
@@ -58,13 +59,13 @@ bool testPowerMap()
   Z2i::Domain domain(Z2i::Point(0,0),Z2i::Point(10,10));
   Z2i::Domain domainLarge(Z2i::Point(0,0),Z2i::Point(10,10));
 
-  Z2i::DigitalSet set(domain);
+  DigitalSetBySTLSet<Z2i::Domain > set(domain);
   set.insertNew(Z2i::Point(3,3)); 
   //set.insertNew(Z2i::Point(3,7)); 
   set.insertNew(Z2i::Point(7,7));
-  DigitalSetDomain<Z2i::DigitalSet> setDomain(set); 
+  DigitalSetDomain< DigitalSetBySTLSet<Z2i::Domain > > setDomain(set); 
   
-  typedef ImageContainerBySTLMap<DigitalSetDomain<Z2i::DigitalSet> , DGtal::int64_t> Image;
+  typedef ImageContainerBySTLMap< DigitalSetDomain< DigitalSetBySTLSet<Z2i::Domain > > , DGtal::int64_t> Image;
   Image image(setDomain);
   
   //Setting some values
@@ -100,7 +101,7 @@ bool testPowerMap()
       for(unsigned int j=0; j<11; j++)
 	{
 	  Z2i::Point p(i,j);
-	  DGtal::int32_t dist = (i-power(p)[0])*(i-power(p)[0]) +
+	  DGtal::int64_t dist = (i-power(p)[0])*(i-power(p)[0]) +
 	    ( j-power(p)[1])*(j-power(p)[1])  - image(power(p));
 	  trace.info()<< dist;
 	}

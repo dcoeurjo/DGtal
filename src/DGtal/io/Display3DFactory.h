@@ -46,6 +46,7 @@
 
 #include "DGtal/io/DrawWithDisplay3DModifier.h"
 #include "DGtal/geometry/curves/StandardDSS6Computer.h"
+#include "DGtal/geometry/curves/Naive3DDSSComputer.h"
 #include "DGtal/kernel/sets/DigitalSetBySTLSet.h"
 #include "DGtal/kernel/sets/DigitalSetBySTLVector.h"
 #include "DGtal/kernel/domains/HyperRectDomain.h"
@@ -67,6 +68,8 @@
 #include "DGtal/dec/VectorField.h"
 #include "DGtal/dec/KForm.h"
 #include "DGtal/dec/DiscreteExteriorCalculus.h"
+
+#include "DGtal/kernel/sets/DigitalSetByAssociativeContainer.h"
 
 //
 //////////////////////////////////////////////////////////////////////////////
@@ -135,8 +138,7 @@ namespace DGtal
      */
     template <typename TVector>
     static void draw( Display & display, const DGtal::SphericalAccumulator<TVector> & accumulator,
-                      const typename DGtal::SphericalAccumulator<TVector>::RealVector &shift =
-                      typename DGtal::SphericalAccumulator<TVector>::RealVector(0,0,0),
+                      const DGtal::Z3i::RealVector &shift = DGtal::Z3i::RealVector(0,0,0),
                       const double radius=1.0);
     // SphericalAccumulator
 
@@ -194,6 +196,87 @@ namespace DGtal
     static void draw( Display & display, const DGtal::StandardDSS6Computer<TIterator,TInteger,connectivity> & anObject );
     // StandardDSS6Computer
 
+    // Naive3DDSSComputer
+    /**
+     * @brief defaultStyle
+     * Default drawing style object.
+     * @param str the name of the class
+     * @param anObject the object to draw
+     * @return the dyn. alloc. default style for this object.
+     */
+    template <typename TIterator, typename TInteger, int connectivity>
+    static DGtal::DrawableWithDisplay3D * defaultStyle( std::string str, const DGtal::Naive3DDSSComputer<TIterator,TInteger,connectivity> & anObject );
+
+    /**
+     * @brief drawAsBalls
+     * @param display the display where to draw
+     * @param anObject the object to draw
+     */
+    template <typename TIterator, typename TInteger, int connectivity>
+    static void drawAsBalls( Display & display, const DGtal::Naive3DDSSComputer<TIterator,TInteger,connectivity> & anObject );
+
+    /**
+     * @brief drawAsBoundingBox
+     * @param display the display where to draw
+     * @param anObject the object to draw
+     */
+    template <typename TIterator, typename TInteger, int connectivity>
+    static void drawAsBoundingBox( Display & display, const DGtal::Naive3DDSSComputer<TIterator,TInteger,connectivity> & anObject );
+    
+    /**
+     * @brief draw
+     * @param display the display where to draw
+     * @param anObject the object to draw
+     */
+    template <typename TIterator, typename TInteger, int connectivity>
+    static void draw( Display & display, const DGtal::Naive3DDSSComputer<TIterator,TInteger,connectivity> & anObject );
+    // Naive3DDSSComputer 
+   
+    
+    // DigitalSetByAssociativeContainer
+    /**
+     * @brief defaultStyle
+     * @param str the name of the class
+     * @param anObject the object to draw
+     * @return the dyn. alloc. default style for this object.
+     */
+    template<typename Domain, typename Container>
+    static DGtal::DrawableWithDisplay3D * defaultStyle( std::string str, const DGtal::DigitalSetByAssociativeContainer<Domain, Container> & anObject );
+
+    /**
+     * @brief drawAsPavingTransparent
+     * @param display the display where to draw
+     * @param anObject the object to draw
+     */
+    template<typename Domain, typename Container>
+    static void drawAsPavingTransparent( Display & display, const DGtal::DigitalSetByAssociativeContainer<Domain, Container> & anObject );
+
+    /**
+     * @brief drawAsPaving
+     * @param display the display where to draw
+     * @param anObject the object to draw
+     */
+    template<typename Domain, typename Container>
+    static void drawAsPaving( Display & display, const DGtal::DigitalSetByAssociativeContainer<Domain, Container> & anObject );
+
+    /**
+     * @brief drawAsGrid
+     * @param display the display where to draw
+     * @param anObject the object to draw
+     */
+    template<typename Domain, typename Container>
+    static void drawAsGrid( Display & display, const DGtal::DigitalSetByAssociativeContainer<Domain, Container> & anObject );
+
+    /**
+     * @brief draw
+     * @param display the display where to draw
+     * @param anObject the object to draw
+     */
+    template<typename Domain, typename Container>
+    static void draw( Display & display, const DGtal::DigitalSetByAssociativeContainer<Domain, Container> & anObject );
+    // DigitalSetByAssociativeContainer
+
+    
     // DigitalSetBySTLSet
     /**
      * @brief defaultStyle
@@ -512,7 +595,7 @@ namespace DGtal
      */
     template <typename TIterator>
     static void draw( Display & display,
-                      const DGtal::ConstRangeAdapter<TIterator, functors::SCellToPoint<KSpace>, typename TKSpace::Point> & anObject );
+                      const DGtal::ConstRangeAdapter<TIterator, DGtal::functors::SCellToPoint<KSpace>, typename TKSpace::Point> & anObject );
     // PointsRange
 
     // MidPointsRange
@@ -535,7 +618,7 @@ namespace DGtal
      */
     template <typename TIterator>
     static void draw( Display & display,
-                      const DGtal::ConstRangeAdapter<TIterator, functors::SCellToArrow<KSpace>,
+                      const DGtal::ConstRangeAdapter<TIterator, DGtal::functors::SCellToArrow<KSpace>,
                       std::pair<typename TKSpace::Point, typename TKSpace::Vector > > & anObject );
     // ArrowsRange
 
@@ -547,7 +630,7 @@ namespace DGtal
      */
     template <typename TIterator>
     static void draw( Display & display,
-                      const DGtal::ConstRangeAdapter<TIterator, functors::SCellToInnerPoint<KSpace>, typename TKSpace::Point> & anObject );
+                      const DGtal::ConstRangeAdapter<TIterator, DGtal::functors::SCellToInnerPoint<KSpace>, typename TKSpace::Point> & anObject );
     // InnerPointsRange
 
     // OuterPointsRange
@@ -558,7 +641,7 @@ namespace DGtal
      */
     template <typename TIterator>
     static void draw( Display & display,
-                      const DGtal::ConstRangeAdapter<TIterator, functors::SCellToOuterPoint<KSpace>, typename TKSpace::Point> & anObject );
+                      const DGtal::ConstRangeAdapter<TIterator, DGtal::functors::SCellToOuterPoint<KSpace>, typename TKSpace::Point> & anObject );
     // OuterPointsRange
 
     // IncidentPointsRange
@@ -569,8 +652,8 @@ namespace DGtal
      */
     template <typename TIterator>
     static void draw( Display & display,
-                      const DGtal::ConstRangeAdapter<TIterator, functors::SCellToIncidentPoints<KSpace>,
-                      std::pair<typename TKSpace::Point, typename TKSpace::Point > > & anObject );
+                      const DGtal::ConstRangeAdapter<TIterator, DGtal::functors::SCellToIncidentPoints<KSpace>,
+                      std::pair<typename KSpace::Point, typename KSpace::Point > > & anObject );
     // IncidentPointsRange
 
     /**

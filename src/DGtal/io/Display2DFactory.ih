@@ -42,14 +42,19 @@ void
 DGtal::Display2DFactory::drawDECSignedKhalimskyCell(DGtal::Board2D& board, const DGtal::SignedKhalimskyCell<dim, TInteger>& sk)
 {
     FATAL_ERROR( dim == 2 );
+    //FIXME: as for Display3D models, embedder should be factorized
+    //and not instantiated at each call.
     typedef DGtal::CanonicSCellEmbedder<DGtal::Z2i::KSpace> Embedder;
-    const Embedder embedder;
+    const Embedder embedder((DGtal::Z2i::KSpace()));
     const Embedder::RealPoint coords = embedder(sk);
     const float x = coords[0];
     const float y = coords[1];
     const float retract = 0.1f;
     const bool xodd = ( sk.myCoordinates[ 0 ] & 1 );
     const bool yodd = ( sk.myCoordinates[ 1 ] & 1 );
+    board.setLineWidth( .5 );
+    board.setPenColor( DGtal::Color::Black );
+    board.setLineStyle( Board2D::Shape::SolidStyle );
     if (!xodd && !yodd)
     {
         if (!sk.myPositive) DGtal::trace.warning() << "negative khalimsky 0-cell" << std::endl;
@@ -87,7 +92,6 @@ DGtal::Display2DFactory::draw(DGtal::Board2D& board, const DGtal::DiscreteExteri
     typedef typename Calculus::KSpace KSpace;
 
     board.setFillColor( DGtal::Color(128,128,128) );
-    board.setLineWidth( .5 );
     for (int kk=2; kk>=0; kk--)
         for (ConstIterator ci=calculus.begin(), cie=calculus.end(); ci!=cie; ci++)
         {
@@ -143,11 +147,21 @@ DGtal::Display2DFactory::draw(DGtal::Board2D& board, const DGtal::KForm<TCalculu
         }
     }
 
+    if (cmap_min == cmap_max) cmap_max += 1;
+
     board.setLineWidth( .5 );
 
     if (cmap_repeat < 1 && cmap_preset == DGtal::CMAP_JET)
     {
         typedef typename DGtal::GradientColorMap<Scalar, DGtal::CMAP_JET> ColorMap;
+        const ColorMap colormap(cmap_min, cmap_max);
+        drawWithColorMap(board, kform, colormap);
+        return;
+    }
+
+    if (cmap_repeat < 1 && cmap_preset == DGtal::CMAP_GRAYSCALE)
+    {
+        typedef typename DGtal::GradientColorMap<Scalar, DGtal::CMAP_GRAYSCALE> ColorMap;
         const ColorMap colormap(cmap_min, cmap_max);
         drawWithColorMap(board, kform, colormap);
         return;
@@ -175,7 +189,6 @@ DGtal::Display2DFactory::drawWithColorMap(DGtal::Board2D& board, const DGtal::KF
 {
     typedef typename TCalculus::Scalar Scalar;
     typedef typename TCalculus::SCell SCell;
-    typedef typename TCalculus::KSpace KSpace;
 
     for (typename TCalculus::Index index=0; index<kform.length(); index++)
     {
@@ -183,7 +196,7 @@ DGtal::Display2DFactory::drawWithColorMap(DGtal::Board2D& board, const DGtal::KF
         const Scalar displayed_value = kform.myContainer(index);
 
         if (std::isfinite(displayed_value)) board.setFillColor( colormap(displayed_value) );
-        else board.setFillColor( DGtal::Color::None );
+        else continue;
 
         drawDECSignedKhalimskyCell(board, displayed_cell);
     }
@@ -419,6 +432,87 @@ void DGtal::Display2DFactory::draw( DGtal::Board2D & board,
 // ArithmeticalDSSComputer
 
 
+// AlphaThickSegmentComputer
+template <typename TInputPoint,  typename TConstIterator>
+void DGtal::Display2DFactory::drawAsBoundingBox( DGtal::Board2D & aBoard, 
+                                                 const DGtal::AlphaThickSegmentComputer< TInputPoint, TConstIterator>  & anAlphaThickSegment){
+  typedef DGtal::PointVector<2,double> PointD;
+
+  PointD topLeft, topRight, bottomRight, bottomLeft;
+  anAlphaThickSegment.getBoundingBox(topLeft, topRight, bottomRight, bottomLeft);
+  //draw bounding box
+  aBoard.drawLine(topLeft[0],topLeft[1],topRight[0],topRight[1]);
+  aBoard.drawLine(topRight[0],topRight[1],bottomRight[0], bottomRight[1] );
+  aBoard.drawLine(bottomRight[0], bottomRight[1], bottomLeft[0], bottomLeft[1]);
+  aBoard.drawLine(bottomLeft[0], bottomLeft[1],topLeft[0],topLeft[1]);
+}
+
+
+template < typename TInputPoint, typename TConstIterator>
+void DGtal::Display2DFactory::drawAsDigitalPoints( DGtal::Board2D & aBoard, 
+                                                   const DGtal::AlphaThickSegmentComputer< TInputPoint, TConstIterator> & anAlphaThickSegment){
+  typedef typename DGtal::AlphaThickSegmentComputer< TInputPoint, TConstIterator>::ContainerConstIterator ContConstIterator;
+  typedef TConstIterator ConstIterator;
+  typedef TInputPoint Point;
+  // Draw a linking polygonal line if the pixels are drawn as points.
+  if(aBoard.getMode("PointVector")=="Grid" || aBoard.getMode("PointVector")=="")
+    {
+      std::vector<LibBoard::Point> contour;
+      if (anAlphaThickSegment.isStoringSegmentPoints()){
+        for (ContConstIterator it = anAlphaThickSegment.containerBegin(); 
+             it != anAlphaThickSegment.containerEnd(); it++) {
+          Point p = *it;
+          double xp = NumberTraits<typename TInputPoint::Component>::castToDouble(p[0]);
+          double yp = NumberTraits<typename TInputPoint::Component>::castToDouble(p[1]);
+          contour.push_back(LibBoard::Point(xp,yp));
+        }
+
+      }else{
+        for (ConstIterator it = anAlphaThickSegment.begin(); it != anAlphaThickSegment.end(); it++) {
+          Point p = *it;
+          double xp = NumberTraits<typename TInputPoint::Component>::castToDouble(p[0]);
+          double yp = NumberTraits<typename TInputPoint::Component>::castToDouble(p[1]);
+          contour.push_back(LibBoard::Point(xp,yp));
+        }
+      }
+      if(contour.size()>0){
+        aBoard.drawPolyline(contour);
+      }
+    }
+  // Draw points
+  if (anAlphaThickSegment.isStoringSegmentPoints()){
+    for (ContConstIterator it = anAlphaThickSegment.containerBegin(); 
+         it != anAlphaThickSegment.containerEnd(); it++) {
+      Point p = *it;
+     draw(aBoard,p );  
+    }
+  }else {
+    for (ConstIterator it = anAlphaThickSegment.begin(); it != anAlphaThickSegment.end(); it++) {
+      Point p = *it;
+    draw(aBoard,p );  
+    }  
+  }
+}
+
+template < typename TInputPoint,  typename TConstIterator>
+void DGtal::Display2DFactory::draw( DGtal::Board2D & aBoard, 
+                                    const DGtal::AlphaThickSegmentComputer< TInputPoint,  TConstIterator>  & anAlphaThickSegment ){
+  std::string mode = aBoard.getMode( anAlphaThickSegment.className() );
+  if ( mode == "BoundingBox" )
+    drawAsBoundingBox( aBoard, anAlphaThickSegment );
+  else if ( mode == "Points" )
+    drawAsDigitalPoints( aBoard, anAlphaThickSegment );
+  else if ( ( mode == "" ) )
+    {
+      drawAsDigitalPoints( aBoard, anAlphaThickSegment );
+      drawAsBoundingBox( aBoard, anAlphaThickSegment );
+    }
+  else
+    FATAL_ERROR_MSG(false, "draw( DGtal::Board2D & board, const DGtal::ArithmeticalDSSComputer<TIterator,TInteger,connectivity> & a ): Unknown mode "+mode);
+  }
+// AlphaThickSegmentComputer
+
+
 // CircleFrom2Points
 template <typename TPoint>
 inline
@@ -613,6 +707,21 @@ void DGtal::Display2DFactory::draw( DGtal::Board2D & board,
     draw(board, *it);
 }
 // DigitalSetBySTLSet
+
+
+// DigitalSetByAssociativeContainer
+template<typename Domain, typename Container>
+inline
+void DGtal::Display2DFactory::draw( DGtal::Board2D & board,
+                                    const DGtal::DigitalSetByAssociativeContainer<Domain,Container> & s )
+{
+  typedef typename DigitalSetByAssociativeContainer<Domain,Container>::ConstIterator ConstIterator;
+
+  BOOST_STATIC_ASSERT(Domain::Space::dimension == 2);
+  for(ConstIterator it =  s.begin(); it != s.end(); ++it)
+    draw(board, *it);
+}
+// DigitalSetByAssociativeContainer
 
 
 // DigitalSetBySTLVector
@@ -1344,6 +1453,37 @@ void DGtal::Display2DFactory::draw( DGtal::Board2D & board,
 }
 // Object
 
+// CubicalComplex
+template < typename TKSpace, typename TCellContainer >
+inline 
+void 
+DGtal::Display2DFactory::draw( DGtal::Board2D & board, 
+             const DGtal::CubicalComplex<TKSpace, TCellContainer> & cc )
+{
+  FATAL_ERROR( cc.dimension == 2);
+  typedef DGtal::CubicalComplex<TKSpace, TCellContainer> CC;
+  typedef typename CC::KSpace               KSpace;
+  typedef typename CC::Point                Point;
+  typedef typename CC::ConstIterator        ConstIterator;
+  typedef typename KSpace::Integer          Integer;
+  for ( ConstIterator it = cc.begin(), itE = cc.end(); it != itE; ++it )
+    { // We are not using operator << for cells in order to use the
+      // style specified for the cubical complex.
+      Point kx = cc.space().uKCoords( *it );
+      float x = (float) ( NumberTraits<Integer>::castToInt64_t( kx[0] ) >> 1 );
+      float y = (float) ( NumberTraits<Integer>::castToInt64_t( kx[1] ) >> 1 );
+      float retract = 0.05f;
+      bool xodd = ( kx[ 0 ] & 1 );
+      bool yodd = ( kx[ 1 ] & 1 );
+      float dx = xodd ? 1.0f - 2.0f*retract : 2.0f*retract;
+      float dy = yodd ? 1.0f - 2.0f*retract : 2.0f*retract;
+      board.drawRectangle( !xodd ? x - retract - 0.5 : x + retract - 0.5,
+                           !yodd ? y + retract - 0.5 : y - retract + 0.5,
+                           dx, dy );
+    }
+}
+// CubicalComplex
+
 
 // PointVector
 template<DGtal::Dimension dim, typename TComponent>
@@ -1352,8 +1492,8 @@ void DGtal::Display2DFactory::drawAsPaving( DGtal::Board2D & board,
            const DGtal::PointVector<dim,TComponent> & p )
 {
   FATAL_ERROR(dim == 2);
-  board.drawRectangle( (float) NumberTraits<TComponent>::castToDouble(p.myArray[0]) - 0.5f,
-                       (float) NumberTraits<TComponent>::castToDouble(p.myArray[1]) + 0.5f, 1, 1 );
+  board.drawRectangle( (float) NumberTraits<TComponent>::castToDouble(p[0]) - 0.5f,
+                       (float) NumberTraits<TComponent>::castToDouble(p[1]) + 0.5f, 1, 1 );
 }
 
 template<DGtal::Dimension dim, typename TComponent>
@@ -1362,8 +1502,8 @@ void DGtal::Display2DFactory::drawAsGrid( DGtal::Board2D & board,
            const DGtal::PointVector<dim,TComponent> & p )
 {
   FATAL_ERROR(dim == 2);
-  board.fillCircle((float) NumberTraits<TComponent>::castToDouble(p.myArray[0]),
-                   (float) NumberTraits<TComponent>::castToDouble(p.myArray[1]),0.1);
+  board.fillCircle((float) NumberTraits<TComponent>::castToDouble(p[0]),
+                   (float) NumberTraits<TComponent>::castToDouble(p[1]),0.1);
 }
 
 template<DGtal::Dimension dim, typename TComponent>
@@ -1395,7 +1535,7 @@ void DGtal::Display2DFactory::draw( DGtal::Board2D & board,
   FATAL_ERROR(dim == 2);
 
   board.drawArrow((float)apoint[0], (float) apoint[1],
-      (float) apoint[0] + p.myArray[0], (float)apoint[1] + p.myArray[1],
+      (float) apoint[0] + p[0], (float)apoint[1] + p[1],
       true);
 }
 // PointVector

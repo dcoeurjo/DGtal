@@ -40,6 +40,7 @@
 #include <fstream>
 #include <algorithm>
 #include <string>
+#include <unordered_set>
 
 #include "DGtal/base/Common.h"
 #include "DGtal/kernel/SpaceND.h"
@@ -50,6 +51,7 @@
 #include "DGtal/kernel/domains/CDomainArchetype.h"
 #include "DGtal/kernel/sets/DigitalSetBySTLVector.h"
 #include "DGtal/kernel/sets/DigitalSetBySTLSet.h"
+#include "DGtal/kernel/sets/DigitalSetByAssociativeContainer.h"
 #include "DGtal/kernel/sets/DigitalSetFromMap.h"
 #include "DGtal/kernel/sets/DigitalSetSelector.h"
 #include "DGtal/kernel/sets/DigitalSetDomain.h"
@@ -60,6 +62,9 @@
 #include "DGtal/helpers/StdDefs.h"
 
 #include "DGtal/io/boards/Board2D.h"
+
+#include "DGtal/kernel/PointHashFunctions.h"
+
 
 
 using namespace DGtal;
@@ -407,6 +412,18 @@ int main()
   bool okMap = testDigitalSet< DigitalSetFromMap<Map> >( setFromMap, setFromMap2 );
   trace.endBlock();
 
+  trace.beginBlock( "DigitalSetByAssociativeContainer" );
+  typedef std::set<Point> Container;
+  bool okAssoctestSet = testDigitalSet< DigitalSetByAssociativeContainer<Domain,Container> >
+  ( DigitalSetByAssociativeContainer<Domain, Container>(domain), DigitalSetByAssociativeContainer<Domain, Container>(domain) );
+  trace.endBlock();
+  
+  trace.beginBlock( "DigitalSetByUnorderedSet" );
+  typedef std::unordered_set<Point> ContainerU;
+  bool okUnorderedSet = testDigitalSet< DigitalSetByAssociativeContainer<Domain,ContainerU> >
+  ( DigitalSetByAssociativeContainer<Domain, ContainerU>(domain), DigitalSetByAssociativeContainer<Domain, ContainerU>(domain) );
+  trace.endBlock();
+    
   bool okSelectorSmall = testDigitalSetSelector
       < Domain, SMALL_DS + LOW_VAR_DS + LOW_ITER_DS + LOW_BEL_DS >
       ( domain, "Small set" );
@@ -427,7 +444,8 @@ int main()
 
   bool res = okVector && okSet && okMap 
       && okSelectorSmall && okSelectorBig && okSelectorMediumHBel
-      && okDigitalSetDomain && okDigitalSetDraw && okDigitalSetDrawSnippet;
+      && okDigitalSetDomain && okDigitalSetDraw && okDigitalSetDrawSnippet
+     && okUnorderedSet && okAssoctestSet;
   trace.endBlock();
   trace.emphase() << ( res ? "Passed." : "Error." ) << endl;
   return res ? 0 : 1;

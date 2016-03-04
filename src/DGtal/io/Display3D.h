@@ -212,6 +212,7 @@ namespace DGtal
     //have to be public because of external functions
     struct BallD3D : public CommonD3D
     {
+      static const typename RealPoint::Dimension dimension = RealPoint::dimension;
       const double & operator[]( unsigned int i ) const
       {
         assert(i<3);
@@ -701,7 +702,7 @@ namespace DGtal
      * @param aMesh : (return) the mesh containing the elements of the display.
      *
      **/
-    void exportToMesh(Mesh<Display3D::BallD3D> & aMesh ) const;
+    void exportToMesh(Mesh<RealPoint> & aMesh ) const;
 
 
     /**
@@ -950,7 +951,7 @@ namespace DGtal
    **/
   void
   operator>> ( const Display3D<Space , KSpace > &aDisplay3D,
-               DGtal::Mesh< typename Display3D<Space , KSpace >::BallD3D> &aMesh);
+               DGtal::Mesh< typename Display3D<Space , KSpace >::RealPoint > &aMesh);
 
 
   /**

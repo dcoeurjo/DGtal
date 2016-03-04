@@ -404,7 +404,7 @@ namespace DGtal
      * Writes/Displays the object on an output stream.
      * @param out the output stream where the object is written.
      */
-    void selfDisplay ( std::ostream & out ) ; 
+    void selfDisplay ( std::ostream & out ) const; 
 
     
   }; // end of class ArithmeticalDSSComputer
@@ -418,7 +418,7 @@ namespace DGtal
  */
 template <typename TIterator, typename TInteger, unsigned short adjacency>
 std::ostream&
-operator<< ( std::ostream & out,  ArithmeticalDSSComputer<TIterator,TInteger,adjacency> & object )
+operator<< ( std::ostream & out,  const ArithmeticalDSSComputer<TIterator,TInteger,adjacency> & object )
 {
   object.selfDisplay( out);
   return out;
@@ -466,7 +466,8 @@ namespace DGtal
     /**
      * Base class
      */
-    typedef ArithmeticalDSSComputer<TIterator, TInteger, 4> Super; 
+    typedef ArithmeticalDSSComputer<TIterator, TInteger, 4> Super;
+    typedef typename Super::ConstIterator ConstIterator;
 
   public: 
 
@@ -480,7 +481,7 @@ namespace DGtal
      * Constructor with initialisation
      * @param it an iterator on 2d points
      */
-    StandardDSS4Computer(const typename Super::ConstIterator& it);
+    StandardDSS4Computer(const ConstIterator& it);
 
     /**
      * Copy constructor.
@@ -527,6 +528,7 @@ namespace DGtal
      * Base class
      */
     typedef ArithmeticalDSSComputer<TIterator, TInteger, 4> Super; 
+    typedef typename Super::ConstIterator ConstIterator;
 
   public: 
 
@@ -540,7 +542,7 @@ namespace DGtal
      * Constructor with initialisation
      * @param it an iterator on 2d points
      */
-    NaiveDSS8Computer(const typename Super::ConstIterator& it);
+    NaiveDSS8Computer(const ConstIterator& it);
 
     /**
      * Copy constructor.

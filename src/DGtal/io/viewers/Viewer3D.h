@@ -40,9 +40,14 @@
 
 //////////////////////////////////////////////////////////////////////////////
 // Inclusions
+#include "DGtal/base/Common.h"
+
 #include <iostream>
 #include <vector>
 #include <algorithm>
+#ifdef WIN32
+#include <windows.h>
+#endif
 #ifdef APPLE
 #include <OpenGL/gl.h>
 #include <OpenGL/glu.h>
@@ -61,7 +66,6 @@
 #include <QGLWidget>
 #include <QKeyEvent>
 
-#include "DGtal/base/Common.h"
 #include "DGtal/kernel/SpaceND.h"
 #include "DGtal/topology/KhalimskySpaceND.h"
 #include "DGtal/base/CountedPtr.h"
@@ -140,6 +144,8 @@ namespace DGtal
     using Display::getSelectCallback3D;
     typedef typename Display::RealPoint RealPoint;
 
+    enum RenderingMode {RenderingDefault, RenderingMetallic, RenderingPlastic };
+
     // ----------------------- Standard services ------------------------------
   public:
 
@@ -147,7 +153,9 @@ namespace DGtal
      * Constructor
      */
     Viewer3D() :QGLViewer(), Display3D<Space, KSpace>()
-    {};
+    {
+      resize(800,600);
+    };
 
     /**
      *Constructor with a khalimsky space
@@ -226,6 +234,56 @@ namespace DGtal
     }
 
 
+    /**
+     * Change the light shininess coefficients used in opengl
+     * rendering (used in glMaterialf with GL_SPECULAR parameters). 
+     *
+     * @param[in] matShininessCoeff the value of the shininess coefficient (defined in [0, 128], default 50.0).
+     * 
+     **/
+    void setGLMaterialShininessCoefficient(const GLfloat matShininessCoeff);
+
+    
+    /**
+     * Change the light ambient coefficients used in opengl
+     * rendering (used in glLightfv with GL_AMBIENT parameters). 
+     *
+     * @param[in] lightAmbientCoeffs the values of specular coefficient of RGBA channels (defined in [0,1], default: {0.0,0.0,0.0,1.0}).
+
+     * 
+     **/
+    void setGLLightAmbientCoefficients(const GLfloat lightAmbientCoeffs [4]);
+
+    /**
+     * Change the material ambient coefficients used in opengl
+     * rendering (used in glMaterialf with GL_AMBIENT parameters). 
+     *
+     * @param[in] lightDiffuseCoeffs the values of specular coefficient of RGBA channels (defined in [0,1], default: {1.0,1.0,1.0,1.0}).
+
+     * 
+     **/
+    void setGLLightDiffuseCoefficients(const GLfloat lightDiffuseCoeffs [4]);
+
+
+    /**
+     * Change the light specular coefficients used in opengl
+     * rendering (used in glLightfv with GL_SPECULAR parameters). 
+     *
+     * @param[in] lightSpecularCoeffs the values of specular coefficient of RGBA channels (defined in [0,1], default: {1.0,1.0,1.0,1.0}).
+     * 
+     **/
+    void setGLLightSpecularCoefficients(const GLfloat lightSpecularCoeffs [4]);
+    
+    
+    /**
+     * Change the current rendering mode of the viewer.
+     * 
+     * @param[in] aRenderMode the mode of the rendering.
+     * 
+     **/
+    void updateRenderingCoefficients(const RenderingMode aRenderMode);
+    
+    
     /// the 3 possible axes for the image direction
     enum ImageDirection {xDirection, yDirection, zDirection, undefDirection };
     /// the modes of representation of an image
@@ -241,7 +299,11 @@ namespace DGtal
     bool myViewWire;
     /// to improve the display of gl line
     double myGLLineMinWidth;
-
+    /// flag to save automatically or not the Viewer3d state when closing the viewer
+    bool myAutoSaveState;
+    // define the default rendering mode of the viewer
+    RenderingMode myRenderingMode = RenderingDefault;
+    
     /**
      * Used to display the 2D domain of an image.
      * @note has to be public because of external functions
@@ -277,7 +339,7 @@ namespace DGtal
        * @param mode the mode of representation
        */
       template<typename TDomain>
-      Image2DDomainD3D( TDomain aDomain, Viewer3D::ImageDirection normalDir=zDirection,
+      Image2DDomainD3D( TDomain aDomain, ImageDirection normalDir=zDirection,
                         double xBottomLeft=0.0, double yBottomLeft=0.0, double zBottomLeft=0.0, std::string mode= "BoundingBox")
       {
         BOOST_CONCEPT_ASSERT(( concepts::CDomain < TDomain >));
@@ -298,7 +360,7 @@ namespace DGtal
        * @param yBottomLeft the x coordinate of bottom left image point.
        * @param zBottomLeft the x coordinate of bottom left image point.
        **/
-      void updateDomainOrientation( Viewer3D::ImageDirection normalDir,
+      void updateDomainOrientation( ImageDirection normalDir,
                                     double xBottomLeft, double yBottomLeft, double zBottomLeft);
 
 
@@ -391,14 +453,14 @@ namespace DGtal
        * @param xBottomLeft the x coordinate of bottom left image point (default 0).
        * @param yBottomLeft the x coordinate of bottom left image point (default 0).
        * @param zBottomLeft the x coordinate of bottom left image point (default 0).
-       * @param aMode the mode of representation
+       * @param aMode the mode of representation (default GrayScaleMode).
        */
       template <typename TImageType, typename TFunctor>
 
       TextureImage( const TImageType & image, const TFunctor &aFunctor,
-                    Viewer3D::ImageDirection normalDir=zDirection,
+                    ImageDirection normalDir=zDirection,
                     double xBottomLeft=0.0, double yBottomLeft=0.0, double zBottomLeft=0.0,
-                    TextureMode aMode= 1)
+                    TextureMode aMode= GrayScaleMode)
       {
         BOOST_CONCEPT_ASSERT(( concepts::CConstImage < TImageType > ));
         BOOST_CONCEPT_ASSERT(( concepts::CUnaryFunctor<TFunctor, typename TImageType::Value, unsigned int> )) ;
@@ -421,7 +483,7 @@ namespace DGtal
        * @param yBottomLeft the x coordinate of bottom left image point.
        * @param zBottomLeft the x coordinate of bottom left image point.
        **/
-      void updateImageOrientation( Viewer3D::ImageDirection normalDir,
+      void updateImageOrientation( ImageDirection normalDir,
                                    double xBottomLeft, double yBottomLeft, double zBottomLeft);
 
 
@@ -569,6 +631,14 @@ namespace DGtal
 
 
     /**
+     *  @brief Overload of the QGLViewer method in order to change the
+     *  order of display (to fix the QGLViewer axis display trough
+     *  transparency).
+     **/
+    virtual void paintGL();
+
+
+    /**
      * Add a TextureImage in the list of image to be displayed.
      * @param image a TextureImage including image data buffer and position, orientation.
      *
@@ -704,6 +774,8 @@ namespace DGtal
 
 
 
+    
+
     // ------------------------- Protected Datas ------------------------------
   private:
 
@@ -725,8 +797,8 @@ namespace DGtal
      * @param needToUpdateBoundingBox flag to update the bounding box
      */
     void updateList ( bool needToUpdateBoundingBox=true );
-    
-    
+
+
     /**
      * Draw a linel by using the [gluCShere] primitive.
      * @param pointel the pointel to draw
@@ -753,8 +825,28 @@ namespace DGtal
      * @param e the QKeyEvent
      **/
     virtual void keyPressEvent ( QKeyEvent *e );
-
-
+    
+    /**
+     * Used to manage a mouse move event (to handle light move).
+     *
+     * @param e the QMouseEvent
+     **/
+    virtual void mouseMoveEvent ( QMouseEvent *e );
+    
+    /**
+     * Used to manage a mouse press event (to handle light move).
+     *
+     * @param e the QMouseEvent
+     **/
+    virtual void mousePressEvent ( QMouseEvent *e );
+    
+    /**
+     * Used to manage a mouse release event (to handle light move).
+     *
+     * @param e the QMouseEvent
+     **/
+    virtual void mouseReleaseEvent ( QMouseEvent *e );
+    
     /**
      * Used to sort pixel from camera
      **/
@@ -869,8 +961,42 @@ namespace DGtal
 
 
 
+    /**
+     * @brief Overload of the QGLViewer method which returns an XML
+     * QDomElement representing the QGLViewer state. This overload adds the light
+     * position attribute.
+     *
+     * @param name the name of the QDomElement tag.  
+     * @param document the QDomElement factory used to create QDomElement.
+     * @see initFromDOMElement
+     */
+    virtual  QDomElement domElement(const QString& name, QDomDocument& document) const;
+    
 
+    /**
+     * @brief Overload of the QGLViewer method which restores the
+     * viewer state from a QDomDocument element. This overload
+     * recovers and loads default viewer attributes with the add of the
+     * the light position.
+     *
+     * @param element QDomDocument used to apply the restoration.
+     *
+     * @see domElement
+     */    
+    virtual void initFromDOMElement(const QDomElement& element);
+    
+    
+    /**
+     * @brief Overload the QWidget method to customize the viewer state auto saving.
+     * Now it save the viewer state if the flag myAutoSaveState is true (false by default)
+     * and call the QGLWidget::closeEvent().
+     * @param e the QCloseEvent calling the method.
+     */
+    
+    protected: virtual void closeEvent	(	QCloseEvent * 	e	);
+    
 
+    
     // ------------------------- Internals ------------------------------------
   private:
 
@@ -1192,6 +1318,7 @@ namespace DGtal
 
     /**
      * Rotate a vertex from a given angle, a center point and a rotation direction.
+     * @tparam TValues the type of coordinate to be rotated.
      * @param  x the x coordinate of the point to rotated (return).
      * @param  y the y coordinate of the point to rotated (return).
      * @param  z the z coordinate of the point to rotated (return).
@@ -1201,9 +1328,10 @@ namespace DGtal
      * @param rotationAngle the angle of the rotation.
      * @param rotationDir the rotation is applied around this axis direction.
      **/
-
+    
+    template <typename TValues>
     static
-    void  rotatePoint(double &x, double &y, double &z,
+    void  rotatePoint(TValues &x, TValues &y, TValues &z,
           double cx, double cy, double cz,
           double rotationAngle, ImageDirection rotationDir);
 
@@ -1255,6 +1383,25 @@ namespace DGtal
     double camera_direction[3]; ///< camera direction
     double camera_upVector[3]; ///< camera up-vector
 
+    double myLightTheta; /// the light position (inclination)
+    double myLightPhi; /// the light position (azimuth)
+    double myLightR; /// the light position (distance)
+    GLfloat myLightPosition [4]; // the light position in cartesian coordinate
+    GLfloat myMaterialShininessCoeff[1] =  {50.0} ; // the material shininess coefficient used in opengl rendering 
+    GLfloat myMaterialSpecularCoeffs[4] = { 1.0, 1.0, 1.0, 1.0 }; // the light specular coefficients used in opengl rendering 
+    GLfloat myLightSpecularCoeffs[4] = { 1.0, 1.0, 1.0, 1.0 }; // the light specular coefficients used in opengl rendering 
+    GLfloat myLightAmbientCoeffs[4] = { 0.0, 0.0, 0.0, 1.0 }; // the material ambient coefficients used in opengl rendering  
+    GLfloat myLightDiffuseCoeffs[4] = { 1.0, 1.0, 1.0, 1.0 }; // the material diffuse coefficients used in opengl rendering  
+    
+    const GLfloat myDefaultRenderSpec = 1.0; // default specular coefficients for default mode rendering
+    const GLfloat myDefaultRenderDiff = 1.0; // default diffuse coefficients for metallic mode rendering
+    const GLfloat myMetallicRenderSpec = 0.6; // default specular coefficients for metallic mode rendering
+    const GLfloat myMetallicRenderDiff = 0.5; // default diffuse coefficients for metallic mode rendering
+    const GLfloat myPlasticRenderSpec = 0.8; // default specular coefficients for platic mode rendering
+    const GLfloat myPlasticRenderDiff = 0.2; // default diffuse coefficients for platic mode rendering
+    
+
+
     double ZNear; ///< znear distance
     double ZFar; ///< zfar distance
 
@@ -1265,6 +1412,12 @@ namespace DGtal
     float myGLScaleFactorX;
     float myGLScaleFactorY;
     float myGLScaleFactorZ;
+
+    // Used to apply interactive light rotation
+    double myLigthRotationStep; /// the angle rotation increment used for interactive light move
+    int myRefMouseXPos; /// the reference mouse x-position used to determince the light position change (azimuth)
+    int myRefMouseYPos; /// the reference mouse y-position used to determince the light position change (inclination)
+    bool myIsMovingLight; /// flag to display the ligth source when it is moved by the user
 
     /// Used to store all displayed images
     std::vector<TextureImage> myGSImageList;

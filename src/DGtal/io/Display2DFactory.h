@@ -43,9 +43,14 @@
 
 #include "DGtal/base/Common.h"
 
+#include "DGtal/kernel/sets/DigitalSetByAssociativeContainer.h"
+#include "DGtal/kernel/sets/DigitalSetBySTLSet.h"
+#include "DGtal/kernel/sets/DigitalSetBySTLVector.h"
+
 #include "DGtal/math/AngleLinearMinimizer.h"
 #include "DGtal/geometry/curves/ArithmeticalDSS.h"
 #include "DGtal/geometry/curves/ArithmeticalDSSComputer.h"
+#include "DGtal/geometry/curves/AlphaThickSegmentComputer.h"
 #include "DGtal/shapes/fromPoints/CircleFrom2Points.h"
 #include "DGtal/shapes/fromPoints/CircleFrom3Points.h"
 #include "DGtal/kernel/sets/DigitalSetBySTLSet.h"
@@ -62,6 +67,7 @@
 #include "DGtal/images/ImageAdapter.h"
 #include "DGtal/topology/KhalimskySpaceND.h"
 #include "DGtal/topology/Object.h"
+#include "DGtal/topology/CubicalComplex.h"
 #include "DGtal/kernel/PointVector.h"
 #include "DGtal/geometry/tools/Preimage2D.h"
 #include "DGtal/shapes/fromPoints/StraightLineFrom2Points.h"
@@ -71,7 +77,6 @@
 #include "DGtal/dec/KForm.h"
 #include "DGtal/dec/DiscreteExteriorCalculus.h"
 
-//#include "DGtal/io/boards/Board2D.h"
 #include "DGtal/helpers/StdDefs.h"
 
 //////////////////////////////////////////////////////////////////////////////
@@ -88,13 +93,12 @@ namespace DGtal
  */
   struct Display2DFactory
  {
+		public:
 
-		private:
 template <Dimension dim, typename TInteger>
 static
 void
 drawDECSignedKhalimskyCell(DGtal::Board2D& board, const DGtal::SignedKhalimskyCell<dim, TInteger>& cell);
-		public:
 
 // DiscreteExteriorCalculus
 template <Dimension dimEmbedded, Dimension dimAmbient, typename TLinearAlgebraBackend, typename TInteger>
@@ -150,8 +154,23 @@ template <typename TIterator, typename TInteger, int connectivity>
 			    const DGtal::ArithmeticalDSSComputer<TIterator,TInteger,connectivity> & );
 
 template <typename TIterator, typename TInteger, int connectivity>
-  static void draw( DGtal::Board2D & board, const DGtal::ArithmeticalDSSComputer<TIterator,TInteger,connectivity> & );
+static void draw( DGtal::Board2D & board, const DGtal::ArithmeticalDSSComputer<TIterator,TInteger,connectivity> & );
 // ArithmeticalDSSComputer
+
+
+// AlphaThickSegmentComputer
+template < typename TInputPoint,  typename TConstIterator>
+static void drawAsBoundingBox( DGtal::Board2D & aBoard, 
+                               const DGtal::AlphaThickSegmentComputer< TInputPoint, TConstIterator> & );
+
+template < typename TInputPoint, typename TConstIterator>
+static void drawAsDigitalPoints( DGtal::Board2D & aBoard, 
+                                 const DGtal::AlphaThickSegmentComputer<TInputPoint, TConstIterator> & );
+
+template < typename TInputPoint,  typename TConstIterator>
+  static void draw( DGtal::Board2D & aBoard, 
+                    const DGtal::AlphaThickSegmentComputer< TInputPoint, TConstIterator> & );
+// AlphaThickSegmentComputer
     
     
 // CircleFrom2Points
@@ -182,7 +201,13 @@ static void draw(Board2D & aBoard, const DGtal::CircleFrom3Points<TPoint> & );
 template<typename Domain, typename Compare>
 static void draw( DGtal::Board2D & board, const DGtal::DigitalSetBySTLSet<Domain, Compare> & );
 // DigitalSetBySTLSet
-    
+
+   
+// DigitalSetByAssociativeContainer
+template<typename Domain, typename Container>
+static void draw( DGtal::Board2D & board, const DGtal::DigitalSetByAssociativeContainer<Domain,Container> & );
+// DigitalSetByAssociativeContainer
+   
     
 // DigitalSetBySTLVector
 template<typename Domain>
@@ -335,6 +360,13 @@ template <typename TDigitalTopology, typename TDigitalSet>
 template <typename TDigitalTopology, typename TDigitalSet>
   static void draw( DGtal::Board2D & board, const DGtal::Object<TDigitalTopology, TDigitalSet> & );
 // Object
+
+
+// CubicalComplex
+template < typename TKSpace, typename TCellContainer >
+  static void draw( DGtal::Board2D & board, const DGtal::CubicalComplex<TKSpace, TCellContainer> & );
+// CubicalComplex
+
     
     
 // PointVector

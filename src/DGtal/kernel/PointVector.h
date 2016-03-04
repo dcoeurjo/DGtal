@@ -47,8 +47,7 @@
 #include <string>
 #include <bitset>
 #include <algorithm>
-#include <boost/array.hpp>
-
+#include <array>
 #include <vector>
 
 #include "DGtal/base/Common.h"
@@ -138,7 +137,7 @@ namespace DGtal
    */
   template < DGtal::Dimension dim, 
 	     typename TEuclideanRing,
-	     typename TContainer=boost::array<TEuclideanRing,dim> >
+	     typename TContainer=std::array<TEuclideanRing,dim> >
   class PointVector
   {
     // ----------------------- Standard services ------------------------------
@@ -167,9 +166,9 @@ namespace DGtal
     ///Copy of the static dimension of the Point/Vector.
     static const Dimension dimension = dim;
 
-		///Types needed by CLinearAlgebraContainer
-		typedef Component Scalar;
-		typedef Dimension Index;
+    ///Types needed by CLinearAlgebraContainer
+    typedef Component Scalar;
+    typedef Dimension Index;
 
     ///Copy of the container type
     typedef TContainer Container;
@@ -227,13 +226,11 @@ namespace DGtal
     PointVector( const Component & x, const Component & y, 
 		 const Component & z, const Component & t );
 
-#ifdef CPP11_INITIALIZER_LIST
     /**
      * Constructor from initializer list.
      * @param init the initializer list.
      */
     PointVector( std::initializer_list<Component> init );
-#endif // CPP11_INITIALIZER_LIST
 
     /** Constructor taking two points and a functor as parameters.
      *  The new point is initialized by the result of functor f
@@ -280,8 +277,6 @@ namespace DGtal
      */
     Self & operator= ( const Self & pv );
 
-
-#ifdef CPP11_INITIALIZER_LIST
     /**
      * Partial copy of a given PointVector. Only coordinates in dimensions
      * are copied.
@@ -305,7 +300,7 @@ namespace DGtal
      */
     Self& partialCopyInv (const Self & pv,
 			  std::initializer_list<Dimension> dimensions);
-#endif
+
     /**
      * Partial copy of a given PointVector. Only coordinates in dimensions
      * are copied.
@@ -541,6 +536,13 @@ namespace DGtal
     Self crossProduct( const Self &v) const;
 
     /**
+     * Positive angle between two vectors, deduced from their scalar product.
+     * @param v any vector
+     * @return the angle between *this and v in [0,pi].
+     */
+    double cosineSimilarity ( const Self & v ) const;
+
+    /**
      * Addition operator with assignement.
      *
      * @param v is the Point that gets added to @a *this.
@@ -746,8 +748,9 @@ namespace DGtal
      * a unitary vector on double.
      * 
      * @return a unitary vector with double as coordiante type. 
+     * @advanced the point container is forced to boost::array<double,dim> 
      */
-    PointVector<dim, double, Container> getNormalized() const;
+    PointVector<dim, double, std::array<double,dim> > getNormalized() const;
     
 
     // ------------------------- Standard vectors ------------------------------
@@ -766,22 +769,9 @@ namespace DGtal
      */
     static Self base( Dimension k, Component val = 1 );
 
-    // ------------------------- Private Datas -------------------------------
-  private:
-
-
-
     // --------------- CDrawableWithBoard2D realization -------------------
   public:
-
-    /**
-     * Default drawing style object.
-     * @return the dyn. alloc. default style for this object.
-     */
-    //DrawableWithBoard2D* defaultStyle( std::string mode = "" ) const;
-    
-
-    
+ 
     /**
      * @return the style name used for drawing this object.
      */
@@ -806,9 +796,9 @@ namespace DGtal
     static Self zero;
     
     // ------------------------- Hidden services ------------------------------
-  //protected:
+  protected:
     
-    ///Internal data-structure: boost/array with constant size.
+    ///Internal data-structure: std::array with constant size.
     Container myArray;
 
   }; // end of class PointVector
