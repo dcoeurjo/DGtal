@@ -78,6 +78,7 @@ DGtal::DomainAdjacency<TDomain,TAdjacency>
 {
   return myPred;
 }
+//------------------------------------------------------------------------------
 // TODO: DGtal-team/DGtal: Issue #1265: isAdjacent/isProperlyAdjacent call
 // themeselves  link: https://github.com/DGtal-team/DGtal/issues/1265
 template <typename TDomain, typename TAdjacency>
