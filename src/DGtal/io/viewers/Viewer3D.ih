@@ -1022,16 +1022,18 @@ DGtal::Viewer3D<TSpace, TKSpace>::updateList ( bool needToUpdateBoundingBox )
   glDeleteLists(myTriangleSetListWiredId, 1);
   glDeleteLists(myPrismListId, 1);
   glDeleteLists(myPolygonSetListId, 1);
-  glDeleteLists(myPolygonSetListWiredId, 1);
-  glDeleteLists(myQuadsMapId, 1);
-  glDeleteLists(myQuadsMapWiredId, 1);
+  glDeleteLists( (GLsizei)myPolygonSetListWiredId, 1 );
+  glDeleteLists( (GLsizei)myQuadsMapId, 1 );
+  glDeleteLists( (GLsizei)myQuadsMapWiredId, 1 );
 
   // Storing ID for each list
   myCubesMapId = glGenLists(1);
-  myLineSetListId = glGenLists(Viewer3D<TSpace, TKSpace>::myLineSetList.size());
-  myNbLineSetList =  Viewer3D<TSpace, TKSpace>::myLineSetList.size();
-  myBallSetListId = glGenLists(Viewer3D<TSpace, TKSpace>::myBallSetList.size());
-  myNbBallSetList = Viewer3D<TSpace, TKSpace>::myBallSetList.size();
+  myLineSetListId =
+  (GLsizei)glGenLists( Viewer3D<TSpace, TKSpace>::myLineSetList.size() );
+  myNbLineSetList = (GLsizei)Viewer3D<TSpace, TKSpace>::myLineSetList.size();
+  myBallSetListId =
+  (GLsizei)glGenLists( Viewer3D<TSpace, TKSpace>::myBallSetList.size() );
+  myNbBallSetList = (GLsizei)Viewer3D<TSpace, TKSpace>::myBallSetList.size();
   myTriangleSetListId = glGenLists(1);
   myTriangleSetListWiredId = glGenLists(1);
   myCubeSetListWiredId = glGenLists(1);

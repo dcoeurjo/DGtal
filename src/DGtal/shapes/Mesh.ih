@@ -324,19 +324,14 @@ DGtal::Mesh<TPoint>::getFaceBarycenter(unsigned int i) const
   return c/static_cast<typename RealPoint::Component>(aFace.size());
 }
 
-
-template<typename TPoint>
-inline
-unsigned int 
-DGtal::Mesh<TPoint>::nbFaces() const
+template <typename TPoint>
+inline typename DGtal::Mesh<TPoint>::Size DGtal::Mesh<TPoint>::nbFaces() const
 {
   return myFaceList.size();
 }
 
-template<typename TPoint>
-inline
-unsigned int 
-DGtal::Mesh<TPoint>::nbVertex() const
+template <typename TPoint>
+inline typename DGtal::Mesh<TPoint>::Size DGtal::Mesh<TPoint>::nbVertex() const
 {
   return myVertexList.size();
 }
