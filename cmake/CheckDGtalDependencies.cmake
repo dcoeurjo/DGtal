@@ -36,20 +36,10 @@ endif( ZLIB_FOUND )
 # Check some CPP11 features in the compiler
 # -----------------------------------------------------------------------------
 MESSAGE(STATUS "Checking C++11 compatibility:")
-INCLUDE(CheckCPP11)
-IF (CPP11_COMPATIBLE)
-  IF (NOT CPP11_COMPATIBLE_FLAG_SET_BY_USER)
-    IF (NOT MSVC)
-      set(CMAKE_CXX_STANDARD 11) # C++11...
-      set(CMAKE_CXX_STANDARD_REQUIRED ON) #...is required...
-      set(CMAKE_CXX_EXTENSIONS OFF) #...without compiler extensions like gnu++11
-      MESSAGE(STATUS "  c++11 enabled by cmake. ")
-    ENDIF()
-  ENDIF()
-  MESSAGE(STATUS "OK.")
-ELSE()
-  MESSAGE(FATAL_ERROR "Your compiler does not support C++11. Please specify another C++ compiler.")
-ENDIF()
+set(CMAKE_CXX_STANDARD 11) # C++11...
+set(CMAKE_CXX_STANDARD_REQUIRED ON) #...is required...
+set(CMAKE_CXX_EXTENSIONS OFF) #...without compiler extensions like gnu++11
+MESSAGE(STATUS "  c++11 enabled by cmake. ")
 
 
 # -----------------------------------------------------------------------------
