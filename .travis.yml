@@ -2,7 +2,7 @@ language: cpp
 dist: trusty
 sudo: false
 
-# Reducing the depth when cloning
+# Reducing the depth when cloning using git
 git:
   depth: 3
 
