@@ -22,8 +22,6 @@
  *
  * @date 2012/08/29
  *
- * Functions for testing class Metrics.
- *
  * This file is part of the DGtal library.
  */
 
