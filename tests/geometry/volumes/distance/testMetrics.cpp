@@ -29,6 +29,9 @@
 
 ///////////////////////////////////////////////////////////////////////////////
 #include <iostream>
+
+#include "DGtalCatch.h"
+
 #include "DGtal/base/Common.h"
 #include "DGtal/helpers/StdDefs.h"
 
@@ -45,171 +48,67 @@ using namespace DGtal;
 ///////////////////////////////////////////////////////////////////////////////
 // Functions for testing class Metrics.
 ///////////////////////////////////////////////////////////////////////////////
-bool testMetrics()
-{
-  unsigned int nbok = 0;
-  unsigned int nb = 0;
-  
-  trace.beginBlock ( "Testing separable metrics l_2 ..." );
 
+
+TEST_CASE("Exact predicates metrics")
+{
   Z2i::Point a( 0,0), b(5, 0), bb(5,-10), bbb(5,5),c(10,0), d(3,3);
   Z2i::Point starting( 0, 5), endpoint(10,5);
   
   ExactPredicateLpSeparableMetric<Z2i::Space, 2> metric;
 
-  trace.info()<< "a= "<<a<<std::endl;
-  trace.info()<< "b= "<<b<<std::endl;
-  trace.info()<< "bb= "<<bb<<std::endl;
-  trace.info()<< "bbb= "<<bbb<<std::endl;
-  trace.info()<< "c= "<<c<<std::endl;
+  SECTION("Checking Closest Predicate")
+    {
+      REQUIRE( metric.closest(a,d,c) == ClosestFIRST);
+    }
 
-  trace.info() << "distance between a and bb = "<< metric(a,bb)<< std::endl;
+  SECTION("Checking hiddenBy l2")
+    {
+      REQUIRE(!metric.hiddenBy(a,b,c,starting,endpoint,0)); 
+      REQUIRE(metric.hiddenBy(a,bb,c,starting,endpoint,0)); 
+      REQUIRE(!metric.hiddenBy(a,bbb,c,starting,endpoint,0)); 
 
-
-  DGtal::Closest closest  =metric.closest(a,d,c);
-  nbok += (closest == ClosestFIRST) ? 1 : 0; 
-  nb++;
-  trace.info() << "(" << nbok << "/" << nb << ") "
-	       << "closest(a,d,c) returns d" << std::endl;
-      
-  bool hidden  =metric.hiddenBy(a,b,c,starting,endpoint,0); 
-  nbok += (!hidden) ? 1 : 0; 
-  nb++;
-  trace.info() << "(" << nbok << "/" << nb << ") "
-	       << "(a,b,c) returns false" << std::endl;
-      
-  hidden  =metric.hiddenBy(a,bb,c,starting,endpoint,0); 
-  nbok += (hidden) ? 1 : 0; 
-  nb++;
-  trace.info() << "(" << nbok << "/" << nb << ") "
-	       << "(a,bb,c) returns true" << std::endl;
-  
-  hidden  =metric.hiddenBy(a,bbb,c,starting,endpoint,0); 
-  nbok += (!hidden) ? 1 : 0; 
-  nb++;
-  trace.info() << "(" << nbok << "/" << nb << ") "
-	       << "(a,bbb,c) returns false" << std::endl;
-  
-  trace.endBlock();
-
-  trace.beginBlock ( "Testing separable metrics l_3 ..." );
+    }
 
    
   ExactPredicateLpSeparableMetric<Z2i::Space, 3> metric3;
 
-  trace.info()<< "a= "<<a<<std::endl;
-  trace.info()<< "b= "<<b<<std::endl;
-  trace.info()<< "bb= "<<bb<<std::endl;
-  trace.info()<< "bbb= "<<bbb<<std::endl;
-  trace.info()<< "c= "<<c<<std::endl;
-
-
-  hidden  =metric3.hiddenBy(a,b,c,starting,endpoint,0); 
-  nbok += (!hidden) ? 1 : 0; 
-  nb++;
-  trace.info() << "(" << nbok << "/" << nb << ") "
-	       << "(a,b,c) returns false" << std::endl;
+  SECTION("Checking hiddenBy l3")
+    {
       
-  hidden  =metric3.hiddenBy(a,bb,c,starting,endpoint,0); 
-  nbok += (hidden) ? 1 : 0; 
-  nb++;
-  trace.info() << "(" << nbok << "/" << nb << ") "
-	       << "(a,bb,c) returns true" << std::endl;
-  
-  hidden  =metric3.hiddenBy(a,bbb,c,starting,endpoint,0); 
-  nbok += (!hidden) ? 1 : 0; 
-  nb++;
-  trace.info() << "(" << nbok << "/" << nb << ") "
-	       << "(a,bbb,c) returns false" << std::endl;
-  
-  trace.endBlock();
-  
-  return nbok == nb;
+      REQUIRE(!metric3.hiddenBy(a,b,c,starting,endpoint,0)); 
+      REQUIRE(metric3.hiddenBy(a,bb,c,starting,endpoint,0)); 
+      REQUIRE(!metric3.hiddenBy(a,bbb,c,starting,endpoint,0)); 
+    }
 }
 
-template <typename Value>
-bool testInexactMetrics()
+TEST_CASE("Inexact Predicate Metrics")
 {
-  unsigned int nbok = 0;
-  unsigned int nb = 0;
-  
-  trace.beginBlock ( "Testing inexact predicate separable metrics l_2.1 ..." );
-
+  typedef double Value;
   Z2i::Point a( 0,0), b(5, 0), bb(5,-10), bbb(5,5),c(10,0);
   Z2i::Point starting( 0, 5), endpoint(10,5);
-  
+      
   InexactPredicateLpSeparableMetric<Z2i::Space, Value> metric (2.1);
-
-  trace.info()<< "a= "<<a<<std::endl;
-  trace.info()<< "b= "<<b<<std::endl;
-  trace.info()<< "bb= "<<bb<<std::endl;
-  trace.info()<< "bbb= "<<bbb<<std::endl;
-  trace.info()<< "c= "<<c<<std::endl;
-
-
-  bool hidden  =metric.hiddenBy(a,b,c,starting,endpoint,0); 
-  nbok += (!hidden) ? 1 : 0; 
-  nb++;
-  trace.info() << "(" << nbok << "/" << nb << ") "
-	       << "(a,b,c) returns false" << std::endl;
-      
-  hidden  =metric.hiddenBy(a,bb,c,starting,endpoint,0); 
-  nbok += (hidden) ? 1 : 0; 
-  nb++;
-  trace.info() << "(" << nbok << "/" << nb << ") "
-	       << "(a,bb,c) returns true" << std::endl;
-  
-  hidden  =metric.hiddenBy(a,bbb,c,starting,endpoint,0); 
-  nbok += (!hidden) ? 1 : 0; 
-  nb++;
-  trace.info() << "(" << nbok << "/" << nb << ") "
-	       << "(a,bbb,c) returns false" << std::endl;
-  
-  trace.endBlock();
-
-  trace.beginBlock ( "Testing inexact predicate separable metrics l_3.1 ..." );
-
-   
   InexactPredicateLpSeparableMetric<Z2i::Space,Value> metric3(3.1);
- 
-  trace.info()<< "a= "<<a<<std::endl;
-  trace.info()<< "b= "<<b<<std::endl;
-  trace.info()<< "bb= "<<bb<<std::endl;
-  trace.info()<< "bbb= "<<bbb<<std::endl;
-  trace.info()<< "c= "<<c<<std::endl;
-
-
-  hidden  =metric3.hiddenBy(a,b,c,starting,endpoint,0); 
-  nbok += (!hidden) ? 1 : 0; 
-  nb++;
-  trace.info() << "(" << nbok << "/" << nb << ") "
-	       << "(a,b,c) returns false" << std::endl;
       
-  hidden  =metric3.hiddenBy(a,bb,c,starting,endpoint,0); 
-  nbok += (hidden) ? 1 : 0; 
-  nb++;
-  trace.info() << "(" << nbok << "/" << nb << ") "
-	       << "(a,bb,c) returns true" << std::endl;
-  
-  hidden  =metric3.hiddenBy(a,bbb,c,starting,endpoint,0); 
-  nbok += (!hidden) ? 1 : 0; 
-  nb++;
-  trace.info() << "(" << nbok << "/" << nb << ") "
-	       << "(a,bbb,c) returns false" << std::endl;
-  
-  trace.endBlock();
-  
-  return nbok == nb;
+  SECTION("Checking hiddenBy l2.1")
+    {
+      REQUIRE(!metric.hiddenBy(a,b,c,starting,endpoint,0)); 
+      REQUIRE(metric.hiddenBy(a,bb,c,starting,endpoint,0)); 
+      REQUIRE(!metric.hiddenBy(a,bbb,c,starting,endpoint,0)); 
+    }
+      
+  SECTION("Checking hiddenBy l3.1")
+    {
+      REQUIRE(!metric3.hiddenBy(a,b,c,starting,endpoint,0)); 
+      REQUIRE(metric3.hiddenBy(a,bb,c,starting,endpoint,0)); 
+      REQUIRE(!metric3.hiddenBy(a,bbb,c,starting,endpoint,0)); 
+    }
 }
 
 
-bool testPowerMetrics()
+TEST_CASE("Exact Power Metrics")
 {
-  unsigned int nbok = 0;
-  unsigned int nb = 0;
-  
-  trace.beginBlock ( "Testing separable weighted metrics ..." );
-
   Z2i::Point a( 0,0), bbis(4, 1), b(5,0), bb(5,-10), bbb(5,5),c(10,0);
   Z2i::Point d(5,-6);
   Z2i::Point starting( 0, 5), endpoint(10,5);
@@ -217,287 +116,121 @@ bool testPowerMetrics()
   typedef ExactPredicateLpPowerSeparableMetric<Z2i::Space, 2> Metric;
   Metric metric;
 
-  trace.info()<< "a= "<<a<<std::endl;
-  trace.info()<< "b= "<<b<<std::endl;
-  trace.info()<< "bb= "<<bb<<std::endl;
-  trace.info()<< "bbb= "<<bbb<<std::endl;
-  trace.info()<< "c= "<<c<<std::endl;
-  trace.info()<< "d= "<<d<<std::endl;
+  SECTION("Closest")
+    {
+      REQUIRE(metric.closestPower(bbis,a,0,c,0) == DGtal::ClosestFIRST);  
+      REQUIRE(metric.closestPower(bbis,a,10,c,35) != DGtal::ClosestFIRST);
+      REQUIRE(!metric.hiddenByPower(a,0,b,0,c,0,starting,endpoint,0)); 
+      REQUIRE(metric.hiddenByPower(a,0,bb,0,c,0,starting,endpoint,0)); 
+      REQUIRE(!metric.hiddenByPower(a,0,bbb,0,c,0,starting,endpoint,0)); 
+      REQUIRE(metric.hiddenByPower(a,0,d,0,c,0,starting,endpoint,0)); 
+    }
   
-  bool closer = (metric.closestPower(bbis,a,0,c,0) == DGtal::ClosestFIRST);  
-  nbok += (closer) ? 1 : 0; 
-  nb++;
-  trace.info() << "(" << nbok << "/" << nb << ") "
-	       << "a is closer" << std::endl;
-
-  closer = (metric.closestPower(bbis,a,10,c,35) == DGtal::ClosestFIRST);
-  nbok += (!closer) ? 1 : 0; 
-  nb++;
-  trace.info() << "(" << nbok << "/" << nb << ") "
-	       << "c is closer with w_a=10 w_c=35" << std::endl;
-  trace.endBlock();
-
-
-  trace.beginBlock("Testing Hidden with w=0");
-  bool hidden  =metric.hiddenByPower(a,0,b,0,c,0,starting,endpoint,0); 
-  nbok += (!hidden) ? 1 : 0; 
-  nb++;
-  trace.info() << "(" << nbok << "/" << nb << ") "
-	       << "(a,b,c) returns false" << std::endl;
-      
-  hidden  =metric.hiddenByPower(a,0,bb,0,c,0,starting,endpoint,0); 
-  nbok += (hidden) ? 1 : 0; 
-  nb++;
-  trace.info() << "(" << nbok << "/" << nb << ") "
-	       << "(a,bb,c) returns true" << std::endl;
-  
-  hidden  =metric.hiddenByPower(a,0,bbb,0,c,0,starting,endpoint,0); 
-  nbok += (!hidden) ? 1 : 0; 
-  nb++;
-  trace.info() << "(" << nbok << "/" << nb << ") "
-	       << "(a,bbb,c) returns false" << std::endl;
-
-  hidden  =metric.hiddenByPower(a,0,d,0,c,0,starting,endpoint,0); 
-  nbok += (hidden) ? 1 : 0; 
-  nb++;
-  trace.info() << "(" << nbok << "/" << nb << ") "
-	       << "(a,d,c) returns true" << std::endl;
-  trace.endBlock();
-
-  trace.beginBlock("Testing Hidden with w!=0");
-
-  hidden  =metric.hiddenByPower(a,0,d,30,c,0,starting,endpoint,0); 
-  nbok += (hidden) ? 1 : 0; 
-  nb++;
-  trace.info() << "(" << nbok << "/" << nb << ") "
-	       << "(a,0,d,30,c,0) returns true" << std::endl;
-
-  hidden  =metric.hiddenByPower(a,10,d,10,c,10,starting,endpoint,0); 
-  nbok += (hidden) ? 1 : 0; 
-  nb++;
-  trace.info() << "(" << nbok << "/" << nb << ") "
-	       << "(a,10,d,10,c,10) returns true" << std::endl;
-  
-  
-  trace.endBlock();
-  
-  return nbok == nb;
+  SECTION("Testing Hidden with w!=0")
+    {
+      REQUIRE(metric.hiddenByPower(a,0,d,30,c,0,starting,endpoint,0)); 
+      REQUIRE(metric.hiddenByPower(a,10,d,10,c,10,starting,endpoint,0)); 
+    }
 }
 
-bool testBinarySearch()
+TEST_CASE("Test Binary search on metrics")
 {
-  unsigned int nbok = 0;
-  unsigned int nb = 0;
- 
-  trace.beginBlock ( "Testing binary search of Voronoi abscissa..." );
-  ExactPredicateLpSeparableMetric<Z2i::Space, 1>::RawValue partialA, partialB;
-  ExactPredicateLpSeparableMetric<Z2i::Space, 1> metric;
-  typedef ExactPredicateLpSeparableMetric<Z2i::Space, 1>::Abscissa Abscissa;
+  SECTION("all")
+    {
+      ExactPredicateLpSeparableMetric<Z2i::Space, 1>::RawValue partialA, partialB;
+      ExactPredicateLpSeparableMetric<Z2i::Space, 1> metric;
+      typedef ExactPredicateLpSeparableMetric<Z2i::Space, 1>::Abscissa Abscissa;
   
-  trace.beginBlock("Classical case");
-  Z2i::Point a(5,5), b(7,10);
+      Z2i::Point a(5,5), b(7,10);
   
-  partialA = 5;
-  partialB = 7;
+      partialA = 5;
+      partialB = 7;
   
-  // (0,9) strict in B
-  // distance( (0,9), (5,5) ) = 9
-  // distance( (0,9), (7,10)) = 8
-  //
-  // (0,8) strict in A
-  // distance( (0,8), (5,5) ) = 8
-  // distance( (0,8), (7,10) ) = 9
+      // (0,9) strict in B
+      // distance( (0,9), (5,5) ) = 9
+      // distance( (0,9), (7,10)) = 8
+      //
+      // (0,8) strict in A
+      // distance( (0,8), (5,5) ) = 8
+      // distance( (0,8), (7,10) ) = 9
   
-  Abscissa res = metric.binarySearchHidden(5, 10, partialA, partialB, 0, 15);
-  trace.info() << "Abscissa ="<<res<<std::endl;
-  
-  nbok += (res == 8) ? 1 : 0;
-  nb++;
-  trace.info() << "(" << nbok << "/" << nb << ") " << "last strict in A==(0,8)" << std::endl;
-  trace.endBlock();
-  
-  trace.beginBlock("Equidistant case");
-  Z2i::Point aa(5,5), bb(6,10);
-  
-  partialA = 5;
-  partialB = 5;
-  
-  // (0,8)  in BB and AA
-  // distance( (0,8), (5,5) ) = 8
-  // distance( (0,8), (6,10)) = 8
-  //
-  // (0,7) strict in AA
-  // distance( (0,7), (5,5) ) = 7
-  // distance( (0,7), (6,10) ) = 9
-  
-  Abscissa res2 = metric.binarySearchHidden(5, 10, partialA, partialB, 0, 15);
-  trace.info() << "Abscissa ="<<res2<<std::endl;
-  
-  nbok += (res2 == 7) ? 1 : 0;
-  nb++;
-  trace.info() << "(" << nbok << "/" << nb << ") " << "last strict in AA==(0,7) (VoroVertex)" << std::endl;
-  trace.endBlock();
-  
-  //trace.beginBlock("Lower than lowerBound case");
-  //Z2i::Point aaa(105,5), bbb(0,10); 
-  //partialA = 105;
-  //partialB = 0;
-  // (0,0) strict in BBB
-  // distance( (0,0), (105,5) ) = 120
-  // distance( (0,0), (0,10)) = 10
-  // Not tested since in the precondition of binarySearch
-  
-  trace.beginBlock("Greater than lowerBound case");
-  
-  partialA = 0;
-  partialB = 105;
-  
-  // (0,15) strict in AAAA
-  // distance( (0,15), (0,5) ) = 10
-  // distance( (0,15), (105,10)) = 110
-  
-  Abscissa res4 = metric.binarySearchHidden(5, 10, partialA, partialB, 0, 15);
-  trace.info() << "Abscissa ="<<res4<<std::endl;
-  
-  nbok += (res4 >= 15) ? 1 : 0;
-  nb++;
-  trace.info() << "(" << nbok << "/" << nb << ") " << "should be >= upper bound (15)" << std::endl;
-  trace.endBlock();
+      Abscissa res = metric.binarySearchHidden(5, 10, partialA, partialB, 0, 15);
+      trace.info() << "Abscissa ="<<res<<std::endl;
+      REQUIRE(res == 8 );
 
+      Z2i::Point aa(5,5), bb(6,10);
   
-  trace.endBlock();
-  return nbok == nb;
+      partialA = 5;
+      partialB = 5;
+  
+      // (0,8)  in BB and AA
+      // distance( (0,8), (5,5) ) = 8
+      // distance( (0,8), (6,10)) = 8
+      //
+      // (0,7) strict in AA
+      // distance( (0,7), (5,5) ) = 7
+      // distance( (0,7), (6,10) ) = 9
+  
+      Abscissa res2 = metric.binarySearchHidden(5, 10, partialA, partialB, 0, 15);
+      trace.info() << "Abscissa ="<<res2<<std::endl;
+  
+      REQUIRE (res2 == 7);
+  
+      partialA = 0;
+      partialB = 105;
+  
+      // (0,15) strict in AAAA
+      // distance( (0,15), (0,5) ) = 10
+      // distance( (0,15), (105,10)) = 110
+  
+      Abscissa res4 = metric.binarySearchHidden(5, 10, partialA, partialB, 0, 15);
+      trace.info() << "Abscissa ="<<res4<<std::endl;
+
+      REQUIRE(res4 >= 15);
+    }
 }
 
 
-bool testSpecialCasesLp()
+TEST_CASE("Special cases lp")
 {
-  unsigned int nbok = 0;
-  unsigned int nb = 0;
-  
-  trace.beginBlock ( "Testing Special Cases Lp..." );
   ExactPredicateLpSeparableMetric<Z2i::Space, 1> metric;
   Z2i::Point a(5,7),b(5,8),bb(6,8),bbb(7,8),c(5,9), bbbb(105,8);
   Z2i::Point starting(4,0), endpoint(4,15);
   
-  bool hidden  =metric.hiddenBy(a,b,c,starting,endpoint,1);
-  nbok += (!hidden) ? 1 : 0;
-  nb++;
-  trace.info() << "(" << nbok << "/" << nb << ") "
-  << "(a,b,c) returns false" << std::endl;
-  trace.info() << "Distances at (4,8) "<<metric(a, Z2i::Point(4,8))<<" "
-  << metric(b, Z2i::Point(4,8))<<" "
-  << metric(c, Z2i::Point(4,8))<<std::endl;
-  
+  REQUIRE(!metric.hiddenBy(a,b,c,starting,endpoint,1));
+ 
   //(a,bb,c)
-  hidden  =metric.hiddenBy(a,bb,c,starting,endpoint,1);
-  nbok += (!hidden) ? 1 : 0;
-  nb++;
-  trace.info() << "(" << nbok << "/" << nb << ") "
-  << "(a,bb,c) returns false" << std::endl;
-  
-  trace.info() << "Distances at (4,8) "<<metric(a, Z2i::Point(4,8))<<" "
-  << metric(bb, Z2i::Point(4,8))<<" "
-  << metric(c, Z2i::Point(4,8))<<std::endl;
-  
-  
-  //(a,bbb,c)
-  hidden  =metric.hiddenBy(a,bbb,c,starting,endpoint,1);
-  nbok += (hidden) ? 1 : 0;
-  nb++;
-  trace.info() << "(" << nbok << "/" << nb << ") "
-	       << "(a,bbb,c) returns true" << std::endl;
-  trace.info() << "Distances at (4,8) "<<metric(a, Z2i::Point(4,8))<<" "
-	       << metric(bbb, Z2i::Point(4,8))<<" "
-	       << metric(c, Z2i::Point(4,8))<<std::endl;
-  
-  //(a,bbbb,c) x_abbbb should be > upper
-  hidden  =metric.hiddenBy(a,bbbb,c,starting,endpoint,1);
-  nbok += (hidden) ? 1 : 0;
-  nb++;
-  trace.info() << "(" << nbok << "/" << nb << ") "
-  << "(a,bbbb,c) returns true" << std::endl;
+  REQUIRE(!metric.hiddenBy(a,bb,c,starting,endpoint,1));
  
   
-  trace.endBlock();
-  return nbok == nb;
+  //(a,bbb,c)
+  REQUIRE(metric.hiddenBy(a,bbb,c,starting,endpoint,1));
+ 
+  //(a,bbbb,c) x_abbbb should be > upper
+  REQUIRE(metric.hiddenBy(a,bbbb,c,starting,endpoint,1));
 }
 
-bool testSpecialCasesL2()
+TEST_CASE("Special cases L2")
 {
-  unsigned int nbok = 0;
-  unsigned int nb = 0;
   
   //Pythagorician triplet to check predicate
-  trace.beginBlock ( "Testing Special Cases L2..." );
   ExactPredicateLpSeparableMetric<Z2i::Space, 2> metric;
   Z2i::Point a(8,5),b(8,8),bb(9,8),bbb(10,8),c(8,11);
   Z2i::Point starting(4,0), endpoint(4,15);
-  
-  bool hidden  =metric.hiddenBy(a,b,c,starting,endpoint,1);
-  nbok += (!hidden) ? 1 : 0;
-  nb++;
-  trace.info() << "(" << nbok << "/" << nb << ") "
-	       << "(a,b,c) returns false" << std::endl;
-  trace.info() << "Distances at (4,8) "<<metric(a, Z2i::Point(4,8))<<" "
-	       << metric(b, Z2i::Point(4,8))<<" "
-	       << metric(c, Z2i::Point(4,8))<<std::endl;
-  
-  hidden  =metric.hiddenBy(a,bb,c,starting,endpoint,1);
-  nbok += (!hidden) ? 1 : 0;
-  nb++;
-  trace.info() << "(" << nbok << "/" << nb << ") "
-	       << "(a,bb,c) returns false" << std::endl;
-  
-  trace.info() << "Distances at (4,8) "<<metric(a, Z2i::Point(4,8))<<" "
-	       << metric(bb, Z2i::Point(4,8))<<" "
-	       << metric(c, Z2i::Point(4,8))<<std::endl;
-  
-  
-  hidden  =metric.hiddenBy(a,bbb,c,starting,endpoint,1);
-  nbok += (hidden) ? 1 : 0;
-  nb++;
-  trace.info() << "(" << nbok << "/" << nb << ") "
-	       << "(a,bbb,c) returns true" << std::endl;
-  trace.info() << "Distances at (4,8) "<<metric(a, Z2i::Point(4,8))<<" "
-	       << metric(bbb, Z2i::Point(4,8))<<" "
-	       << metric(c, Z2i::Point(4,8))<<std::endl;
-  
-  trace.endBlock();
-  return nbok == nb;
+
+  REQUIRE(!metric.hiddenBy(a,b,c,starting,endpoint,1));
+  REQUIRE(!metric.hiddenBy(a,bb,c,starting,endpoint,1));
+  REQUIRE(metric.hiddenBy(a,bbb,c,starting,endpoint,1));
 }
 
 
-bool testConcepts()
+TEST_CASE("Concepts")
 {
   BOOST_CONCEPT_ASSERT(( concepts::CSeparableMetric<ExactPredicateLpSeparableMetric<Z2i::Space, 2> > ));
   BOOST_CONCEPT_ASSERT(( concepts::CPowerSeparableMetric<ExactPredicateLpPowerSeparableMetric<Z2i::Space, 2> > ));
   BOOST_CONCEPT_ASSERT(( concepts::CSeparableMetric<InexactPredicateLpSeparableMetric<Z2i::Space> > ));  
-  return true;
 }
 
-///////////////////////////////////////////////////////////////////////////////
-// Standard services - public :
 
-int main( int argc, char** argv )
-{
-  trace.beginBlock ( "Testing class Metrics" );
-  trace.info() << "Args:";
-  for ( int i = 0; i < argc; ++i )
-    trace.info() << " " << argv[ i ];
-  trace.info() << endl;
 
-  bool res = testMetrics()
-    && testInexactMetrics<double>()
-    && testInexactMetrics<float>()
-    && testPowerMetrics()
-    && testBinarySearch()
-    && testSpecialCasesL2()
-    && testSpecialCasesLp()
-    && testConcepts();
-  trace.emphase() << ( res ? "Passed." : "Error." ) << endl;
-  trace.endBlock();
-  return res ? 0 : 1;
-}
-//                                                                           //
-///////////////////////////////////////////////////////////////////////////////
+/** @ingroup Tests **/
