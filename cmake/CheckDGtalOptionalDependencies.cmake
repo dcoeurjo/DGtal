@@ -14,7 +14,7 @@ message(STATUS "")
 
 OPTION(WITH_OPENMP "With OpenMP (compiler multithread programming) features." OFF)
 OPTION(WITH_GMP "With Gnu Multiprecision Library (GMP)." OFF)
-OPTION(WITH_EIGEN "With Eigen3 Linear Algebra Library." OFF)
+OPTION(WITH_EIGEN "With Eigen3 Linear Algebra Library." ON)
 OPTION(WITH_CGAL "With CGAL." OFF)
 OPTION(WITH_MAGICK "With GraphicsMagick++." OFF)
 OPTION(WITH_ITK "With Insight Toolkit ITK." OFF)
